@@ -1,0 +1,239 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Amethysta';
+  src: url('./fonts/Amethysta-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Jost';
+  src: url('./fonts/Jost-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Jost';
+  src: url('./fonts/Jost-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('./fonts/Manrope-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 800;
+  font-style: normal;
+}
+
+@layer base {
+  :root {
+    /* Inaayika — Handmade Jewellery Theme */
+    --background: 0 0% 100%;         /* #FFFFFF */
+    --foreground: 160 50% 8%;        /* Dark green/black */
+    --card: 0 0% 100%;
+    --card-foreground: 160 50% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 50% 8%;
+    --primary: 160 100% 12%;         /* #003E29 (Emerald Green) */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 46 65% 52%;        /* #D4AF37 (Gold) */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 160 15% 96%;
+    --muted-foreground: 160 15% 45%;
+    --accent: 46 65% 52%;           /* #D4AF37 (Gold) */
+    --accent-foreground: 0 0% 100%;
+    --chart-1: 160 100% 12%;
+    --chart-2: 46 65% 52%;
+    --chart-3: 160 80% 20%;
+    --chart-4: 46 50% 70%;
+    --chart-5: 160 40% 80%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 160 20% 90%;           /* Soft border */
+    --input: 160 20% 90%;
+    --ring: 160 100% 12%;
+    --radius: 0.5rem;
+
+    /* Brand palette as CSS vars for direct use */
+    --brand-green: #003E29;
+    --brand-gold: #D4AF37;
+    --brand-dark: #002216;
+    --brand-bg: #FFFFFF;
+    --brand-border: #E5E7EB;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* Premium Typography */
+@layer utilities {
+  .font-display {
+    font-family: 'Amethysta', Georgia, serif;
+  }
+  .font-sans {
+    font-family: 'Jost', sans-serif;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Premium Layout - Generous Spacing */
+@layer components {
+  .section-container {
+    @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-12;
+  }
+  
+  .section-padding {
+    @apply py-12 md:py-16;
+  }
+  
+  .section-padding-sm {
+    @apply py-12 md:py-16;
+  }
+}
+
+/* Premium Card Styles */
+@layer utilities {
+  .card-premium {
+    @apply bg-white rounded-2xl transition-all duration-300;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+  
+  .card-premium:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+  
+  .card-shadow {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+  
+  .card-shadow-lg {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* Premium Image Containers */
+@layer utilities {
+  .img-zoom {
+    @apply overflow-hidden;
+  }
+  .img-zoom img {
+    @apply transition-transform duration-500;
+  }
+  .img-zoom:hover img {
+    transform: scale(1.05);
+  }
+}
+
+/* Premium Animations */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out forwards;
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Premium Background System */
+  .bg-page {
+    background-color: #ffffff;
+  }
+  
+  .bg-section-light {
+    background-color: #fcfcfc;
+  }
+  
+  .bg-section-white {
+    background-color: #ffffff;
+  }
+  
+  .bg-hero-gradient {
+    background: linear-gradient(135deg, #ffffff 0%, #f4fbf7 50%, #faf6ee 100%);
+  }
+
+  .bg-hero-brand {
+    background: linear-gradient(135deg,
+      rgba(0, 62, 41, 0.04) 0%,
+      rgba(212, 175, 55, 0.06) 50%,
+      rgba(0, 62, 41, 0.03) 100%
+    );
+  }
+
+  .bg-hero-dark {
+    background: linear-gradient(135deg, #003E29 0%, #002216 100%);
+  }
+
+  .bg-pharma-hero {
+    background: linear-gradient(135deg, #f4fbf7 0%, #faf6ee 40%, #ffffff 100%);
+  }
+
+  .section-padding-sm {
+    @apply py-12 md:py-16;
+  }
+
+  /* Minimal Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
