@@ -529,7 +529,7 @@ export default function ProductContent({ slug }) {
             <div className="mb-6 flex items-center gap-2.5 p-3.5 bg-amber-50/50 border border-amber-100 rounded-xl text-xs text-amber-800">
               <ShoppingBag className="h-4.5 w-4.5 text-amber-700 animate-bounce flex-shrink-0" />
               <span>
-                <strong>12 people</strong> have this in their carts right now. It's running out!
+                <strong>12 people</strong> have this in their carts right now. It&apos;s running out!
               </span>
             </div>
 

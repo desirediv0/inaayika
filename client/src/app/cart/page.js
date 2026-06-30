@@ -291,7 +291,7 @@ export default function CartPage() {
         toast.success("Coupon removed");
     }, [removeCoupon]);
 
-    const totals = useMemo(() => getCartTotals(), [cart, coupon]);
+    const totals = useMemo(() => getCartTotals(), [cart, coupon, getCartTotals]);
 
     const handleCheckout = useCallback(() => {
         if (!isAuthenticated && hidePricesForGuests) {
