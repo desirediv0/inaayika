@@ -365,7 +365,7 @@ export default function ProductContent({ slug }) {
 
   if (loading) return (
     <div className="max-w-7xl mx-auto px-4 py-24 flex flex-col items-center gap-4">
-      <div className="w-10 h-10 border-2 border-black border-t-transparent rounded-full animate-spin" />
+      <div className="w-10 h-10 border-2 border-[#003E29] border-t-transparent rounded-full animate-spin" />
       <p className="text-sm text-neutral-400 tracking-widest uppercase font-semibold">Loading Page…</p>
     </div>
   );
@@ -377,7 +377,7 @@ export default function ProductContent({ slug }) {
       </div>
       <h2 className="text-xl    text-gray-900 mb-2">Product Not Available</h2>
       <p className="text-sm text-gray-500 mb-6">{error || "The requested item is not found."}</p>
-      <Link href="/products" className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-xs font-semibold uppercase tracking-wider rounded-lg">
+      <Link href="/products" className="inline-flex items-center gap-2 px-6 py-3 bg-[#003E29] text-white text-xs font-semibold uppercase tracking-wider rounded-lg hover:bg-[#002e1f] transition-colors">
         Go Back to Gallery
       </Link>
     </div>
@@ -444,7 +444,7 @@ export default function ProductContent({ slug }) {
                     <button
                       key={idx}
                       onClick={() => setMainImage(img)}
-                      className={`relative flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 bg-neutral-50 ${active ? "border-black shadow-sm" : "border-neutral-200 hover:border-neutral-400"
+                      className={`relative flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 bg-neutral-50 ${active ? "border-[#003E29] shadow-sm" : "border-neutral-200 hover:border-neutral-400"
                         }`}
                     >
                       <Image src={getImageUrl(img.url)} alt="" fill className="object-cover" sizes="64px" />
@@ -472,7 +472,7 @@ export default function ProductContent({ slug }) {
               {/* Badges on image */}
               <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                 {product.flashSale?.isActive && (
-                  <span className="px-3 py-1.5 bg-black text-white text-[9px]   uppercase tracking-widest rounded shadow-md flex items-center gap-1">
+                  <span className="px-3 py-1.5 bg-[#003E29] text-white text-[9px]   uppercase tracking-widest rounded shadow-md flex items-center gap-1">
                     <Zap className="h-3 w-3 fill-white animate-pulse" /> FLASH SALE
                   </span>
                 )}
@@ -551,8 +551,8 @@ export default function ProductContent({ slug }) {
                           key={v.id}
                           onClick={() => handleAttributeChange(attr.id, v.id)}
                           className={`px-4 py-2 text-xs font-semibold border rounded-lg transition-all duration-300 ${active
-                            ? "border-black bg-black text-white shadow-sm"
-                            : "border-neutral-200 text-neutral-700 hover:border-black"
+                            ? "border-[#003E29] bg-[#003E29] text-white shadow-sm"
+                            : "border-neutral-200 text-neutral-700 hover:border-[#003E29]"
                             }`}
                         >
                           {v.value}
@@ -600,7 +600,7 @@ export default function ProductContent({ slug }) {
                 id="main-add-to-cart-btn"
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || outOfStock}
-                className="flex-1 h-12 bg-black hover:bg-neutral-900 text-white text-xs   uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.99]"
+                className="flex-1 h-12 bg-[#003E29] hover:bg-[#002e1f] text-white text-xs   uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.99]"
               >
                 {isAddingToCart ? (
                   <div className="h-4 w-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
@@ -737,7 +737,7 @@ export default function ProductContent({ slug }) {
                 <button
                   onClick={handleAddBundleToCart}
                   disabled={isAddingBundle || !Object.values(bundleSelected).some(Boolean)}
-                  className="w-full h-11 bg-black hover:bg-neutral-900 text-white text-xs   uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2"
+                  className="w-full h-11 bg-[#003E29] hover:bg-[#002e1f] text-white text-xs   uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   {isAddingBundle ? "Adding Bundle..." : "Add All to Cart"}
                 </button>
@@ -760,7 +760,7 @@ export default function ProductContent({ slug }) {
                 key={key}
                 onClick={() => setActiveTab(key)}
                 className={`px-6 py-4 text-xs   uppercase tracking-widest border-b-2 -mb-[1px] transition-all whitespace-nowrap ${activeTab === key
-                  ? "border-black text-black"
+                  ? "border-[#003E29] text-[#003E29]"
                   : "border-transparent text-gray-400 hover:text-gray-800"
                   }`}
               >
@@ -850,7 +850,7 @@ export default function ProductContent({ slug }) {
           <div className="pt-12 border-t border-neutral-100">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl    tracking-wide text-neutral-900 uppercase">You May Also Like</h2>
-              <Link href="/products" className="text-xs   uppercase tracking-widest border-b border-black pb-0.5 hover:text-neutral-600 hover:border-neutral-600 transition-colors">
+              <Link href="/products" className="text-xs   uppercase tracking-widest border-b border-[#003E29] pb-0.5 hover:text-[#002e1f] hover:border-[#002e1f] transition-colors">
                 View All Collection
               </Link>
             </div>
@@ -890,7 +890,7 @@ export default function ProductContent({ slug }) {
               <button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || outOfStock}
-                className="px-6 h-9 bg-black hover:bg-neutral-900 text-white text-[10px]   uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center"
+                className="px-6 h-9 bg-[#003E29] hover:bg-[#002e1f] text-white text-[10px]   uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center"
               >
                 {isAddingToCart ? "Adding..." : "Add to Cart"}
               </button>

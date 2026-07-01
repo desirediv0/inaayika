@@ -293,7 +293,7 @@ function ProductsContent() {
             max="2000"
             value={priceRange.max}
             onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) })}
-            className="w-full accent-black cursor-pointer bg-zinc-200 h-1 rounded-lg"
+            className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-1 rounded-lg"
           />
           <div className="flex items-center justify-between text-xs text-zinc-500">
             <span>Price: ₹{priceRange.min} — ₹{priceRange.max}</span>
@@ -302,7 +302,7 @@ function ProductsContent() {
                 handleFilterChange("minPrice", String(priceRange.min));
                 handleFilterChange("maxPrice", String(priceRange.max));
               }}
-              className="px-4 py-1.5 bg-black text-white text-[10px]   tracking-widest uppercase hover:bg-zinc-900 transition-colors"
+              className="px-4 py-1.5 bg-[#003E29] text-white text-[10px]   tracking-widest uppercase hover:bg-[#002e1f] transition-colors"
             >
               Filter
             </button>
@@ -413,7 +413,7 @@ function ProductsContent() {
                 <div>
                   <Link
                     href="/products?productType=featured"
-                    className="inline-block bg-black hover:bg-zinc-900 text-white text-[10px]   uppercase tracking-widest px-6 py-3 transition-colors"
+                    className="inline-block bg-[#003E29] hover:bg-[#002e1f] text-white text-[10px]   uppercase tracking-widest px-6 py-3 transition-colors"
                   >
                     See More Products
                   </Link>
@@ -434,21 +434,21 @@ function ProductsContent() {
               <span className="text-[10px]   text-zinc-400 uppercase tracking-wider">Fast Filters:</span>
               <button
                 onClick={() => handleFilterChange("productType", filters.productType === "featured" ? "" : "featured")}
-                className={`px-3 py-1 text-[10px]   rounded-full border uppercase tracking-wider transition-colors ${filters.productType === "featured" ? "bg-black border-black text-white" : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                className={`px-3 py-1 text-[10px]   rounded-full border uppercase tracking-wider transition-colors ${filters.productType === "featured" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-400"
                   }`}
               >
                 Featured
               </button>
               <button
                 onClick={() => handleFilterChange("productType", filters.productType === "bestseller" ? "" : "bestseller")}
-                className={`px-3 py-1 text-[10px]   rounded-full border uppercase tracking-wider transition-colors ${filters.productType === "bestseller" ? "bg-black border-black text-white" : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                className={`px-3 py-1 text-[10px]   rounded-full border uppercase tracking-wider transition-colors ${filters.productType === "bestseller" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-400"
                   }`}
               >
                 Best Sellers
               </button>
               <button
                 onClick={() => handleFilterChange("productType", filters.productType === "trending" ? "" : "trending")}
-                className={`px-3 py-1 text-[10px]   rounded-full border uppercase tracking-wider transition-colors ${filters.productType === "trending" ? "bg-black border-black text-white" : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                className={`px-3 py-1 text-[10px]   rounded-full border uppercase tracking-wider transition-colors ${filters.productType === "trending" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-400"
                   }`}
               >
                 Top Rated
@@ -485,7 +485,7 @@ function ProductsContent() {
                         setViewMode("grid");
                         setViewCols(c);
                       }}
-                      className={`text-[10px]   w-6 h-6 flex items-center justify-center transition-colors ${viewMode === "grid" && viewCols === c ? "bg-black text-white" : "text-zinc-400 hover:text-black"
+                      className={`text-[10px]   w-6 h-6 flex items-center justify-center transition-colors ${viewMode === "grid" && viewCols === c ? "bg-[#003E29] text-white" : "text-zinc-400 hover:text-[#003E29]"
                         }`}
                     >
                       {c}
@@ -493,7 +493,7 @@ function ProductsContent() {
                   ))}
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`p-1 flex items-center justify-center transition-colors ${viewMode === "list" ? "bg-black text-white" : "text-zinc-400 hover:text-black"
+                    className={`p-1 flex items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#003E29] text-white" : "text-zinc-400 hover:text-[#003E29]"
                       }`}
                     title="List View"
                   >
@@ -529,7 +529,7 @@ function ProductsContent() {
                   <p className="text-xs text-zinc-500 mb-4">Try removing some filter choices.</p>
                   <button
                     onClick={clearFilters}
-                    className="px-5 py-2 bg-black text-white text-xs   uppercase tracking-widest hover:bg-zinc-900 transition-colors"
+                    className="px-5 py-2 bg-[#003E29] text-white text-xs   uppercase tracking-widest hover:bg-[#002e1f] transition-colors"
                   >
                     Reset Filters
                   </button>
@@ -560,8 +560,8 @@ function ProductsContent() {
                       key={p}
                       onClick={() => handlePageChange(p)}
                       className={`w-10 h-10 border   text-xs flex items-center justify-center rounded-xl transition-all ${p === pagination.page
-                        ? "bg-black border-black text-white scale-105"
-                        : "border-zinc-200 text-zinc-500 hover:border-black hover:text-black"
+                        ? "bg-[#003E29] border-[#003E29] text-white scale-105"
+                        : "border-zinc-200 text-zinc-500 hover:border-[#003E29] hover:text-[#003E29]"
                         }`}
                     >
                       {p}

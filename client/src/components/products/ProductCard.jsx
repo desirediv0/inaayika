@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Loader2, ShoppingCart, Eye, Check, Star, RefreshCw } from "lucide-react";
+import { Heart, Loader2, ShoppingCart, Eye, Check, Star } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { fetchApi, formatCurrency, cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -219,8 +219,8 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
             <button
               onClick={handleAddToCart}
               disabled={!showPrice || isAddingToCart || isOutOfStock}
-              className="ml-auto flex-shrink-0 flex items-center gap-2 px-4 py-2 text-white text-xs   uppercase tracking-wider transition-all hover:bg-black/90 disabled:opacity-50"
-              style={{ background: addedToCart ? "#10b981" : isOutOfStock ? "#ef4444" : "#000000" }}
+              className="ml-auto flex-shrink-0 flex items-center gap-2 px-4 py-2 text-white text-xs   uppercase tracking-wider transition-all hover:bg-[#002e1f]/90 disabled:opacity-50"
+              style={{ background: addedToCart ? "#10b981" : isOutOfStock ? "#ef4444" : "#003E29" }}
             >
               {isAddingToCart ? <Loader2 className="w-4 h-4 animate-spin" /> : addedToCart ? <><Check className="w-4 h-4" /><span>Added</span></> : isOutOfStock ? <span>Out Of Stock</span> : <><ShoppingCart className="w-4 h-4" /><span>Add to Cart</span></>}
             </button>
@@ -256,12 +256,12 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
         {/* BESTSELLER / SALE Badges — top left */}
         <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5 pointer-events-none">
           {product.isNew && (
-            <span className="text-[9px]   tracking-widest text-white px-2 py-1 bg-black uppercase">
+            <span className="text-[9px]   tracking-widest text-white px-2 py-1 bg-[#003E29] uppercase">
               BESTSELLER
             </span>
           )}
           {discountPercent > 0 && (
-            <span className="text-[9px]   tracking-widest text-white px-2 py-1 bg-black uppercase">
+            <span className="text-[9px]   tracking-widest text-white px-2 py-1 bg-[#003E29] uppercase">
               SALE!
             </span>
           )}
@@ -294,13 +294,7 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
               : <Heart className={cn("h-4 w-4", inWishlist && "fill-current")} />}
           </button>
 
-          {/* Compare/Refresh */}
-          <button
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-md text-gray-800 hover:text-black transition-colors"
-            aria-label="Compare"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
+
 
           {/* Quick View */}
           <Link
@@ -321,7 +315,7 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
             <button
               onClick={handleAddToCart}
               disabled={isAddingToCart}
-              className="w-full py-3 bg-black hover:bg-black/95 text-white text-[11px]   uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 bg-[#003E29] hover:bg-[#002e1f] text-white text-[11px]   uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
             >
               {isAddingToCart ? (
                 <Loader2 className="w-4 h-4 animate-spin text-white" />
