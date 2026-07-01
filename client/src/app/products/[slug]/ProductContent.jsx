@@ -91,7 +91,7 @@ export default function ProductContent({ slug }) {
         if (pd.images?.length) setMainImage(pd.images[0]);
         if (pd.variants?.length) {
           const combos = pd.variants
-            .filter((v) => v.isActive && (v.stock > 0 || v.quantity > 0))
+            .filter((v) => v.isActive)
             .map((v) => ({ attributeValueIds: v.attributes?.map((a) => a.attributeValueId) || [], variant: v }));
           setAvailableCombinations(combos);
           if (pd.attributeOptions?.length) {
@@ -223,7 +223,7 @@ export default function ProductContent({ slug }) {
       // Add main product
       const mainV = selectedVariant || product?.variants?.[0];
       if (mainV && bundleSelected[product.id]) {
-        await addToCart(mainV.id, 1);
+        await addToCart(mainV.id, quantity);
       }
       // Add checked related products
       for (const p of relatedProducts.slice(0, 3)) {
@@ -396,7 +396,7 @@ export default function ProductContent({ slug }) {
 
   // Bundle calculations
   const bundleItems = [
-    { id: product.id, name: product.name, price: selectedVariant?.salePrice || selectedVariant?.price || product.basePrice || product.regularPrice || 0, isMain: true, stock: stock, image: primary?.url },
+    { id: product.id, name: product.name, price: parseFloat(effectivePriceInfo?.price || selectedVariant?.salePrice || selectedVariant?.price || product.basePrice || product.regularPrice || 0), isMain: true, stock: stock, image: primary?.url },
     ...relatedProducts.slice(0, 3).map((p) => {
       const v = p.variants?.[0] || {};
       const price = v.salePrice || v.price || p.basePrice || p.regularPrice || 0;
@@ -405,7 +405,8 @@ export default function ProductContent({ slug }) {
   ];
 
   const bundleTotal = bundleItems.reduce((sum, item) => {
-    return sum + (bundleSelected[item.id] ? item.price : 0);
+    const qty = item.isMain ? quantity : 1;
+    return sum + (bundleSelected[item.id] ? (item.price * qty) : 0);
   }, 0);
 
   return (
