@@ -1859,6 +1859,15 @@ export function ProductForm({
                       </div>
                     ))}
                   </div>
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <Link
+                      to="/product-sections"
+                      className="text-xs text-[#2E7D32] hover:underline flex items-center gap-1 font-medium"
+                    >
+                      <ImageIcon className="h-3 w-3" />
+                      Configure Section Names & Background Images
+                    </Link>
+                  </div>
                 </div>
               </div>
 

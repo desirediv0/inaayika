@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   getAllProductSections,
   getProductSectionById,
@@ -15,6 +16,19 @@ import {
 } from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
+
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed!"), false);
+    }
+  },
+});
 
 // Get all product sections
 router.get(
@@ -37,6 +51,7 @@ router.post(
   "/product-sections",
   verifyAdminJWT,
   hasPermission("products", "create"),
+  upload.single("image"),
   createProductSection
 );
 
@@ -45,6 +60,7 @@ router.put(
   "/product-sections/:id",
   verifyAdminJWT,
   hasPermission("products", "update"),
+  upload.single("image"),
   updateProductSection
 );
 

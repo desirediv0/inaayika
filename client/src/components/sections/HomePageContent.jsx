@@ -126,33 +126,48 @@ function FeaturedProductsCarousel({ products, isLoading }) {
 ───────────────────────────────────── */
 export default function HomePageContent() {
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState({
-    featured: [],
-    latest: [],
-    bestseller: [],
-    trending: [],
-    new: [],
-  });
+  const [dbSections, setDbSections] = useState([]);
+  const [products, setProducts] = useState({});
 
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const endpoints = [
-          { key: "featured", url: "/public/products/type/featured?limit=12" },
-          { key: "latest", url: "/public/products/type/latest?limit=12" },
-          { key: "bestseller", url: "/public/products/type/bestseller?limit=12" },
-          { key: "trending", url: "/public/products/type/trending?limit=12" },
-          { key: "new", url: "/public/products/type/new?limit=12" },
+        // 1. Fetch sections from database for custom configurations
+        let fetchedSections = [];
+        try {
+          const sectionRes = await fetchApi("/public/product-sections");
+          if (sectionRes?.data?.sections) {
+            fetchedSections = sectionRes.data.sections;
+            setDbSections(fetchedSections);
+          }
+        } catch (sectionErr) {
+          console.error("Error fetching db sections for banner:", sectionErr);
+        }
+
+        // Fallback to defaults if no sections exist yet
+        const displaySections = fetchedSections.length > 0 ? fetchedSections : [
+          { slug: "featured" },
+          { slug: "latest" },
+          { slug: "bestseller" },
+          { slug: "trending" },
+          { slug: "new" },
         ];
 
+        // 2. Build dynamic endpoints based on active sections
+        const dynamicEndpoints = displaySections.map(sec => ({
+          key: sec.slug?.toLowerCase(),
+          url: `/public/products/type/${sec.slug?.toLowerCase()}?limit=12`
+        }));
+
+        // Fetch products list for all active sections
         const results = await Promise.allSettled(
-          endpoints.map(({ url }) => fetchApi(url))
+          dynamicEndpoints.map(({ url }) => fetchApi(url))
         );
 
-        const updated = { ...products };
+        const updated = {};
         results.forEach((result, index) => {
-          const key = endpoints[index].key;
+          const key = dynamicEndpoints[index].key;
           if (result.status === "fulfilled") {
             updated[key] = result.value?.data?.products || [];
           }
@@ -173,13 +188,30 @@ export default function HomePageContent() {
     const sectionProducts = products[key];
     if (!loading && sectionProducts.length === 0) return null;
 
-    const banner = SECTION_METADATA[key] || {
+    const dbSection = dbSections.find(
+      (s) =>
+        s.slug?.toLowerCase() === key.toLowerCase() ||
+        s.slug?.toLowerCase().replace(/-/g, "") === key.toLowerCase()
+    );
+
+    const defaultBanner = SECTION_METADATA[key] || {
       bannerImage: "/placeholder.jpg",
       tag: "COLLECTION",
       title: title,
       subtitle: "",
       dateText: description,
       linkUrl: `/shop?type=${key}`
+    };
+
+    // Split section name to fit layout's title and subtitle pattern
+    let titleParts = dbSection?.name ? dbSection.name.split(" ") : [];
+
+    const banner = {
+      ...defaultBanner,
+      bannerImage: dbSection?.image || defaultBanner.bannerImage,
+      title: titleParts.length > 0 ? titleParts[0].toUpperCase() : defaultBanner.title,
+      subtitle: titleParts.length > 1 ? titleParts.slice(1).join(" ").toUpperCase() : defaultBanner.subtitle,
+      dateText: dbSection?.description || defaultBanner.dateText,
     };
 
     return (
@@ -227,53 +259,35 @@ export default function HomePageContent() {
     );
   };
 
+  const displaySections = dbSections.length > 0
+    ? [...dbSections].sort((a, b) => a.displayOrder - b.displayOrder)
+    : [
+        { id: "featured", slug: "featured", name: "FEATURED COLLECTIONS", description: "Handpicked handcrafted jewellery pieces selected for your style" },
+        { id: "latest", slug: "latest", name: "LATEST ADDITIONS", description: "Newly added premium jewellery collections" },
+        { id: "bestseller", slug: "bestseller", name: "BEST SELLERS", description: "Our most popular jewellery designs loved by clients across India" },
+        { id: "trending", slug: "trending", name: "TRENDING NOW", description: "Most loved and trending handmade designs and accessories this week" },
+        { id: "new", slug: "new", name: "NEW ARRIVALS", description: "Fresh handcrafted creations added to our gallery" },
+      ];
+
   return (
     <>
-      {/* FEATURED JEWELLERY */}
-      {renderSection(
-        "featured",
-        "FEATURED COLLECTIONS",
-        "Handpicked handcrafted jewellery pieces selected for your style",
-        "bg-white"
-      )}
+      {displaySections.map((sec, idx) => {
+        const key = sec.slug?.toLowerCase();
+        if (!products[key]) return null;
 
-      {/* BRANDS */}
-      <BrandCarousel tag="HOT" title="TRUSTED DESIGNERS" />
-
-      {/* LATEST */}
-      {renderSection(
-        "latest",
-        "LATEST ADDITIONS",
-        "Newly added premium jewellery collections",
-        "bg-white"
-      )}
-
-      {/* BEST SELLERS */}
-      {renderSection(
-        "bestseller",
-        "BEST SELLERS",
-        "Our most popular jewellery designs loved by clients across India",
-        "bg-white"
-      )}
-
-      {/* TRENDING */}
-      {renderSection(
-        "trending",
-        "TRENDING NOW",
-        "Most loved and trending handmade designs and accessories this week",
-        "bg-white"
-      )}
-
-      {/* NEW BRANDS */}
-      <BrandCarousel tag="NEW" title="NEW ARRIVALS" />
-
-      {/* NEW ARRIVALS */}
-      {renderSection(
-        "new",
-        "NEW ARRIVALS",
-        "Fresh handcrafted creations added to our gallery",
-        "bg-white"
-      )}
+        return (
+          <div key={sec.id || key}>
+            {renderSection(
+              key,
+              sec.name,
+              sec.description,
+              "bg-white"
+            )}
+            {idx === 0 && <BrandCarousel tag="HOT" title="TRUSTED DESIGNERS" />}
+            {idx === 3 && <BrandCarousel tag="NEW" title="NEW ARRIVALS" />}
+          </div>
+        );
+      })}
     </>
   );
 }

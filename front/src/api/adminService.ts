@@ -931,31 +931,17 @@ export const productSections = {
   getProductSectionById: (sectionId: string) => {
     return api.get(`/api/admin/product-sections/${sectionId}`);
   },
-  createProductSection: (data: {
-    name: string;
-    slug: string;
-    description?: string;
-    icon?: string;
-    color?: string;
-    displayOrder?: number;
-    maxProducts?: number;
-  }) => {
-    return api.post("/api/admin/product-sections", data);
+  createProductSection: (data: any) => {
+    const isFormData = data instanceof FormData;
+    return api.post("/api/admin/product-sections", data, {
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : undefined,
+    });
   },
-  updateProductSection: (
-    sectionId: string,
-    data: {
-      name?: string;
-      slug?: string;
-      description?: string;
-      icon?: string;
-      color?: string;
-      displayOrder?: number;
-      maxProducts?: number;
-      isActive?: boolean;
-    }
-  ) => {
-    return api.put(`/api/admin/product-sections/${sectionId}`, data);
+  updateProductSection: (sectionId: string, data: any) => {
+    const isFormData = data instanceof FormData;
+    return api.put(`/api/admin/product-sections/${sectionId}`, data, {
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : undefined,
+    });
   },
   deleteProductSection: (sectionId: string) => {
     return api.delete(`/api/admin/product-sections/${sectionId}`);

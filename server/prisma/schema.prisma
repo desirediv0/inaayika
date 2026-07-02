@@ -647,6 +647,7 @@ model ProductSection {
   description  String?
   icon         String? // Icon name (e.g., "Star", "Flame")
   color        String? // Color class (e.g., "bg-yellow-500")
+  image        String? // Custom background banner image URL/key
   isActive     Boolean              @default(true)
   displayOrder Int                  @default(0)
   maxProducts  Int                  @default(15) // Limit of products per section

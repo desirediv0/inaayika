@@ -14,6 +14,7 @@ import {
   Package,
   Layers,
   MoreVertical,
+  Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -26,13 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -43,7 +38,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/context";
+
 
 interface Product {
   id: string;
@@ -68,6 +63,7 @@ interface ProductSection {
   description?: string;
   icon?: string;
   color?: string;
+  image?: string;
   isActive: boolean;
   displayOrder: number;
   maxProducts: number;
@@ -80,11 +76,10 @@ interface ProductSection {
 }
 
 export default function ProductSectionsPage() {
-  const { t } = useLanguage();
   const [sections, setSections] = useState<ProductSection[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -103,6 +98,114 @@ export default function ProductSectionsPage() {
     displayOrder: 0,
     maxProducts: 15,
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [draggedSectionIndex, setDraggedSectionIndex] = useState<number | null>(null);
+  const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
+
+  const handleDragStartSection = (e: React.DragEvent, index: number) => {
+    setDraggedSectionIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOverSection = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDropSection = async (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedSectionIndex === null || draggedSectionIndex === index) return;
+
+    const sortedSections = [...sections].sort((a, b) => a.displayOrder - b.displayOrder);
+    const [draggedItem] = sortedSections.splice(draggedSectionIndex, 1);
+    sortedSections.splice(index, 0, draggedItem);
+
+    // Update display orders locally
+    const updatedSections = sortedSections.map((sec, i) => ({
+      ...sec,
+      displayOrder: i,
+    }));
+
+    setSections(updatedSections);
+
+    try {
+      await Promise.all(
+        updatedSections.map((sec) =>
+          productSections.updateProductSection(sec.id, {
+            displayOrder: sec.displayOrder,
+          })
+        )
+      );
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save section order");
+    } finally {
+      setDraggedSectionIndex(null);
+    }
+  };
+
+  const handleDragStartProduct = (e: React.DragEvent, index: number) => {
+    setDraggedProductIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOverProduct = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDropProduct = async (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    const currentSection = sections.find((s) => s.id === activeTab);
+    if (draggedProductIndex === null || draggedProductIndex === index || !currentSection) return;
+
+    const sortedItems = [...(currentSection.items || [])].sort(
+      (a, b) => a.displayOrder - b.displayOrder
+    );
+
+    const [draggedItem] = sortedItems.splice(draggedProductIndex, 1);
+    sortedItems.splice(index, 0, draggedItem);
+
+    const reorderedProductOrders = sortedItems.map((item, i) => ({
+      productId: item.productId,
+      displayOrder: i,
+    }));
+
+    // Optimistically update local state
+    setSections((prevSections) =>
+      prevSections.map((sec) => {
+        if (sec.id === currentSection.id) {
+          return {
+            ...sec,
+            items: sec.items?.map((item) => {
+              const orderObj = reorderedProductOrders.find(
+                (o) => o.productId === item.productId
+              );
+              return {
+                ...item,
+                displayOrder: orderObj ? orderObj.displayOrder : item.displayOrder,
+              };
+            }),
+          };
+        }
+        return sec;
+      })
+    );
+
+    try {
+      await productSections.updateProductOrderInSection(currentSection.id, {
+        productOrders: reorderedProductOrders,
+      });
+
+      fetchSections(true);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save product order");
+    } finally {
+      setDraggedProductIndex(null);
+    }
+  };
 
   useEffect(() => {
     fetchSections();
@@ -115,9 +218,9 @@ export default function ProductSectionsPage() {
     }
   }, [sections]);
 
-  const fetchSections = async () => {
+  const fetchSections = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const response = await productSections.getProductSections();
       if (response.data?.success) {
         const sectionsList = response.data.data?.sections || [];
@@ -132,7 +235,7 @@ export default function ProductSectionsPage() {
       console.error("Error fetching sections:", error);
       setError("Failed to load product sections");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -155,14 +258,25 @@ export default function ProductSectionsPage() {
 
   const handleCreateSection = async () => {
     try {
-      const response = await productSections.createProductSection(formData);
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("slug", formData.slug);
+      data.append("description", formData.description);
+      data.append("color", formData.color);
+      data.append("displayOrder", formData.displayOrder.toString());
+      data.append("maxProducts", formData.maxProducts.toString());
+      if (imageFile) {
+        data.append("image", imageFile);
+      }
+
+      const response = await productSections.createProductSection(data as any);
       if (response.data?.success) {
-        toast.success(t("product_sections.messages.create_success"));
+        toast.success("Section created successfully");
         setShowCreateDialog(false);
         resetForm();
-        fetchSections();
+        fetchSections(true);
       } else {
-        toast.error(response.data?.message || t("product_sections.messages.create_error"));
+        toast.error(response.data?.message || "Failed to create section");
       }
     } catch (error: any) {
       console.error("Error creating section:", error);
@@ -173,15 +287,26 @@ export default function ProductSectionsPage() {
   const handleUpdateSection = async () => {
     if (!selectedSection) return;
     try {
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("slug", formData.slug);
+      data.append("description", formData.description);
+      data.append("color", formData.color);
+      data.append("displayOrder", formData.displayOrder.toString());
+      data.append("maxProducts", formData.maxProducts.toString());
+      if (imageFile) {
+        data.append("image", imageFile);
+      }
+
       const response = await productSections.updateProductSection(
         selectedSection.id,
-        formData
+        data as any
       );
       if (response.data?.success) {
         toast.success("Section updated successfully");
         setShowEditDialog(false);
         resetForm();
-        fetchSections();
+        fetchSections(true);
       } else {
         toast.error(response.data?.message || "Failed to update section");
       }
@@ -197,7 +322,7 @@ export default function ProductSectionsPage() {
       const response = await productSections.deleteProductSection(sectionId);
       if (response.data?.success) {
         toast.success("Section deleted successfully");
-        fetchSections();
+        fetchSections(true);
       } else {
         toast.error(response.data?.message || "Failed to delete section");
       }
@@ -217,7 +342,7 @@ export default function ProductSectionsPage() {
       if (response.data?.success) {
         toast.success("Product added to section");
         setShowAddProductDialog(false);
-        fetchSections();
+        fetchSections(true);
       } else {
         toast.error(
           response.data?.message || "Failed to add product to section"
@@ -239,7 +364,7 @@ export default function ProductSectionsPage() {
       );
       if (response.data?.success) {
         toast.success("Product removed from section");
-        fetchSections();
+        fetchSections(true);
       } else {
         toast.error(
           response.data?.message || "Failed to remove product from section"
@@ -265,7 +390,7 @@ export default function ProductSectionsPage() {
         toast.success(
           `Section ${isActive ? "activated" : "deactivated"} successfully`
         );
-        fetchSections();
+        fetchSections(true);
       } else {
         toast.error(response.data?.message || "Failed to update section");
       }
@@ -285,6 +410,8 @@ export default function ProductSectionsPage() {
       displayOrder: 0,
       maxProducts: 15,
     });
+    setImageFile(null);
+    setImagePreview(null);
     setSelectedSection(null);
   };
 
@@ -299,6 +426,8 @@ export default function ProductSectionsPage() {
       displayOrder: section.displayOrder,
       maxProducts: section.maxProducts,
     });
+    setImageFile(null);
+    setImagePreview(section.image || null);
     setShowEditDialog(true);
   };
 
@@ -341,7 +470,7 @@ export default function ProductSectionsPage() {
         <Button
           variant="outline"
           className="border-[#4CAF50] text-[#2E7D32] hover:bg-[#E8F5E9]"
-          onClick={fetchSections}
+          onClick={() => fetchSections()}
         >
           Try Again
         </Button>
@@ -375,10 +504,10 @@ export default function ProductSectionsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-semibold text-[#1F2937] tracking-tight">
-              {t("product_sections.title")}
+              Product Sections
             </h1>
             <p className="text-[#9CA3AF] text-sm mt-1.5">
-              {t("product_sections.subtitle")}
+              Manage product sections for homepage display (max 15 products per section)
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -399,7 +528,7 @@ export default function ProductSectionsPage() {
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              {t("product_sections.create_button")}
+              Create Section
             </Button>
           </div>
         </div>
@@ -413,10 +542,10 @@ export default function ProductSectionsPage() {
               <Layers className="h-8 w-8 text-[#9CA3AF]" />
             </div>
             <h3 className="text-lg font-semibold text-[#1F2937] mb-1.5">
-              {t("product_sections.empty.title")}
+              No product sections found
             </h3>
             <p className="text-sm text-[#9CA3AF] mb-6 max-w-sm mx-auto">
-              {t("product_sections.empty.description")}
+              Create your first section to organize products.
             </p>
             <Button
               className=""
@@ -426,273 +555,301 @@ export default function ProductSectionsPage() {
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              {t("product_sections.empty.create_first")}
+              Create First Section
             </Button>
           </div>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {/* Premium Section Tabs */}
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Tabs Navigation */}
+          <div className="lg:col-span-1 space-y-2">
             {sections
               .sort((a, b) => a.displayOrder - b.displayOrder)
-              .map((section) => (
+              .map((section, index) => (
                 <button
                   key={section.id}
                   onClick={() => setActiveTab(section.id)}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStartSection(e, index)}
+                  onDragOver={handleDragOverSection}
+                  onDrop={(e) => handleDropSection(e, index)}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all relative",
+                    "w-full text-left px-4 py-3 rounded-xl transition-all flex items-center justify-between group cursor-grab active:cursor-grabbing",
                     activeTab === section.id
-                      ? "bg-[#E8F5E9] text-[#2E7D32] shadow-sm"
-                      : "bg-[#FFFFFF] text-[#4B5563] border border-[#E5E7EB] hover:bg-[#F3F7F6]"
+                      ? "bg-[#E8F5E9] text-[#2E7D32] font-medium shadow-[0_2px_4px_rgba(76,175,80,0.08)]"
+                      : "text-[#4B5563] hover:bg-[#F3F7F6]"
                   )}
                 >
-                  <div className="flex items-center gap-2">
-                    <span>{section.name}</span>
-                    <Badge
+                  <div className="flex items-center gap-3">
+                    <span
                       className={cn(
-                        "text-xs",
-                        section.isActive
-                          ? "bg-[#ECFDF5] text-[#22C55E] border-[#D1FAE5]"
-                          : "bg-[#FFFBEB] text-[#F59E0B] border-[#FEF3C7]"
+                        "w-2.5 h-2.5 rounded-full",
+                        section.color || "bg-blue-500"
                       )}
-                    >
-                      {section.items?.length || 0}/{section.maxProducts}
-                    </Badge>
+                    />
+                    <span>{section.name}</span>
                   </div>
+                  <Badge
+                    className={cn(
+                      "text-[10px] font-semibold px-2 py-0.5 rounded-full transition-colors",
+                      activeTab === section.id
+                        ? "bg-[#2E7D32] text-white"
+                        : "bg-[#F3F4F6] text-[#6B7280] group-hover:bg-[#E5E7EB]"
+                    )}
+                  >
+                    {section.items?.length || 0}
+                  </Badge>
                 </button>
               ))}
           </div>
 
-          {/* Section Content */}
-          {currentSection && (
-            <Card className="bg-[#FFFFFF] border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)] rounded-xl">
-              <CardHeader className="px-6 pt-6 pb-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <CardTitle className="text-xl font-semibold text-[#1F2937]">
-                        {currentSection.name}
-                      </CardTitle>
-                      <Badge
-                        className={cn(
-                          "text-xs",
-                          currentSection.isActive
-                            ? "bg-[#ECFDF5] text-[#22C55E] border-[#D1FAE5]"
-                            : "bg-[#FFFBEB] text-[#F59E0B] border-[#FEF3C7]"
-                        )}
-                      >
-                        {currentSection.isActive ? t("product_sections.status.active") : t("product_sections.status.inactive")}
-                      </Badge>
+          {/* Tab Content */}
+          <div className="lg:col-span-3">
+            {currentSection && (
+              <Card className="bg-[#FFFFFF] border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)] rounded-xl">
+                <CardHeader className="px-6 pt-6 pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <CardTitle className="text-xl font-semibold text-[#1F2937]">
+                          {currentSection.name}
+                        </CardTitle>
+                        <Badge
+                          className={cn(
+                            "text-xs",
+                            currentSection.isActive
+                              ? "bg-[#ECFDF5] text-[#22C55E] border-[#D1FAE5]"
+                              : "bg-[#FFFBEB] text-[#F59E0B] border-[#FEF3C7]"
+                          )}
+                        >
+                          {currentSection.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                      {currentSection.description && (
+                        <p className="text-sm text-[#9CA3AF] mt-1">
+                          {currentSection.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 mt-3 text-xs text-[#9CA3AF]">
+                        <span>Slug: {currentSection.slug}</span>
+                        <span>•</span>
+                        <span>Display Order: {currentSection.displayOrder}</span>
+                      </div>
+                      {currentSection.image && (
+                        <div className="mt-4 space-y-1">
+                          <span className="text-xs font-medium text-[#4B5563] block">Section Background Image:</span>
+                          <div className="relative rounded-lg overflow-hidden h-24 w-48 border border-[#E5E7EB] bg-gray-50">
+                            <img
+                              src={currentSection.image}
+                              alt="Banner Preview"
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    {currentSection.description && (
-                      <p className="text-sm text-[#9CA3AF] mt-1">
-                        {currentSection.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 mt-3 text-xs text-[#9CA3AF]">
-                      <span>{t("product_sections.labels.slug")}: {currentSection.slug}</span>
-                      <span>•</span>
-                      <span>{t("product_sections.labels.display_order")}: {currentSection.displayOrder}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2">
-                      <Label
-                        htmlFor={`switch-${currentSection.id}`}
-                        className="text-sm text-[#4B5563] cursor-pointer"
-                      >
-                        {t("product_sections.status.active")}
-                      </Label>
-                      <Switch
-                        id={`switch-${currentSection.id}`}
-                        checked={currentSection.isActive}
-                        onCheckedChange={(checked) =>
-                          handleToggleSectionActive(currentSection, checked)
-                        }
-                      />
+                      <div className="flex items-center gap-2">
+                        <Label
+                          htmlFor={`switch-${currentSection.id}`}
+                          className="text-sm text-[#4B5563] cursor-pointer"
+                        >
+                          Active
+                        </Label>
+                        <Switch
+                          id={`switch-${currentSection.id}`}
+                          checked={currentSection.isActive}
+                          onCheckedChange={(checked) =>
+                            handleToggleSectionActive(currentSection, checked)
+                          }
+                        />
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-[#F3F4F6]"
+                          >
+                            <MoreVertical className="h-4 w-4 text-[#4B5563]" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="bg-[#FFFFFF] border-[#E5E7EB] shadow-lg"
+                        >
+                          <DropdownMenuItem
+                            className="text-[#1F2937] hover:bg-[#F3F7F6]"
+                            onClick={() => openEditDialog(currentSection)}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-[#E5E7EB]" />
+                          <DropdownMenuItem
+                            className="text-[#EF4444] hover:bg-[#FEF2F2]"
+                            onClick={() => handleDeleteSection(currentSection.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-[#F3F4F6]"
-                        >
-                          <MoreVertical className="h-4 w-4 text-[#4B5563]" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="bg-[#FFFFFF] border-[#E5E7EB] shadow-lg"
-                      >
-                        <DropdownMenuItem
-                          className="text-[#1F2937] hover:bg-[#F3F7F6]"
-                          onClick={() => openEditDialog(currentSection)}
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          {t("product_sections.actions.edit")}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-[#E5E7EB]" />
-                        <DropdownMenuItem
-                          className="text-[#EF4444] hover:bg-[#FEF2F2]"
-                          onClick={() => handleDeleteSection(currentSection.id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          {t("product_sections.actions.delete")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="px-6 pb-6">
-                <div className="mb-6 flex items-center justify-between">
-                  <p className="text-sm text-[#9CA3AF]">
-                    {t("product_sections.labels.products")}:{" "}
-                    <span className="font-semibold text-[#1F2937]">
-                      {currentSection.items?.length || 0}
-                    </span>{" "}
-                    / {currentSection.maxProducts}
-                  </p>
-                  {currentSection.items &&
-                    currentSection.items.length < currentSection.maxProducts && (
+                </CardHeader>
+                <CardContent className="px-6 pb-6">
+                  <div className="mb-6 flex items-center justify-between">
+                    <p className="text-sm text-[#9CA3AF]">
+                      Products:{" "}
+                      <span className="font-semibold text-[#1F2937]">
+                        {currentSection.items?.length || 0}
+                      </span>{" "}
+                      / {currentSection.maxProducts}
+                    </p>
+                    {currentSection.items &&
+                      currentSection.items.length < currentSection.maxProducts && (
+                        <Button
+                          size="sm"
+                          onClick={() => openAddProductDialog(currentSection)}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add Product
+                        </Button>
+                      )}
+                  </div>
+
+                  {currentSection.items && currentSection.items.length > 0 ? (
+                    <div className="divide-y divide-[#E5E7EB]">
+                      {[...currentSection.items]
+                        .sort((a, b) => a.displayOrder - b.displayOrder)
+                        .map((item, index) => {
+                          const productImage = getProductImage(item.product);
+                          return (
+                            <div
+                              key={item.id}
+                              draggable={true}
+                              onDragStart={(e) => handleDragStartProduct(e, index)}
+                              onDragOver={handleDragOverProduct}
+                              onDrop={(e) => handleDropProduct(e, index)}
+                              className="flex items-center gap-4 p-4 hover:bg-[#F3F7F6] transition-colors cursor-grab active:cursor-grabbing"
+                            >
+                              {/* Product Image */}
+                              <div className="flex-shrink-0">
+                                {productImage ? (
+                                  <img
+                                    src={productImage}
+                                    alt={item.product.name}
+                                    className="h-14 w-14 rounded-lg object-cover border border-[#E5E7EB]"
+                                  />
+                                ) : (
+                                  <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#F3F4F6] border border-[#E5E7EB]">
+                                    <Package className="h-6 w-6 text-[#9CA3AF]" />
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Product Info */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-[#1F2937] text-base mb-1 truncate">
+                                      {item.product.name}
+                                    </h3>
+                                    {item.product.description && (
+                                      <p className="text-xs text-[#9CA3AF] line-clamp-1">
+                                        {item.product.description.replace(/<[^>]*>/g, "")}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* Price */}
+                                  <div className="text-right flex-shrink-0">
+                                    {item.product.salePrice ? (
+                                      <div className="flex flex-col items-end">
+                                        <span className="  text-[#1F2937]">
+                                          ₹{item.product.salePrice}
+                                        </span>
+                                        <span className="text-xs line-through text-[#9CA3AF]">
+                                          ₹{item.product.price}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span className="  text-[#1F2937]">
+                                        ₹{item.product.price || 0}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Display Order - Hidden on mobile */}
+                              <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
+                                <Badge className="bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB] text-xs">
+                                  Order: {item.displayOrder}
+                                </Badge>
+                              </div>
+
+                              {/* Remove Button */}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 hover:bg-[#FEF2F2] text-[#EF4444] hover:text-[#EF4444]"
+                                onClick={() =>
+                                  handleRemoveProduct(
+                                    currentSection.id,
+                                    item.productId
+                                  )
+                                }
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#F3F4F6] mb-4">
+                        <Package className="h-8 w-8 text-[#9CA3AF]" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-[#1F2937] mb-1.5">
+                        No products in this section
+                      </h3>
+                      <p className="text-sm text-[#9CA3AF] mb-6 max-w-sm mx-auto">
+                        Add products to display them on your homepage.
+                      </p>
                       <Button
-                        size="sm"
+                        className=""
                         onClick={() => openAddProductDialog(currentSection)}
                       >
                         <Plus className="mr-2 h-4 w-4" />
-                        {t("product_sections.labels.add_product")}
+                        Add Product
                       </Button>
-                    )}
-                </div>
-
-                {currentSection.items && currentSection.items.length > 0 ? (
-                  <div className="divide-y divide-[#E5E7EB]">
-                    {currentSection.items
-                      .sort((a, b) => a.displayOrder - b.displayOrder)
-                      .map((item) => {
-                        const productImage = getProductImage(item.product);
-                        return (
-                          <div
-                            key={item.id}
-                            className="flex items-center gap-4 p-4 hover:bg-[#F3F7F6] transition-colors"
-                          >
-                            {/* Product Image */}
-                            <div className="flex-shrink-0">
-                              {productImage ? (
-                                <img
-                                  src={productImage}
-                                  alt={item.product.name}
-                                  className="h-14 w-14 rounded-lg object-cover border border-[#E5E7EB]"
-                                />
-                              ) : (
-                                <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#F3F4F6] border border-[#E5E7EB]">
-                                  <Package className="h-6 w-6 text-[#9CA3AF]" />
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Product Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-semibold text-[#1F2937] text-base mb-1 truncate">
-                                    {item.product.name}
-                                  </h3>
-                                  {item.product.description && (
-                                    <p className="text-xs text-[#9CA3AF] line-clamp-1">
-                                      {item.product.description}
-                                    </p>
-                                  )}
-                                </div>
-
-                                {/* Price */}
-                                <div className="text-right flex-shrink-0">
-                                  {item.product.salePrice ? (
-                                    <div className="flex flex-col items-end">
-                                      <span className="  text-[#1F2937]">
-                                        ₹{item.product.salePrice}
-                                      </span>
-                                      <span className="text-xs line-through text-[#9CA3AF]">
-                                        ₹{item.product.price}
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <span className="  text-[#1F2937]">
-                                      ₹{item.product.price || 0}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Display Order - Hidden on mobile */}
-                            <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
-                              <Badge className="bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB] text-xs">
-                                Order: {item.displayOrder}
-                              </Badge>
-                            </div>
-
-                            {/* Remove Button */}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 hover:bg-[#FEF2F2] text-[#EF4444] hover:text-[#EF4444]"
-                              onClick={() =>
-                                handleRemoveProduct(
-                                  currentSection.id,
-                                  item.productId
-                                )
-                              }
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        );
-                      })}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#F3F4F6] mb-4">
-                      <Package className="h-8 w-8 text-[#9CA3AF]" />
                     </div>
-                    <h3 className="text-lg font-semibold text-[#1F2937] mb-1.5">
-                      {t("product_sections.labels.no_products_title")}
-                    </h3>
-                    <p className="text-sm text-[#9CA3AF] mb-6 max-w-sm mx-auto">
-                      {t("product_sections.labels.no_products_desc")}
-                    </p>
-                    <Button
-                      className=""
-                      onClick={() => openAddProductDialog(currentSection)}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      {t("product_sections.labels.add_product")}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       )}
 
       {/* Premium Create Section Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="bg-[#FFFFFF] border-[#E5E7EB] max-w-2xl">
+        <DialogContent className="bg-[#FFFFFF] border-[#E5E7EB] w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-[#1F2937]">
-              {t("product_sections.form.create_title")}
+              Create Section
             </DialogTitle>
             <DialogDescription className="text-[#9CA3AF]">
-              {t("product_sections.form.create_desc")}
+              Add a new product section to organize products.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-5 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium text-[#4B5563]">
-                {t("product_sections.form.name_label")} <span className="text-[#EF4444]">*</span>
+                Section Name <span className="text-[#EF4444]">*</span>
               </Label>
               <Input
                 id="name"
@@ -704,7 +861,7 @@ export default function ProductSectionsPage() {
                     slug: generateSlug(e.target.value),
                   });
                 }}
-                placeholder={t("product_sections.form.name_placeholder")}
+                placeholder="e.g., Featured Products"
                 className="border-[#E5E7EB] focus:border-primary"
               />
             </div>
@@ -721,16 +878,10 @@ export default function ProductSectionsPage() {
                 placeholder="e.g., featured-products"
                 className="border-[#E5E7EB] focus:border-primary"
               />
-              <p className="text-xs text-[#9CA3AF]">
-                {t("product_sections.form.slug_hint")}
-              </p>
             </div>
             <div className="space-y-2">
-              <Label
-                htmlFor="description"
-                className="text-sm font-medium text-[#4B5563]"
-              >
-                Description
+              <Label htmlFor="description" className="text-sm font-medium text-[#4B5563]">
+                Description (Optional)
               </Label>
               <Input
                 id="description"
@@ -738,67 +889,32 @@ export default function ProductSectionsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Optional description"
+                placeholder="e.g., Selected for your style"
                 className="border-[#E5E7EB] focus:border-primary"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="color"
-                  className="text-sm font-medium text-[#4B5563]"
-                >
-                  {t("product_sections.form.color_label")}
-                </Label>
-                <Select
-                  value={formData.color}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, color: value })
-                  }
-                >
-                  <SelectTrigger className="border-[#E5E7EB] focus:border-primary">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#FFFFFF] border-[#E5E7EB]">
-                    <SelectItem value="bg-blue-500">Blue</SelectItem>
-                    <SelectItem value="bg-green-500">Green</SelectItem>
-                    <SelectItem value="bg-yellow-500">Yellow</SelectItem>
-                    <SelectItem value="bg-red-500">Red</SelectItem>
-                    <SelectItem value="bg-purple-500">Purple</SelectItem>
-                    <SelectItem value="bg-pink-500">Pink</SelectItem>
-                    <SelectItem value="bg-orange-500">Orange</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label
-                  htmlFor="maxProducts"
-                  className="text-sm font-medium text-[#4B5563]"
-                >
-                  {t("product_sections.form.max_products_label")}
-                </Label>
-                <Input
-                  id="maxProducts"
-                  type="number"
-                  value={formData.maxProducts}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      maxProducts: parseInt(e.target.value) || 15,
-                    })
-                  }
-                  min={1}
-                  max={50}
-                  className="border-[#E5E7EB] focus:border-primary"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="maxProducts" className="text-sm font-medium text-[#4B5563]">
+                Max Products
+              </Label>
+              <Input
+                id="maxProducts"
+                type="number"
+                value={formData.maxProducts}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    maxProducts: parseInt(e.target.value) || 15,
+                  })
+                }
+                min={1}
+                max={50}
+                className="border-[#E5E7EB] focus:border-primary"
+              />
             </div>
             <div className="space-y-2">
-              <Label
-                htmlFor="displayOrder"
-                className="text-sm font-medium text-[#4B5563]"
-              >
-                {t("product_sections.form.display_order_label")}
+              <Label htmlFor="displayOrder" className="text-sm font-medium text-[#4B5563]">
+                Display Order
               </Label>
               <Input
                 id="displayOrder"
@@ -812,12 +928,42 @@ export default function ProductSectionsPage() {
                 }
                 className="border-[#E5E7EB] focus:border-primary"
               />
-              <p className="text-xs text-[#9CA3AF]">
-                {t("product_sections.form.display_order_hint")}
-              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="image" className="text-sm font-medium text-[#4B5563]">
+                Section Background Image
+              </Label>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setImageFile(file);
+                        setImagePreview(URL.createObjectURL(file));
+                      }
+                    }}
+                    className="cursor-pointer border-[#E5E7EB] focus:border-primary py-1 h-9 text-xs"
+                  />
+                </div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E5E7EB] bg-[#F3F4F6] flex-shrink-0 overflow-hidden">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <ImageIcon className="h-4 w-4 text-[#9CA3AF]" />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-          <DialogFooter className="gap-3">
+          <DialogFooter className="gap-3 border-t pt-4">
             <Button
               variant="outline"
               className="border-[#E5E7EB] hover:bg-[#F3F7F6]"
@@ -826,13 +972,13 @@ export default function ProductSectionsPage() {
                 resetForm();
               }}
             >
-              {t("product_sections.actions.cancel")}
+              Cancel
             </Button>
             <Button
               className=""
               onClick={handleCreateSection}
             >
-              {t("product_sections.actions.create")}
+              Create
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -840,22 +986,22 @@ export default function ProductSectionsPage() {
 
       {/* Premium Edit Section Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="bg-[#FFFFFF] border-[#E5E7EB] max-w-2xl">
+        <DialogContent className="bg-[#FFFFFF] border-[#E5E7EB] w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-[#1F2937]">
-              {t("product_sections.form.edit_title")}
+              Edit Section
             </DialogTitle>
             <DialogDescription className="text-[#9CA3AF]">
-              {t("product_sections.form.edit_desc")}
+              Update section details and background banner image.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-5 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div className="space-y-2">
               <Label
                 htmlFor="edit-name"
                 className="text-sm font-medium text-[#4B5563]"
               >
-                {t("product_sections.form.name_label")} <span className="text-[#EF4444]">*</span>
+                Section Name <span className="text-[#EF4444]">*</span>
               </Label>
               <Input
                 id="edit-name"
@@ -875,7 +1021,7 @@ export default function ProductSectionsPage() {
                 htmlFor="edit-slug"
                 className="text-sm font-medium text-[#4B5563]"
               >
-                {t("product_sections.form.slug_label")} <span className="text-[#EF4444]">*</span>
+                Slug <span className="text-[#EF4444]">*</span>
               </Label>
               <Input
                 id="edit-slug"
@@ -891,7 +1037,7 @@ export default function ProductSectionsPage() {
                 htmlFor="edit-description"
                 className="text-sm font-medium text-[#4B5563]"
               >
-                {t("product_sections.form.description_label")}
+                Description (Optional)
               </Label>
               <Input
                 id="edit-description"
@@ -902,63 +1048,34 @@ export default function ProductSectionsPage() {
                 className="border-[#E5E7EB] focus:border-primary"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="edit-color"
-                  className="text-sm font-medium text-[#4B5563]"
-                >
-                  {t("product_sections.form.color_label")}
-                </Label>
-                <Select
-                  value={formData.color}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, color: value })
-                  }
-                >
-                  <SelectTrigger className="border-[#E5E7EB] focus:border-primary">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#FFFFFF] border-[#E5E7EB]">
-                    <SelectItem value="bg-blue-500">Blue</SelectItem>
-                    <SelectItem value="bg-green-500">Green</SelectItem>
-                    <SelectItem value="bg-yellow-500">Yellow</SelectItem>
-                    <SelectItem value="bg-red-500">Red</SelectItem>
-                    <SelectItem value="bg-purple-500">Purple</SelectItem>
-                    <SelectItem value="bg-pink-500">Pink</SelectItem>
-                    <SelectItem value="bg-orange-500">Orange</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label
-                  htmlFor="edit-maxProducts"
-                  className="text-sm font-medium text-[#4B5563]"
-                >
-                  {t("product_sections.form.max_products_label")}
-                </Label>
-                <Input
-                  id="edit-maxProducts"
-                  type="number"
-                  value={formData.maxProducts}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      maxProducts: parseInt(e.target.value) || 15,
-                    })
-                  }
-                  min={1}
-                  max={50}
-                  className="border-[#E5E7EB] focus:border-primary"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label
+                htmlFor="edit-maxProducts"
+                className="text-sm font-medium text-[#4B5563]"
+              >
+                Max Products
+              </Label>
+              <Input
+                id="edit-maxProducts"
+                type="number"
+                value={formData.maxProducts}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    maxProducts: parseInt(e.target.value) || 15,
+                  })
+                }
+                min={1}
+                max={50}
+                className="border-[#E5E7EB] focus:border-primary"
+              />
             </div>
             <div className="space-y-2">
               <Label
                 htmlFor="edit-displayOrder"
                 className="text-sm font-medium text-[#4B5563]"
               >
-                {t("product_sections.form.display_order_label")}
+                Display Order
               </Label>
               <Input
                 id="edit-displayOrder"
@@ -973,8 +1090,41 @@ export default function ProductSectionsPage() {
                 className="border-[#E5E7EB] focus:border-primary"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-image" className="text-sm font-medium text-[#4B5563]">
+                Section Background Image
+              </Label>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <Input
+                    id="edit-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setImageFile(file);
+                        setImagePreview(URL.createObjectURL(file));
+                      }
+                    }}
+                    className="cursor-pointer border-[#E5E7EB] focus:border-primary py-1 h-9 text-xs"
+                  />
+                </div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E5E7EB] bg-[#F3F4F6] flex-shrink-0 overflow-hidden">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <ImageIcon className="h-4 w-4 text-[#9CA3AF]" />
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-          <DialogFooter className="gap-3">
+          <DialogFooter className="gap-3 border-t pt-4">
             <Button
               variant="outline"
               className="border-[#E5E7EB] hover:bg-[#F3F7F6]"
@@ -983,13 +1133,13 @@ export default function ProductSectionsPage() {
                 resetForm();
               }}
             >
-              {t("product_sections.actions.cancel")}
+              Cancel
             </Button>
             <Button
               className=""
               onClick={handleUpdateSection}
             >
-              {t("product_sections.actions.update")}
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -425,151 +425,21 @@ export const getActiveFlashSales = asyncHandler(async (req, res) => {
 // Get active product sections (public)
 export const getActiveProductSections = asyncHandler(async (req, res) => {
   const sections = await prisma.productSection.findMany({
-    where: {
-      isActive: true,
-    },
+    where: { isActive: true },
     orderBy: { displayOrder: "asc" },
-    include: {
-      items: {
-        where: {
-          product: {
-            isActive: true,
-          },
-        },
-        include: {
-          product: {
-            include: {
-              images: {
-                where: { isPrimary: true },
-                take: 1,
-              },
-              variants: {
-                where: { isActive: true },
-                include: {
-                  attributes: {
-                    include: {
-                      attributeValue: {
-                        include: {
-                          attribute: true,
-                        },
-                      },
-                    },
-                  },
-                  images: {
-                    orderBy: { order: "asc" },
-                    take: 1,
-                  },
-                },
-                orderBy: { price: "asc" },
-                take: 1,
-              },
-              _count: {
-                select: {
-                  reviews: { where: { status: "APPROVED" } },
-                },
-              },
-            },
-          },
-        },
-        orderBy: { displayOrder: "asc" },
-      },
-    },
   });
 
-  // Collect all product IDs and batch fetch flash sales
-  const allProductIds = sections.flatMap(section =>
-    section.items.map(item => item.product.id)
-  );
-
-  const now = new Date();
-  const flashSaleProductsData = await prisma.flashSaleProduct.findMany({
-    where: {
-      productId: { in: allProductIds },
-      flashSale: {
-        isActive: true,
-        startTime: { lte: now },
-        endTime: { gte: now },
-      },
-    },
-    include: {
-      flashSale: {
-        select: {
-          id: true,
-          name: true,
-          discountPercentage: true,
-          endTime: true,
-        },
-      },
-    },
-  });
-
-  // Create flash sale map
-  const flashSaleMap = {};
-  flashSaleProductsData.forEach(fsp => {
-    flashSaleMap[fsp.productId] = {
-      isActive: true,
-      flashSaleId: fsp.flashSale.id,
-      name: fsp.flashSale.name,
-      discountPercentage: fsp.flashSale.discountPercentage,
-      endTime: fsp.flashSale.endTime,
-    };
-  });
-
-  // Format sections with products
-  const formattedSections = sections
-    .filter((section) => section.items.length > 0)
-    .map((section) => {
-      const products = section.items.map((item) => {
-        const product = item.product;
-        const variant = product.variants[0];
-        const image = product.images[0]?.url || variant?.images[0]?.url || null;
-
-        // Calculate base and flash sale prices
-        const basePrice = variant
-          ? parseFloat(variant.salePrice || variant.price)
-          : null;
-        const regularPrice = variant ? parseFloat(variant.price) : null;
-        const hasSale = variant?.salePrice !== null;
-
-        // Get flash sale data
-        const flashSale = flashSaleMap[product.id] || null;
-        let flashSalePrice = null;
-        if (flashSale && basePrice !== null) {
-          const discountAmount = (basePrice * flashSale.discountPercentage) / 100;
-          flashSalePrice = Math.round((basePrice - discountAmount) * 100) / 100;
-        }
-
-        return {
-          id: product.id,
-          name: product.name,
-          slug: product.slug,
-          description: product.description,
-          image: image ? getFileUrl(image) : null,
-          price: regularPrice,
-          basePrice,
-          salePrice: variant?.salePrice ? parseFloat(variant.salePrice) : null,
-          regularPrice,
-          hasSale,
-          reviewCount: product._count.reviews,
-          flashSale: flashSale ? {
-            ...flashSale,
-            flashSalePrice,
-          } : null,
-        };
-      });
-
-      return {
-        id: section.id,
-        name: section.name,
-        slug: section.slug,
-        description: section.description,
-        icon: section.icon,
-        color: section.color,
-        displayOrder: section.displayOrder,
-        maxProducts: section.maxProducts,
-        products: products.slice(0, section.maxProducts),
-      };
-    });
+  const formattedSections = sections.map((section) => ({
+    id: section.id,
+    name: section.name,
+    slug: section.slug,
+    description: section.description,
+    icon: section.icon,
+    color: section.color,
+    image: section.image ? getFileUrl(section.image) : null,
+    displayOrder: section.displayOrder,
+    maxProducts: section.maxProducts,
+  }));
 
   res
     .status(200)
