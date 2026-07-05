@@ -299,7 +299,7 @@ export default function ProductContent({ slug }) {
       const regPrice = parseFloat(product.basePrice);
       return (
         <div className="flex items-baseline gap-3">
-          <span className="text-3xl   text-black">
+          <span className="text-3xl font-light tracking-wide text-neutral-900">
             {formatCurrency(flashPrice)}
           </span>
           <span className="text-sm text-gray-400 line-through">
@@ -321,7 +321,7 @@ export default function ProductContent({ slug }) {
       const discPct = hasDiff ? Math.round(((mrp - saleP) / mrp) * 100) : 0;
       return (
         <div className="flex items-baseline gap-3">
-          <span className="text-3xl font-semibold text-black">
+          <span className="text-3xl font-light tracking-wide text-neutral-900">
             {formatCurrency(saleP)}
           </span>
           {hasDiff && (
@@ -346,7 +346,7 @@ export default function ProductContent({ slug }) {
 
     return (
       <div className="flex items-baseline gap-3">
-        <span className="text-3xl font-semibold text-black">
+        <span className="text-3xl font-light tracking-wide text-neutral-900">
           {formatCurrency(currentPrice)}
         </span>
         {originalPrice && (
@@ -456,7 +456,7 @@ export default function ProductContent({ slug }) {
             )}
 
             {/* Main Image Container */}
-            <div className="relative flex-1 aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-50 border border-neutral-100 shadow-sm group">
+            <div className="relative flex-1 aspect-[4/5] rounded-none overflow-hidden border group" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
               {images.length > 0 ? (
                 <Image
                   src={getImageUrl(primary?.url)}
@@ -503,11 +503,11 @@ export default function ProductContent({ slug }) {
             {/* Title & Brand */}
             <div className="mb-4">
               {product.brand && (
-                <span className="text-[10px]   tracking-[0.25em] text-neutral-400 uppercase block mb-1">
+                <span className="text-[10px] tracking-[0.35em] uppercase block mb-2" style={{ color: "#B08D57" }}>
                   {product.brand.name}
                 </span>
               )}
-              <h1 className="text-3xl    tracking-wide text-neutral-900 leading-tight uppercase">
+              <h1 className="font-display text-4xl md:text-[2.75rem] font-medium tracking-wide text-neutral-900 leading-tight">
                 {product.name}
               </h1>
             </div>
@@ -527,7 +527,7 @@ export default function ProductContent({ slug }) {
 
 
             {/* Cart Alert Badge */}
-            <div className="mb-6 flex items-center gap-2.5 p-3.5 bg-amber-50/50 border border-amber-100 rounded-xl text-xs text-amber-800">
+            <div className="mb-6 flex items-center gap-2.5 p-3.5 rounded-none text-xs border" style={{ background: "#F7F3EB", borderColor: "#E9E2D5", color: "#8a6d3f" }}>
               <ShoppingBag className="h-4.5 w-4.5 text-amber-700 animate-bounce flex-shrink-0" />
               <span>
                 <strong>12 people</strong> have this in their carts right now. It&apos;s running out!
@@ -601,7 +601,7 @@ export default function ProductContent({ slug }) {
                 id="main-add-to-cart-btn"
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || outOfStock}
-                className="flex-1 h-12 bg-[#003E29] hover:bg-[#002e1f] text-white text-xs   uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.99]"
+                className="flex-1 h-12 bg-[#003E29] hover:bg-[#002216] text-white text-[11px] uppercase tracking-[0.25em] rounded-none transition-all flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.99]"
               >
                 {isAddingToCart ? (
                   <div className="h-4 w-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
@@ -850,8 +850,8 @@ export default function ProductContent({ slug }) {
         {relatedProducts.length > 0 && (
           <div className="pt-12 border-t border-neutral-100">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl    tracking-wide text-neutral-900 uppercase">You May Also Like</h2>
-              <Link href="/products" className="text-xs   uppercase tracking-widest border-b border-[#003E29] pb-0.5 hover:text-[#002e1f] hover:border-[#002e1f] transition-colors">
+              <h2 className="font-display text-3xl md:text-4xl font-medium tracking-wide text-neutral-900">You May Also Like</h2>
+              <Link href="/products" className="text-[10px] uppercase tracking-[0.3em] border-b pb-1 transition-colors" style={{ color: "#B08D57", borderColor: "#B08D57" }}>
                 View All Collection
               </Link>
             </div>
@@ -891,7 +891,7 @@ export default function ProductContent({ slug }) {
               <button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || outOfStock}
-                className="px-6 h-9 bg-[#003E29] hover:bg-[#002e1f] text-white text-[10px]   uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center"
+                className="px-6 h-9 bg-[#003E29] hover:bg-[#002216] text-white text-[10px] uppercase tracking-[0.25em] rounded-none transition-colors flex items-center justify-center"
               >
                 {isAddingToCart ? "Adding..." : "Add to Cart"}
               </button>

@@ -8,7 +8,6 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { fetchApi, cn, sortCategories } from "@/lib/utils";
 import { ClientOnly } from "@/components/client-only";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast, Toaster } from "sonner";
 import {
@@ -42,8 +41,8 @@ function AvatarCircle({ name, size = "sm" }) {
   const dim = size === "lg" ? "w-11 h-11 text-base" : "w-8 h-8 text-sm";
   return (
     <div
-      className={`${dim} rounded-full flex items-center justify-center text-white   shadow-md flex-shrink-0`}
-      style={{ background: "linear-gradient(135deg, #003E29, #D4AF37)" }}
+      className={`${dim} rounded-full flex items-center justify-center text-white font-display shadow-md flex-shrink-0 border border-[#B08D57]/40`}
+      style={{ background: "#003E29" }}
     >
       {name?.charAt(0)?.toUpperCase() || "U"}
     </div>
@@ -56,12 +55,12 @@ function MobileNavItem({ href, icon: Icon, label, onClick, badge }) {
     <Link
       href={href}
       onClick={onClick}
-      className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:text-primary hover:bg-blue-50/60 transition-all duration-200"
+      className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-all duration-200"
     >
-      <Icon className="h-5 w-5 text-gray-400 flex-shrink-0" />
-      <span className="text-sm font-medium">{label}</span>
+      <Icon className="h-5 w-5 text-[#B08D57] flex-shrink-0 stroke-[1.5]" />
+      <span className="text-sm font-normal tracking-wide">{label}</span>
       {badge > 0 && (
-        <span className="ml-auto bg-primary text-white text-[10px]   px-2 py-0.5 rounded-full min-w-[20px] text-center">
+        <span className="ml-auto bg-[#003E29] text-white text-[10px] px-2 py-0.5 rounded-full min-w-[20px] text-center">
           {badge}
         </span>
       )}
@@ -72,8 +71,8 @@ function MobileNavItem({ href, icon: Icon, label, onClick, badge }) {
 /* ── Section helper (mobile drawer) ────────── */
 function DrawerSection({ title, children }) {
   return (
-    <div className="mt-2 pt-2 border-t border-gray-100">
-      <p className="px-4 py-1.5 text-[10px]   text-gray-400 uppercase tracking-widest">{title}</p>
+    <div className="mt-2 pt-2 border-t" style={{ borderColor: "#E9E2D5" }}>
+      <p className="px-4 py-1.5 text-[10px] uppercase tracking-[0.3em]" style={{ color: "#B08D57" }}>{title}</p>
       <div className="space-y-0.5 px-2">{children}</div>
     </div>
   );
@@ -94,13 +93,24 @@ export function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   const searchInputRef = useRef(null);
   const navbarRef = useRef(null);
 
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll);
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 10);
+        const total = document.documentElement.scrollHeight - window.innerHeight;
+        setScrollProgress(total > 0 ? Math.min(100, (window.scrollY / total) * 100) : 0);
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -150,14 +160,28 @@ export function Navbar() {
       <header
         ref={navbarRef}
         className={cn(
-          "sticky top-0 z-50 w-full transition-all duration-300 bg-white",
-          isScrolled ? "shadow-md" : ""
+          "sticky top-0 z-50 w-full transition-all duration-300",
+          isScrolled
+            ? "bg-[#FDFBF7]/90 backdrop-blur-md shadow-[0_10px_30px_-15px_rgba(0,34,22,0.2)]"
+            : "bg-[#FDFBF7]"
         )}
       >
         <Toaster position="top-center" richColors />
 
+        {/* ── Gold reading-progress hairline ── */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] z-[60] pointer-events-none" aria-hidden="true">
+          <div
+            className="h-full transition-[width] duration-150 ease-out"
+            style={{
+              width: `${scrollProgress}%`,
+              background: "linear-gradient(90deg, #B08D57, #E7C983)",
+              boxShadow: "0 0 8px rgba(231,201,131,0.6)",
+            }}
+          />
+        </div>
+
         {/* ── TOP INFO BAR (Green Bar) ── */}
-        <div className="text-white text-[11px] font-semibold tracking-wider py-2.5 px-4 border-b border-[#D4AF37]/20" style={{ background: "#003E29" }}>
+        <div className="text-white/90 text-[11px] font-light py-2.5 px-4" style={{ background: "#002216", letterSpacing: "0.2em" }}>
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Left: Social Links */}
             <div className="flex items-center gap-4">
@@ -165,73 +189,73 @@ export function Navbar() {
                 href="https://www.instagram.com/all_about_hair_accesories?igsh=MTJ6bXA2YnZ5M2k3Ng%3D%3D"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity"
+                className="text-white/70 hover:text-[#D4AF37] transition-colors"
               >
-                <FiInstagram className="h-4 w-4" />
+                <FiInstagram className="h-3.5 w-3.5" />
               </a>
               <a
                 href="https://www.youtube.com/@Inaayikabypoojakhan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity"
+                className="text-white/70 hover:text-[#D4AF37] transition-colors"
               >
-                <FiYoutube className="h-4 w-4" />
+                <FiYoutube className="h-3.5 w-3.5" />
               </a>
             </div>
 
             {/* Center: Promo Text */}
-            <div className="text-center   tracking-widest text-[10px] sm:text-[11px] uppercase">
-              NEWS: DELIVERY TO THE DOOR IS ACTIVE!
+            <div className="text-center tracking-[0.35em] text-[9px] sm:text-[10px] uppercase font-light">
+              <span className="text-[#D4AF37]">✦</span>&nbsp;&nbsp;Complimentary Doorstep Delivery Across India&nbsp;&nbsp;<span className="text-[#D4AF37]">✦</span>
             </div>
 
             {/* Right: Cart, Search, Help Links */}
-            <div className="flex items-center gap-4 text-[10px] sm:text-[11px]   tracking-widest uppercase">
-              <Link href="/cart" className="hover:underline">CART</Link>
-              <button onClick={() => setIsSearchOpen(true)} className="hover:underline">SEARCH</button>
-              <Link href="/contact" className="hover:underline">HELP</Link>
+            <div className="flex items-center gap-5 text-[9px] sm:text-[10px] tracking-[0.25em] uppercase font-light">
+              <Link href="/cart" className="hover:text-[#D4AF37] transition-colors">Cart</Link>
+              <button onClick={() => setIsSearchOpen(true)} className="hover:text-[#D4AF37] transition-colors uppercase tracking-[0.25em]">Search</button>
+              <Link href="/contact" className="hover:text-[#D4AF37] transition-colors">Help</Link>
             </div>
           </div>
         </div>
 
         {/* ── MAIN HEADER NAVBAR ── */}
-        <div className="border-b border-gray-100">
+        <div className="border-b bg-transparent" style={{ borderColor: "#E9E2D5" }}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
-            <div className="flex items-center justify-between h-20 gap-4">
+            <div className="relative flex items-center justify-between h-20 gap-4">
 
               {/* Left Side: Desktop Menu Items */}
-              <div className="hidden lg:flex items-center gap-8">
-                <Link href="/" className="text-xs   tracking-widest text-gray-900 hover:text-brand-green transition-colors uppercase">
-                  HOME
+              <div className="hidden lg:flex items-center gap-9">
+                <Link href="/" className="luxe-link text-neutral-800 hover:text-[#003E29] transition-colors">
+                  Home
                 </Link>
 
-                <Link href="/products" className="text-xs   tracking-widest text-gray-900 hover:text-brand-green transition-colors uppercase">
-                  SHOP
+                <Link href="/products" className="luxe-link text-neutral-800 hover:text-[#003E29] transition-colors">
+                  Shop
                 </Link>
 
-                <Link href="/products" className="text-xs   tracking-widest text-gray-900 hover:text-brand-green transition-colors uppercase">
-                  PRODUCT
+                <Link href="/categories" className="luxe-link text-neutral-800 hover:text-[#003E29] transition-colors">
+                  Collections
                 </Link>
 
                 <div className="relative group" onMouseEnter={() => setActiveDropdown("pages")} onMouseLeave={() => setActiveDropdown(null)}>
-                  <span className="flex items-center gap-1 text-xs   tracking-widest text-gray-900 hover:text-brand-green transition-colors cursor-pointer uppercase">
-                    PAGES <FiChevronDown className="h-3 w-3" />
+                  <span className="flex items-center gap-1.5 text-xs uppercase font-medium tracking-[0.28em] text-neutral-800 hover:text-[#003E29] transition-colors cursor-pointer">
+                    Maison <FiChevronDown className="h-3 w-3" />
                   </span>
                   {activeDropdown === "pages" && (
-                    <div className="absolute left-0 top-full pt-2 z-50">
-                      <div className="bg-white rounded-lg shadow-xl border p-2 min-w-[200px] border-gray-100">
-                        <Link href="/about" className="block px-4 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50 hover:text-black rounded uppercase">ABOUT US</Link>
-                        <Link href="/contact" className="block px-4 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50 hover:text-black rounded uppercase">CONTACT</Link>
-                        <Link href="/shipping-policy" className="block px-4 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50 hover:text-black rounded uppercase">SHIPPING POLICY</Link>
-                        <Link href="/return-policy" className="block px-4 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50 hover:text-black rounded uppercase">RETURN POLICY</Link>
-                        <Link href="/privacy-policy" className="block px-4 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50 hover:text-black rounded uppercase">PRIVACY POLICY</Link>
+                    <div className="absolute left-0 top-full pt-3 z-50">
+                      <div className="bg-white border py-3 min-w-[220px]" style={{ borderColor: "#E9E2D5", boxShadow: "0 24px 50px -20px rgba(0,34,22,0.18)" }}>
+                        <Link href="/about" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">About Us</Link>
+                        <Link href="/contact" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Contact</Link>
+                        <Link href="/shipping-policy" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Shipping Policy</Link>
+                        <Link href="/return-policy" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Return Policy</Link>
+                        <Link href="/privacy-policy" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Privacy Policy</Link>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Center: Logo / Brand Title */}
-              <div className="flex-1 lg:flex-none flex justify-center">
+              {/* Center: Logo / Brand Title — absolutely centered on desktop */}
+              <div className="flex-1 lg:flex-none flex justify-center lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:z-10">
                 <Link href="/" className="flex items-center justify-center  ">
                   <Image src="/logo.png" alt="Logo" width={80} height={80} />
                   {/* <div className="flex flex-col items-center justify-center">
@@ -250,22 +274,22 @@ export function Navbar() {
                 {/* Search */}
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="p-2 text-black hover:opacity-75 transition-opacity"
+                  className="p-2 text-neutral-800 hover:text-[#B08D57] transition-colors"
                   aria-label="Search"
                 >
-                  <FiSearch className="h-5 w-5 stroke-[2.5]" />
+                  <FiSearch className="h-5 w-5 stroke-[1.5]" />
                 </button>
 
                 {/* Cart */}
                 <ClientOnly>
                   <Link
                     href="/cart"
-                    className="p-2 text-black hover:opacity-75 transition-opacity relative animate-fade-in"
+                    className="p-2 text-neutral-800 hover:text-[#B08D57] transition-colors relative animate-fade-in"
                     aria-label="Cart"
                   >
-                    <FiShoppingBag className="h-5 w-5 stroke-[2.5]" />
+                    <FiShoppingBag className="h-5 w-5 stroke-[1.5]" />
                     {cartCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 bg-black text-white text-[9px] font-black rounded-full w-4.5 h-4.5 flex items-center justify-center border border-white">
+                      <span className="absolute -top-0.5 -right-0.5 text-white text-[9px] font-medium rounded-full w-4.5 h-4.5 flex items-center justify-center border border-white" style={{ background: "#003E29" }}>
                         {cartCount}
                       </span>
                     )}
@@ -275,10 +299,10 @@ export function Navbar() {
                 {/* Wishlist */}
                 <Link
                   href="/wishlist"
-                  className="p-2 text-black hover:opacity-75 transition-opacity relative"
+                  className="p-2 text-neutral-800 hover:text-[#B08D57] transition-colors relative"
                   aria-label="Wishlist"
                 >
-                  <FiHeart className="h-5 w-5 stroke-[2.5]" />
+                  <FiHeart className="h-5 w-5 stroke-[1.5]" />
                 </Link>
 
                 {/* Account */}
@@ -415,15 +439,15 @@ function AccountDropdown({ user, isAuthenticated, activeDropdown, setActiveDropd
       <ClientOnly>
         <button
           className={cn(
-            "flex items-center gap-1.5 p-2.5 rounded-xl transition-all",
-            open ? "text-primary bg-green-50" : "text-gray-600 hover:text-primary hover:bg-green-50"
+            "flex items-center gap-1.5 p-2.5 transition-all",
+            open ? "text-[#003E29]" : "text-neutral-800 hover:text-[#B08D57]"
           )}
         >
           {isAuthenticated ? (
             <AvatarCircle name={user?.name} />
           ) : (
             <>
-              <FiUser className="h-5 w-5" />
+              <FiUser className="h-5 w-5 stroke-[1.5]" />
               <FiChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
             </>
           )}
@@ -432,14 +456,14 @@ function AccountDropdown({ user, isAuthenticated, activeDropdown, setActiveDropd
         {open && (
           <div className="absolute right-0 top-full pt-2 z-50">
             <div
-              className="bg-white rounded-2xl shadow-2xl border w-72 animate-in fade-in slide-in-from-top-2 duration-150 overflow-hidden"
-              style={{ borderColor: "#E5E7EB", boxShadow: "0 20px 60px rgba(0,62,41,0.15)" }}
+              className="bg-white border w-72 animate-in fade-in slide-in-from-top-2 duration-150 overflow-hidden"
+              style={{ borderColor: "#E9E2D5", boxShadow: "0 24px 60px -20px rgba(0,34,22,0.25)" }}
             >
               {isAuthenticated ? (
                 <>
                   <div
                     className="p-4 border-b"
-                    style={{ background: "linear-gradient(135deg, rgba(0,62,41,0.05), rgba(212,175,55,0.05))", borderColor: "#E5E7EB" }}
+                    style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}
                   >
                     <div className="flex items-center gap-3">
                       <AvatarCircle name={user?.name} size="lg" />
@@ -460,9 +484,9 @@ function AccountDropdown({ user, isAuthenticated, activeDropdown, setActiveDropd
                         key={href}
                         href={href}
                         onClick={() => setActiveDropdown(null)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:text-primary hover:bg-green-50/60 transition-colors"
+                        className="flex items-center gap-3 px-5 py-2.5 text-sm tracking-wide text-gray-700 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors"
                       >
-                        <Icon className="h-4 w-4 text-gray-400" />
+                        <Icon className="h-4 w-4 text-[#B08D57]" />
                         {label}
                       </Link>
                     ))}
@@ -478,30 +502,23 @@ function AccountDropdown({ user, isAuthenticated, activeDropdown, setActiveDropd
                   </div>
                 </>
               ) : (
-                <div className="p-5">
+                <div className="p-6">
                   <div className="text-center mb-5">
                     <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                      style={{ background: "rgba(0,62,41,0.08)" }}
+                      className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 border"
+                      style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}
                     >
-                      <User className="h-7 w-7" style={{ color: "#003E29" }} />
+                      <User className="h-6 w-6 stroke-[1.5]" style={{ color: "#B08D57" }} />
                     </div>
-                    <h3 className="  text-gray-900">Welcome!</h3>
-                    <p className="text-xs text-gray-500 mt-1">Sign in to track your orders</p>
+                    <h3 className="font-display text-xl text-gray-900">Welcome</h3>
+                    <p className="text-xs text-gray-500 mt-1 tracking-wide">Sign in to track your orders</p>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <Link href="/auth" onClick={() => setActiveDropdown(null)}>
-                      <Button
-                        className="w-full h-10 font-semibold text-white"
-                        style={{ background: "#003E29" }}
-                      >
-                        Sign In
-                      </Button>
+                      <button className="btn-luxe w-full">Sign In</button>
                     </Link>
                     <Link href="/auth?tab=register" onClick={() => setActiveDropdown(null)}>
-                      <Button variant="outline" className="w-full h-10 font-semibold border-2" style={{ borderColor: "#E5E7EB" }}>
-                        Create Account
-                      </Button>
+                      <button className="btn-luxe-outline w-full mt-2.5">Create Account</button>
                     </Link>
                   </div>
                 </div>
@@ -518,42 +535,40 @@ function AccountDropdown({ user, isAuthenticated, activeDropdown, setActiveDropd
 function SearchDialog({ open, onOpenChange, searchQuery, setSearchQuery, handleSearch, searchInputRef, categories }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[580px] bg-white p-0 overflow-hidden border shadow-2xl rounded-2xl" style={{ borderColor: "#E5E7EB" }}>
-        <DialogHeader className="px-6 pt-5 pb-4 border-b" style={{ borderColor: "#E5E7EB" }}>
-          <DialogTitle className="text-base   text-gray-900 flex items-center gap-2.5">
-            <div className="p-2 rounded-xl" style={{ background: "rgba(0,62,41,0.08)" }}>
-              <FiSearch className="h-4 w-4" style={{ color: "#003E29" }} />
-            </div>
-            Search Handcrafted Jewellery Collections
+      <DialogContent className="sm:max-w-[580px] bg-white p-0 overflow-hidden border shadow-2xl rounded-none" style={{ borderColor: "#E9E2D5" }}>
+        <DialogHeader className="px-8 pt-7 pb-5 border-b" style={{ borderColor: "#E9E2D5" }}>
+          <DialogTitle className="text-center">
+            <span className="luxe-eyebrow block mb-2">Inaayika</span>
+            <span className="font-display text-2xl font-medium text-gray-900 block">Search the Collection</span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="px-6 py-5">
+        <div className="px-8 py-6">
           <form onSubmit={handleSearch} className="relative">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#003E29" }} />
+            <FiSearch className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#B08D57" }} />
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search necklaces, earrings, bracelets..."
+              placeholder="Necklaces, earrings, bracelets..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-11 pr-28 text-sm rounded-xl border focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400"
-              style={{ borderColor: "#E5E7EB", background: "#F9FAFB" }}
+              className="w-full h-12 pl-8 pr-28 text-sm bg-transparent border-0 border-b focus:outline-none focus:ring-0 transition-all placeholder:text-gray-400 tracking-wide"
+              style={{ borderColor: "#B08D57", borderBottomWidth: "1px" }}
               autoComplete="off"
             />
-            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg"
+                  className="p-1.5 text-gray-400 hover:text-gray-600"
                 >
                   <FiX className="h-4 w-4" />
                 </button>
               )}
               <button
                 type="submit"
-                className="h-9 px-4 rounded-lg text-white text-xs  "
+                className="h-9 px-5 text-white text-[10px] uppercase tracking-[0.25em] transition-colors hover:bg-[#002216]"
                 style={{ background: "#003E29" }}
               >
                 Search
@@ -562,18 +577,18 @@ function SearchDialog({ open, onOpenChange, searchQuery, setSearchQuery, handleS
           </form>
 
           {categories.length > 0 && (
-            <div className="mt-5">
-              <p className="text-[10px]   text-gray-400 uppercase tracking-widest mb-3">Browse Categories</p>
+            <div className="mt-7">
+              <p className="text-[10px] uppercase tracking-[0.3em] mb-3" style={{ color: "#B08D57" }}>Browse Categories</p>
               <div className="flex flex-wrap gap-2">
                 {categories.slice(0, 15).map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/category/${cat.slug}`}
                     onClick={() => onOpenChange(false)}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:text-white"
-                    style={{ borderColor: "#E5E7EB", color: "#003E29", background: "rgba(0,62,41,0.04)" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "#003E29"; e.currentTarget.style.color = "#fff"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,62,41,0.04)"; e.currentTarget.style.color = "#003E29"; }}
+                    className="px-4 py-1.5 text-[11px] tracking-[0.15em] uppercase border transition-all"
+                    style={{ borderColor: "#E9E2D5", color: "#003E29", background: "#FDFBF7" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#003E29"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#003E29"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "#FDFBF7"; e.currentTarget.style.color = "#003E29"; e.currentTarget.style.borderColor = "#E9E2D5"; }}
                   >
                     {cat.name}
                   </Link>
@@ -582,13 +597,13 @@ function SearchDialog({ open, onOpenChange, searchQuery, setSearchQuery, handleS
             </div>
           )}
 
-          <div className="mt-5 pt-4 border-t flex justify-between text-gray-400 text-[11px]" style={{ borderColor: "#E5E7EB" }}>
+          <div className="mt-7 pt-4 border-t flex justify-between text-gray-400 text-[11px]" style={{ borderColor: "#E9E2D5" }}>
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 border rounded bg-gray-50 text-gray-500 text-[10px]" style={{ borderColor: "#E5E7EB" }}>ESC</kbd>
+              <kbd className="px-1.5 py-0.5 border bg-[#FDFBF7] text-gray-500 text-[10px]" style={{ borderColor: "#E9E2D5" }}>ESC</kbd>
               close
             </span>
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 border rounded bg-gray-50 text-gray-500 text-[10px]" style={{ borderColor: "#E5E7EB" }}>ENTER</kbd>
+              <kbd className="px-1.5 py-0.5 border bg-[#FDFBF7] text-gray-500 text-[10px]" style={{ borderColor: "#E9E2D5" }}>ENTER</kbd>
               search
             </span>
           </div>
@@ -611,12 +626,12 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
         {/* Drawer Header */}
         <div
           className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
-          style={{ borderColor: "#E5E7EB", background: "linear-gradient(135deg, rgba(0,62,41,0.03), rgba(212,175,55,0.04))" }}
+          style={{ borderColor: "#E9E2D5", background: "#F7F3EB" }}
         >
           <Image src="/logo.png" alt="Inaayika" width={130} height={44} className="h-10 w-auto object-contain" />
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all"
+            className="p-2 text-gray-500 hover:text-gray-700 transition-all"
           >
             <FiX className="h-5 w-5" />
           </button>
@@ -626,7 +641,7 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
         <ClientOnly>
           <div
             className="px-4 py-3 border-b flex-shrink-0"
-            style={{ borderColor: "#E5E7EB", background: "rgba(0,62,41,0.02)" }}
+            style={{ borderColor: "#E9E2D5", background: "#FDFBF7" }}
           >
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
@@ -639,14 +654,10 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
             ) : (
               <div className="flex gap-2">
                 <Link href="/auth" className="flex-1" onClick={onClose}>
-                  <Button className="w-full h-9 text-sm font-semibold text-white" style={{ background: "#003E29" }}>
-                    Sign In
-                  </Button>
+                  <button className="btn-luxe w-full !py-2.5 text-[10px]">Sign In</button>
                 </Link>
                 <Link href="/auth?tab=register" className="flex-1" onClick={onClose}>
-                  <Button variant="outline" className="w-full h-9 text-sm font-semibold border-2" style={{ borderColor: "#E5E7EB" }}>
-                    Register
-                  </Button>
+                  <button className="btn-luxe-outline w-full !py-2.5 text-[10px]">Register</button>
                 </Link>
               </div>
             )}
@@ -669,16 +680,16 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
                   key={cat.id}
                   href={`/category/${cat.slug}`}
                   onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 hover:text-primary hover:bg-green-50/60 transition-all"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-all tracking-wide"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#D4AF37" }} />
+                  <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "#B08D57" }} />
                   {cat.name}
                 </Link>
               ))}
               <Link
                 href="/categories"
                 onClick={onClose}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-colors hover:bg-green-50"
+                className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-[0.2em] font-medium transition-colors hover:bg-[#F7F3EB]"
                 style={{ color: "#003E29" }}
               >
                 View All <FiChevronRight className="h-4 w-4" />
@@ -698,7 +709,7 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
                 ))}
                 <button
                   onClick={() => { handleLogout(); onClose(); }}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-all"
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-all"
                 >
                   <FiLogOut className="h-5 w-5 flex-shrink-0" />
                   <span className="font-medium">Sign Out</span>
@@ -713,7 +724,7 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
                 key={href}
                 href={href}
                 onClick={onClose}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 hover:text-primary hover:bg-green-50/60 transition-all"
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-all tracking-wide"
               >
                 {label}
               </Link>
@@ -722,8 +733,8 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
 
           {/* Contact block */}
           <div
-            className="mx-3 mt-3 p-4 rounded-2xl space-y-2.5"
-            style={{ background: "rgba(0,62,41,0.04)", border: "1px solid #E5E7EB" }}
+            className="mx-3 mt-3 p-4 space-y-2.5"
+            style={{ background: "#F7F3EB", border: "1px solid #E9E2D5" }}
           >
             <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-primary transition-colors">
               <FiMail className="h-4 w-4 flex-shrink-0" style={{ color: "#003E29" }} />
@@ -754,7 +765,7 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
 /* ── Mobile Bottom Nav ──────────────────────── */
 function BottomNav({ pathname, isAuthenticated, cartCount, onMenuOpen }) {
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50" style={{ borderColor: "#E5E7EB" }}>
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#FDFBF7] border-t z-50" style={{ borderColor: "#E9E2D5" }}>
       <div className="grid grid-cols-5 h-14">
         {/* Home */}
         <Link
@@ -784,8 +795,8 @@ function BottomNav({ pathname, isAuthenticated, cartCount, onMenuOpen }) {
           className="flex flex-col items-center justify-center gap-0.5 relative"
         >
           <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg -mt-4 relative"
-            style={{ background: "linear-gradient(135deg, #003E29, #D4AF37)" }}
+            className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg -mt-4 relative border-2 border-[#B08D57]/50"
+            style={{ background: "#003E29" }}
           >
             <FiShoppingCart className="h-5 w-5 text-white" />
             <ClientOnly>

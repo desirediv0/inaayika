@@ -181,14 +181,15 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
   if (isList) {
     return (
       <div
-        className="group relative bg-white overflow-hidden flex flex-row transition-all duration-300 hover:shadow-md border-b border-gray-100 py-4"
+        className="group relative bg-white overflow-hidden flex flex-row transition-all duration-300 hover:shadow-[0_20px_40px_-24px_rgba(0,34,22,0.25)] border-b py-4"
+        style={{ borderColor: "#E9E2D5" }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <Link
           href={`/products/${product.slug}`}
-          className="flex-shrink-0 bg-gray-50 flex items-center justify-center overflow-hidden"
-          style={{ width: "140px", minHeight: "140px" }}
+          className="flex-shrink-0 flex items-center justify-center overflow-hidden"
+          style={{ width: "140px", minHeight: "140px", background: "#F7F3EB" }}
         >
           <Image
             src={getAllProductImages[currentImageIndex] || "/placeholder.jpg"}
@@ -201,26 +202,26 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
         </Link>
         <div className="flex flex-col flex-1 p-4 justify-between min-w-0">
           <div>
-            <span className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 block">{product.category?.name || "Jewellery"}</span>
+            <span className="text-[9px] uppercase tracking-[0.3em] mb-1 block" style={{ color: "#B08D57" }}>{product.category?.name || "Jewellery"}</span>
             <Link href={`/products/${product.slug}`}>
-              <h3 className="text-sm font-semibold mb-1 line-clamp-2 hover:text-[#003E29] transition-colors text-black">{product.name}</h3>
+              <h3 className="font-display text-lg font-medium mb-1 line-clamp-2 hover:text-[#003E29] transition-colors text-neutral-900">{product.name}</h3>
             </Link>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {showPrice ? (
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-base   text-black">{formatCurrency(displayPrice)}</span>
-                {originalPrice && <span className="text-xs text-gray-400 line-through">{formatCurrency(originalPrice)}</span>}
-                {discountPercent > 0 && <span className="text-[10px]   text-green-600 bg-green-50 px-2 py-0.5 rounded">{discountPercent}% OFF</span>}
+                <span className="text-[15px] tracking-[0.08em] text-neutral-900">{formatCurrency(displayPrice)}</span>
+                {originalPrice && <span className="text-xs text-neutral-400 line-through font-light">{formatCurrency(originalPrice)}</span>}
+                {discountPercent > 0 && <span className="text-[9px] tracking-[0.2em] uppercase text-[#003E29] bg-[#F7F3EB] border border-[#E9E2D5] px-2 py-0.5">{discountPercent}% Off</span>}
               </div>
             ) : (
-              <Link href="/auth" className="text-sm   text-black">Login for Price</Link>
+              <Link href="/auth" className="text-xs uppercase tracking-[0.2em] text-neutral-700">Login for Price</Link>
             )}
             <button
               onClick={handleAddToCart}
               disabled={!showPrice || isAddingToCart || isOutOfStock}
-              className="ml-auto flex-shrink-0 flex items-center gap-2 px-4 py-2 text-white text-xs   uppercase tracking-wider transition-all hover:bg-[#002e1f]/90 disabled:opacity-50"
-              style={{ background: addedToCart ? "#10b981" : isOutOfStock ? "#ef4444" : "#003E29" }}
+              className="ml-auto flex-shrink-0 flex items-center gap-2 px-5 py-2.5 text-white text-[10px] uppercase tracking-[0.25em] transition-all hover:bg-[#002216] disabled:opacity-50"
+              style={{ background: addedToCart ? "#10b981" : isOutOfStock ? "#b91c1c" : "#003E29" }}
             >
               {isAddingToCart ? <Loader2 className="w-4 h-4 animate-spin" /> : addedToCart ? <><Check className="w-4 h-4" /><span>Added</span></> : isOutOfStock ? <span>Out Of Stock</span> : <><ShoppingCart className="w-4 h-4" /><span>Add to Cart</span></>}
             </button>
@@ -239,8 +240,8 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
     >
       {/* ── Image section ── */}
       <div
-        className="relative block overflow-hidden bg-white"
-        style={{ aspectRatio: "1/1" }}
+        className="img-shine relative block overflow-hidden border border-transparent group-hover:border-[#E9E2D5] transition-colors duration-500"
+        style={{ aspectRatio: "1/1", background: "#F7F3EB" }}
       >
         <Link href={`/products/${product.slug}`} className="block w-full h-full">
           {/* Product image */}
@@ -248,7 +249,7 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
             src={getAllProductImages[currentImageIndex] || "/placeholder.jpg"}
             alt={product.name}
             fill
-            className="object-cover transition-transform duration-[2000ms] ease-out group-hover:scale-105"
+            className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.06]"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         </Link>
@@ -256,20 +257,20 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
         {/* BESTSELLER / SALE Badges — top left */}
         <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5 pointer-events-none">
           {product.isNew && (
-            <span className="text-[9px]   tracking-widest text-white px-2 py-1 bg-[#003E29] uppercase">
-              BESTSELLER
+            <span className="text-[8px] tracking-[0.25em] text-white px-2.5 py-1 uppercase" style={{ background: "#B08D57" }}>
+              Bestseller
             </span>
           )}
           {discountPercent > 0 && (
-            <span className="text-[9px]   tracking-widest text-white px-2 py-1 bg-[#003E29] uppercase">
-              SALE!
+            <span className="text-[8px] tracking-[0.25em] text-white px-2.5 py-1 bg-[#003E29] uppercase">
+              Sale
             </span>
           )}
         </div>
 
         {/* Out of stock tag — bottom left */}
         {isOutOfStock && (
-          <span className="absolute bottom-3 left-3 z-20 text-xs   text-red-600 uppercase tracking-wider bg-white/95 px-2 py-1 shadow-sm">
+          <span className="absolute bottom-3 left-3 z-20 text-[10px] text-red-700 uppercase tracking-[0.2em] bg-white/95 px-2.5 py-1 shadow-sm">
             Out of stock
           </span>
         )}
@@ -284,14 +285,14 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
             onClick={handleAddToWishlist}
             disabled={isAddingToWishlist[product.id]}
             className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-md text-gray-800 transition-colors hover:text-red-500",
+              "w-9 h-9 flex items-center justify-center bg-white/95 shadow-sm border border-[#E9E2D5] text-neutral-700 transition-colors hover:text-[#B08D57] hover:border-[#B08D57]",
               inWishlist && "text-red-500"
             )}
             aria-label="Wishlist"
           >
             {isAddingToWishlist[product.id]
               ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              : <Heart className={cn("h-4 w-4", inWishlist && "fill-current")} />}
+              : <Heart className={cn("h-4 w-4 stroke-[1.5]", inWishlist && "fill-current")} />}
           </button>
 
 
@@ -299,10 +300,10 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
           {/* Quick View */}
           <Link
             href={`/products/${product.slug}`}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-md text-gray-800 hover:text-black transition-colors"
+            className="w-9 h-9 flex items-center justify-center bg-white/95 shadow-sm border border-[#E9E2D5] text-neutral-700 hover:text-[#B08D57] hover:border-[#B08D57] transition-colors"
             aria-label="Quick View"
           >
-            <Eye className="h-4 w-4" />
+            <Eye className="h-4 w-4 stroke-[1.5]" />
           </Link>
         </div>
 
@@ -315,14 +316,14 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
             <button
               onClick={handleAddToCart}
               disabled={isAddingToCart}
-              className="w-full py-3 bg-[#003E29] hover:bg-[#002e1f] text-white text-[11px]   uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3.5 bg-[#002216]/95 hover:bg-[#003E29] text-white text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-2 transition-colors backdrop-blur-sm"
             >
               {isAddingToCart ? (
                 <Loader2 className="w-4 h-4 animate-spin text-white" />
               ) : addedToCart ? (
                 <><Check className="w-4 h-4 text-white" /> Added</>
               ) : (
-                "Add to cart"
+                "Add to Cart"
               )}
             </button>
           </div>
@@ -330,51 +331,55 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
       </div>
 
       {/* ── Info section ── */}
-      <div className="flex flex-col pt-3 pb-4">
+      <div className="flex flex-col items-center text-center pt-4 pb-5 px-2">
+        {/* Category */}
+        {product.category?.name && (
+          <span className="text-[9px] uppercase tracking-[0.3em] mb-1.5" style={{ color: "#B08D57" }}>
+            {product.category.name}
+          </span>
+        )}
+
         {/* Name */}
-        <Link href={`/products/${product.slug}`} className="block mb-1">
-          <h3 className="text-sm font-medium leading-snug text-gray-900 hover:text-brand-green transition-colors line-clamp-1">
+        <Link href={`/products/${product.slug}`} className="block mb-1.5">
+          <h3 className="font-display text-[17px] font-medium leading-snug text-neutral-900 hover:text-[#003E29] transition-colors line-clamp-1">
             {product.name}
           </h3>
         </Link>
 
-        {/* Price & Rating Row */}
-        <div className="flex items-center justify-between mt-1">
-          {/* Price */}
-          {showPrice ? (
-            <div className="flex items-center gap-2">
-              {originalPrice && (
-                <span className="text-xs text-gray-400 line-through">
-                  {formatCurrency(originalPrice)}
-                </span>
-              )}
-              <span className="text-sm font-semibold text-gray-900">
-                {formatCurrency(displayPrice)}
+        {/* Price */}
+        {showPrice ? (
+          <div className="flex items-center justify-center gap-2">
+            {originalPrice && (
+              <span className="text-xs text-neutral-400 line-through font-light">
+                {formatCurrency(originalPrice)}
               </span>
-            </div>
-          ) : (
-            <Link href="/auth" className="text-xs   text-gray-600 hover:underline">
-              Login for Price
-            </Link>
-          )}
+            )}
+            <span className="text-[13px] tracking-[0.08em] text-neutral-800">
+              {formatCurrency(displayPrice)}
+            </span>
+          </div>
+        ) : (
+          <Link href="/auth" className="text-[11px] uppercase tracking-[0.2em] text-neutral-600 hover:text-[#B08D57] transition-colors">
+            Login for Price
+          </Link>
+        )}
 
-          {/* Rating */}
-          {product.avgRating > 0 && (
-            <div className="flex items-center gap-0.5">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Star
-                  key={s}
-                  className={cn(
-                    "w-3 h-3",
-                    s <= Math.round(product.avgRating)
-                      ? "fill-amber-400 text-amber-400"
-                      : "text-gray-200 fill-gray-200"
-                  )}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Rating */}
+        {product.avgRating > 0 && (
+          <div className="flex items-center gap-0.5 mt-1.5">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <Star
+                key={s}
+                className={cn(
+                  "w-3 h-3",
+                  s <= Math.round(product.avgRating)
+                    ? "fill-[#B08D57] text-[#B08D57]"
+                    : "text-neutral-200 fill-neutral-200"
+                )}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

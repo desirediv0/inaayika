@@ -12,6 +12,7 @@ import {
 import { fetchApi } from "@/lib/utils";
 import Image from "next/image";
 import Headtext from "../ui/headtext";
+import Reveal from "@/components/ui/Reveal";
 
 export default function BrandCarousel({ tag, title }) {
   const [brands, setBrands] = useState([]);
@@ -45,11 +46,12 @@ export default function BrandCarousel({ tag, title }) {
   }
 
   return (
-    <section className="py-4 md:py-8 bg-white">
+    <section className="py-12 md:py-16 border-b" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
       <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-4">
+        <Reveal className="text-center mb-10">
+          <span className="luxe-eyebrow block mb-3">Curated For You</span>
           <Headtext text={title} />
-        </div>
+        </Reveal>
         <Carousel opts={{ align: "start", loop: true }}>
           <CarouselContent>
             {brands.map((brand) => (
@@ -61,7 +63,7 @@ export default function BrandCarousel({ tag, title }) {
                   href={`/brand/${brand.slug}`}
                   className="block group text-center"
                 >
-                  <div className="relative h-20 md:h-40 w-20 md:w-40 mx-auto mb-2 bg-white rounded-lg border flex items-center justify-center shadow p-2">
+                  <div className="relative h-20 md:h-40 w-20 md:w-40 mx-auto mb-3 bg-white border border-[#E9E2D5] group-hover:border-[#B08D57]/60 flex items-center justify-center p-2 transition-colors duration-300">
                     <Image
                       width={120}
                       height={120}
@@ -71,18 +73,18 @@ export default function BrandCarousel({ tag, title }) {
                           : `https://desirediv-storage.blr1.digitaloceanspaces.com/${brand.image}`
                       }
                       alt={brand.name}
-                      className="object-contain h-20 w-20 md:h-40 md:w-40 group-hover:scale-105 transition-transform"
+                      className="object-contain h-20 w-20 md:h-40 md:w-40 group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
-                  <div className="font-medium text-sm md:text-lg mt-2 group-hover:text-primary transition-colors whitespace-nowrap overflow-hidden text-ellipsis">
+                  <div className="font-display text-sm md:text-lg font-medium mt-2 text-neutral-800 group-hover:text-[#003E29] transition-colors whitespace-nowrap overflow-hidden text-ellipsis">
                     {brand.name}
                   </div>
                 </Link>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="-left-3 md:-left-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-lg hover:text-gray-800" />
-          <CarouselNext className="-right-1 md:right-0 top-1/2 -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-lg hover:text-gray-800" />
+          <CarouselPrevious className="-left-3 md:-left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-none bg-white border-[#E9E2D5] text-neutral-700 shadow-sm hover:bg-[#003E29] hover:text-white hover:border-[#003E29]" />
+          <CarouselNext className="-right-1 md:right-0 top-1/2 -translate-y-1/2 h-9 w-9 rounded-none bg-white border-[#E9E2D5] text-neutral-700 shadow-sm hover:bg-[#003E29] hover:text-white hover:border-[#003E29]" />
         </Carousel>
       </div>
     </section>

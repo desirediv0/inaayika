@@ -58,14 +58,17 @@ export const PageHero = ({
         )}
 
         {/* Title */}
-        <h1 className={`font-display text-4xl md:text-5xl lg:text-6xl   mb-4 max-w-4xl ${isDark ? "text-white" : "text-foreground"
+        <h1 className={`font-display text-4xl md:text-5xl lg:text-6xl font-medium tracking-wide mb-4 max-w-4xl ${isDark ? "text-white" : "text-foreground"
           }`}>
           {title}
         </h1>
 
+        {/* Gold rule */}
+        <span className="luxe-rule mb-5 !w-20" style={{ display: "block" }} />
+
         {/* Description */}
         {description && (
-          <p className={`text-lg md:text-xl max-w-3xl ${isDark ? "text-white/70" : "text-muted-foreground"
+          <p className={`text-base md:text-lg font-light tracking-wide max-w-3xl ${isDark ? "text-white/70" : "text-muted-foreground"
             }`}>
             {description}
           </p>

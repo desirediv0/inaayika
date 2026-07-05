@@ -321,23 +321,21 @@ export default function CartPage() {
 
     if ((!cart.items || cart.items.length === 0) && !error) {
         return (
-            <div className="min-h-screen bg-neutral-50/50 flex flex-col items-center justify-center py-20 px-4">
-                <div className="bg-white p-10 md:p-14 rounded-2xl border border-neutral-100 text-center max-w-xl mx-auto shadow-sm">
-                    <div className="inline-flex justify-center items-center bg-neutral-50 p-6 rounded-2xl mb-8">
-                        <ShoppingBag className="h-12 w-12 text-neutral-400" />
+            <div className="min-h-screen flex flex-col items-center justify-center py-20 px-4" style={{ background: "#FDFBF7" }}>
+                <div className="bg-white p-10 md:p-14 border text-center max-w-xl mx-auto" style={{ borderColor: "#E9E2D5" }}>
+                    <div className="inline-flex justify-center items-center p-6 rounded-full mb-8 border" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+                        <ShoppingBag className="h-10 w-10 stroke-[1.25]" style={{ color: "#B08D57" }} />
                     </div>
-                    <h2 className="text-3xl    uppercase tracking-wide mb-4 text-neutral-900">
-                        Your Cart is Empty
+                    <h2 className="font-display text-4xl font-medium mb-4 text-neutral-900">
+                        Your Bag is Empty
                     </h2>
-                    <p className="text-neutral-500 mb-8 max-w-sm mx-auto text-sm font-light leading-relaxed">
+                    <span className="luxe-rule mb-5" />
+                    <p className="text-neutral-500 mb-8 max-w-sm mx-auto text-sm font-light leading-relaxed tracking-wide">
                         Explore our gallery of handcrafted, premium luxury jewellery collections to find your perfect style.
                     </p>
                     <Link href="/products">
-                        <button
-                            className="text-white text-xs font-semibold uppercase tracking-widest px-8 py-4 rounded-xl transition-all shadow-md border border-[#D4AF37]/30 hover:bg-[#002216]"
-                            style={{ background: "#003E29" }}
-                        >
-                            Browse Collection
+                        <button className="btn-luxe">
+                            Browse the Collection
                         </button>
                     </Link>
                 </div>
@@ -346,18 +344,18 @@ export default function CartPage() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-50/40 pb-24">
+        <div className="min-h-screen pb-24" style={{ background: "#FDFBF7" }}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-                <div className="mb-8">
-                    <span className="text-[10px]  tracking-[0.3em] text-neutral-500 uppercase block mb-1">YOUR SHOPPING BAG</span>
-                    <h1 className="text-3xl sm:text-4xl font-light  tracking-wide text-neutral-900 uppercase">
+                <div className="mb-10">
+                    <span className="luxe-eyebrow block mb-2">Your Shopping Bag</span>
+                    <h1 className="font-display text-4xl sm:text-5xl font-medium tracking-wide text-neutral-900">
                         Shopping Cart
                     </h1>
                 </div>
 
                 {/* Guest cart notice */}
                 {!isAuthenticated && cart.items.length > 0 && (
-                    <div className="bg-white border border-neutral-100 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 shadow-sm">
+                    <div className="bg-white border p-6 rounded-none flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8" style={{ borderColor: "#E9E2D5" }}>
                         <div className="flex-1">
                             <h2 className="text-base  text-neutral-900 mb-1 uppercase tracking-wide">
                                 Guest Shopping Cart
@@ -368,12 +366,12 @@ export default function CartPage() {
                         </div>
                         <div className="flex gap-3">
                             <Link href="/auth?redirect=cart">
-                                <button className="bg-black hover:bg-neutral-900 text-white text-xs   uppercase tracking-widest px-5 py-3 rounded-lg transition-colors">
+                                <button className="btn-luxe !px-5 !py-3">
                                     Sign In
                                 </button>
                             </Link>
                             <Link href="/auth?redirect=cart">
-                                <button className="border border-neutral-300 hover:border-black text-neutral-800 text-xs   uppercase tracking-widest px-5 py-3 rounded-lg transition-colors">
+                                <button className="btn-luxe-outline !px-5 !py-3">
                                     Sign Up
                                 </button>
                             </Link>
@@ -392,7 +390,7 @@ export default function CartPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                     {/* Cart Items List */}
                     <div className="lg:col-span-8 flex flex-col gap-6">
-                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-none border overflow-hidden" style={{ borderColor: "#E9E2D5" }}>
                             <div className="divide-y divide-neutral-100">
                                 {cart.items.map((item) => (
                                     <CartItem
@@ -426,9 +424,9 @@ export default function CartPage() {
 
                     {/* Cart Summary */}
                     <div className="lg:col-span-4">
-                        <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm flex flex-col gap-6 sticky top-24">
-                            <h2 className="text-lg    uppercase tracking-wider text-neutral-900 border-b border-neutral-100 pb-3">
-                                Cart Summary
+                        <div className="bg-white rounded-none border p-6 flex flex-col gap-6 sticky top-24" style={{ borderColor: "#E9E2D5" }}>
+                            <h2 className="font-display text-2xl font-medium text-neutral-900 border-b pb-3" style={{ borderColor: "#E9E2D5" }}>
+                                Order Summary
                             </h2>
 
                             {/* Apply Coupon */}
@@ -549,7 +547,7 @@ export default function CartPage() {
 
                             {/* Checkout Actions */}
                             <button
-                                className="w-full text-white text-xs font-semibold uppercase tracking-widest py-4.5 rounded-xl transition-all shadow-md border border-[#D4AF37]/30 hover:bg-[#002216] active:scale-[0.99] h-12"
+                                className="w-full text-white text-[11px] uppercase tracking-[0.25em] py-4.5 rounded-none transition-all hover:bg-[#002216] active:scale-[0.99] h-12"
                                 style={{ background: "#003E29" }}
                                 onClick={handleCheckout}
                             >

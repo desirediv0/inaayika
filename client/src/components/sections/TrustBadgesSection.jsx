@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Reveal from "@/components/ui/Reveal";
 
 const ImageOrSvg = ({ src, fallback: Fallback }) => {
   const [error, setError] = useState(false);
@@ -69,26 +70,29 @@ const BADGES = [
 
 export default function TrustBadgesSection() {
   return (
-    <section className="bg-white py-12 md:py-16 border-b border-gray-100">
+    <section className="py-14 md:py-16 border-b" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-0 sm:divide-x" style={{ "--tw-divide-opacity": 1 }}>
           {BADGES.map((badge, idx) => (
-            <div key={idx} className="flex flex-col items-center text-center">
+            <Reveal key={idx} delay={idx * 0.1} className="flex flex-col items-center text-center sm:px-8" style={{ borderColor: "#E9E2D5" }}>
               {/* Icon Container */}
-              <div className="mb-4">
+              <div className="mb-5 text-[#B08D57] [&_svg]:text-[#B08D57] [&_svg]:w-10 [&_svg]:h-10 [&_img]:w-10 [&_img]:h-10">
                 <ImageOrSvg src={badge.src} fallback={badge.fallback} />
               </div>
 
               {/* Title */}
-              <h3 className="font-sans   text-gray-900 text-sm md:text-base mb-1.5 uppercase tracking-wider">
+              <h3 className="font-display text-lg font-medium text-neutral-900 mb-2 tracking-wide">
                 {badge.title}
               </h3>
 
+              {/* Gold rule */}
+              <span className="luxe-rule mb-3" />
+
               {/* Description */}
-              <p className="font-sans text-xs text-gray-400 font-medium max-w-[240px]">
+              <p className="font-sans text-xs text-neutral-500 font-light tracking-wide leading-relaxed max-w-[220px]">
                 {badge.desc}
               </p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>

@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { fetchApi } from "@/lib/utils";
 import { Sparkles, Users, Award, Truck, Globe, Crown } from "lucide-react";
 import { getPharmaIcon } from "@/lib/pharma-icons";
+import Reveal from "@/components/ui/Reveal";
 
 const WHATSAPP_NUMBER = "918796449692";
 
@@ -127,62 +128,65 @@ export function ColdChainBanner() {
   ];
 
   return (
-    <section className="py-16 bg-white font-sans">
+    <section className="py-16 md:py-20 font-sans border-b" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="text-center mb-12">
-          <span className="inline-block bg-[#003E29]/10 text-[#003E29] tracking-wider text-[10px] px-3.5 py-1.5 rounded-full uppercase mb-4 border border-[#003E29]/25">
-            Why Choose Inaayika
+        <Reveal className="text-center mb-14">
+          <span className="luxe-eyebrow block mb-4">
+            The Inaayika Promise
           </span>
-          <h2 className="text-3xl md:text-4xl text-zinc-950 tracking-tight">
-            Why Style Lovers Choose <span className="underline decoration-2 decoration-[#D4AF37] underline-offset-4">Inaayika</span>
+          <h2 className="font-display text-4xl md:text-5xl font-medium tracking-wide text-neutral-900">
+            Why Style Lovers Choose <span className="italic text-gold-shimmer">Inaayika</span>
           </h2>
-          <p className="text-sm text-zinc-500 max-w-xl mx-auto mt-3">
+          <span className="luxe-rule mt-5" />
+          <p className="text-sm text-neutral-500 font-light tracking-wide max-w-xl mx-auto mt-5 leading-relaxed">
             Discover the art of handcrafted perfection, lovingly designed by Pooja Khan and delivered globally.
           </p>
-        </div>
+        </Reveal>
 
         {/* Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 
           {/* Left Column: Founder Highlight Card (5 cols) */}
-          <div className="lg:col-span-5 bg-zinc-50 border border-zinc-100 rounded-3xl overflow-hidden flex flex-col justify-between shadow-sm group">
-            <div className="relative h-[240px] w-full overflow-hidden">
+          <Reveal className="lg:col-span-5 bg-white border overflow-hidden flex flex-col justify-between group" style={{ borderColor: "#E9E2D5" }}>
+            <div className="relative h-[260px] w-full overflow-hidden">
               <Image
                 src="/founder-craft.png"
                 alt="Founder Pooja Khan Handcrafting Jewelry"
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                className="object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute top-4 left-4 bg-[#D4AF37] text-white text-[10px] px-3 py-1 rounded uppercase tracking-wider">
+              <div className="absolute top-4 left-4 text-white text-[9px] px-3 py-1.5 uppercase tracking-[0.25em]" style={{ background: "#B08D57" }}>
                 Founder Design
               </div>
             </div>
             <div className="p-8">
-              <span className="text-[10px] tracking-widest text-zinc-400 uppercase">Designed by Founder</span>
-              <h3 className="text-xl font-black text-zinc-950 mt-1 mb-2">@meandshiningstars</h3>
-              <p className="text-xs text-zinc-500 leading-relaxed">
+              <span className="text-[9px] tracking-[0.35em] uppercase" style={{ color: "#B08D57" }}>Designed by the Founder</span>
+              <h3 className="font-display text-2xl font-medium text-neutral-900 mt-1.5 mb-2">@meandshiningstars</h3>
+              <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide">
                 Pooja Khan personally designs and supervises the creation of every singular hair accessory, ensuring unmatched quality and attention to detail.
               </p>
             </div>
-          </div>
+          </Reveal>
 
           {/* Right Column: Grid Features (7 cols) */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {TRUST_ITEMS.map((item, idx) => (
-              <div
+              <Reveal
                 key={idx}
-                className="p-6 rounded-2xl border border-zinc-100 bg-white shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group"
+                delay={idx * 0.08}
+                className="p-6 border bg-white flex flex-col justify-between transition-shadow hover:shadow-[0_20px_40px_-24px_rgba(0,34,22,0.2)] group"
+                style={{ borderColor: "#E9E2D5" }}
               >
                 <div>
-                  <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-[#003E29] mb-4 group-hover:scale-105 transition-transform duration-300">
-                    <item.icon className="w-5 h-5" />
+                  <div className="w-10 h-10 border flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300" style={{ background: "#F7F3EB", borderColor: "#E9E2D5", color: "#B08D57" }}>
+                    <item.icon className="w-5 h-5 stroke-[1.5]" />
                   </div>
-                  <h4 className="text-sm text-zinc-950 mb-1">{item.value}</h4>
-                  <span className="text-[10px] uppercase tracking-wider text-[#D4AF37] mb-2 block">{item.label}</span>
-                  <p className="text-xs text-zinc-500 leading-relaxed">{item.desc}</p>
+                  <h4 className="font-display text-lg font-medium text-neutral-900 mb-1">{item.value}</h4>
+                  <span className="text-[9px] uppercase tracking-[0.3em] mb-2 block" style={{ color: "#B08D57" }}>{item.label}</span>
+                  <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide">{item.desc}</p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
 

@@ -10,8 +10,13 @@ module.exports = {
 		extend: {
 			fontFamily: {
 				sans: ['Jost', 'sans-serif'],
-				display: ['Amethysta', 'Georgia', 'serif'],
+				display: ['Cormorant Garamond', 'Amethysta', 'Georgia', 'serif'],
+				serif: ['Cormorant Garamond', 'Georgia', 'serif'],
 				manrope: ['Manrope', 'sans-serif'],
+			},
+			letterSpacing: {
+				luxe: '0.3em',
+				'luxe-lg': '0.42em',
 			},
 			colors: {
 				background: 'hsl(var(--background))',
@@ -50,10 +55,13 @@ module.exports = {
 				/* Inaayika brand palette */
 				brand: {
 					green:  '#003E29',
-					gold:   '#D4AF37',
+					gold:   '#B08D57',
+					goldBright: '#D4AF37',
 					dark:   '#002216',
-					bg:     '#FFFFFF',
-					border: '#E5E7EB',
+					ivory:  '#FDFBF7',
+					champagne: '#F7F3EB',
+					bg:     '#FDFBF7',
+					border: '#E9E2D5',
 				},
 				chart: {
 					'1': 'hsl(var(--chart-1))',

@@ -1,5 +1,6 @@
 
 import HeroSection from "@/components/sections/HeroSection";
+import LuxuryMarquee from "@/components/sections/LuxuryMarquee";
 import TrustBadgesSection from "@/components/sections/TrustBadgesSection";
 import HomePageContent from "@/components/sections/HomePageContent";
 import { WhyBuySection } from "@/components/sections/WhyBuySection";
@@ -20,6 +21,9 @@ export default function Home() {
       <main>
         {/* Hero */}
         <HeroSection />
+
+        {/* Live luxury ribbon */}
+        <LuxuryMarquee />
 
         {/* Trust Guarantees */}
         <TrustBadgesSection />

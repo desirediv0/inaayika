@@ -16,18 +16,15 @@ import Link from "next/link";
 ───────────────────────────────────────────── */
 function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-100 overflow-hidden animate-pulse shadow-sm">
-      <div className="aspect-square bg-zinc-50 relative animate-pulse" />
+    <div className="bg-white overflow-hidden animate-pulse">
+      <div className="aspect-square bg-[#F7F3EB] relative animate-pulse" />
       <div className="p-3.5 space-y-3">
         <div className="space-y-1.5">
-          <div className="h-4 bg-zinc-100 rounded-full w-full" />
-          <div className="h-3 bg-zinc-50 rounded-full w-2/3" />
+          <div className="h-4 bg-[#F7F3EB] w-full" />
+          <div className="h-3 bg-[#FDFBF7] w-2/3 mx-auto" />
         </div>
-        <div className="flex justify-between items-center pt-2">
-          <div className="space-y-1">
-            <div className="h-4 bg-zinc-100 rounded-full w-14" />
-          </div>
-          <div className="h-8 bg-zinc-100 rounded-xl w-16" />
+        <div className="flex justify-center items-center pt-2">
+          <div className="h-4 bg-[#F7F3EB] w-14" />
         </div>
       </div>
     </div>
@@ -39,12 +36,12 @@ function ProductCardSkeleton() {
 ───────────────────────────────────────────── */
 function FilterSection({ title, isOpen, onToggle, children }) {
   return (
-    <div className="border-b border-zinc-100 py-4 last:border-b-0">
+    <div className="border-b py-4 last:border-b-0" style={{ borderColor: "#E9E2D5" }}>
       <button
         onClick={onToggle}
         className="flex items-center justify-between w-full text-left transition-colors"
       >
-        <span className="text-xs   text-zinc-950 uppercase tracking-widest">{title}</span>
+        <span className="text-[11px] text-neutral-900 uppercase tracking-[0.25em] font-medium">{title}</span>
         {isOpen ? (
           <span className="text-zinc-400   text-sm leading-none">—</span>
         ) : (
@@ -370,17 +367,18 @@ function ProductsContent() {
   );
 
   return (
-    <div className="bg-white min-h-screen font-sans">
+    <div className="min-h-screen font-sans" style={{ background: "#FDFBF7" }}>
 
       {/* ── Header Breadcrumb & Title ── */}
-      <div className="relative w-full h-[180px] bg-[#f9f9f9] border-b border-zinc-100 flex items-center justify-center overflow-hidden mb-8">
+      <div className="relative w-full h-[200px] border-b flex items-center justify-center overflow-hidden mb-10" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
         <div className="text-center relative z-10">
-          <div className="text-[10px] text-zinc-400   uppercase tracking-[0.2em] flex items-center justify-center gap-1.5 mb-2">
-            <Link href="/" className="hover:text-black transition-colors">Home</Link>
-            <span className="text-zinc-300">•</span>
+          <div className="text-[9px] uppercase tracking-[0.35em] flex items-center justify-center gap-2 mb-3" style={{ color: "#B08D57" }}>
+            <Link href="/" className="hover:text-[#003E29] transition-colors">Home</Link>
+            <span>·</span>
             <span>Shop</span>
           </div>
-          <h1 className="text-4xl   text-zinc-950 tracking-tight">Shop</h1>
+          <h1 className="font-display text-5xl font-medium text-neutral-900 tracking-wide">The Collection</h1>
+          <span className="luxe-rule mt-4" />
         </div>
         <div className="absolute right-0 top-0 bottom-0 w-[350px] opacity-20 md:opacity-100 pointer-events-none">
           <Image
@@ -396,7 +394,7 @@ function ProductsContent() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
           {/* ── Left Sidebar (3 cols) ── */}
-          <aside className="lg:col-span-3 hidden lg:block border-r border-zinc-100 pr-8">
+          <aside className="lg:col-span-3 hidden lg:block border-r pr-8" style={{ borderColor: "#E9E2D5" }}>
             <SidebarContent />
           </aside>
 
@@ -404,16 +402,17 @@ function ProductsContent() {
           <div className="lg:col-span-9 space-y-8">
 
             {/* Top Promo Banner inside Shop area */}
-            <div className="relative rounded-3xl overflow-hidden bg-[#F9F9F9] border border-zinc-100 flex flex-col md:flex-row items-stretch shadow-sm">
+            <div className="relative overflow-hidden border flex flex-col md:flex-row items-stretch" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
               <div className="p-8 md:p-12 flex flex-col justify-center flex-1">
-                <h3 className="text-lg   text-zinc-950 mb-2">Free Shipping On Over ₹999</h3>
-                <p className="text-xs text-zinc-500 leading-relaxed mb-6">
+                <span className="luxe-eyebrow mb-3">Complimentary Shipping</span>
+                <h3 className="font-display text-2xl font-medium text-neutral-900 mb-2">Free Shipping on Orders Over ₹999</h3>
+                <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide mb-6">
                   For the terms of the campaign, check our details page. Handcrafted adornments delivered to your doorstep.
                 </p>
                 <div>
                   <Link
                     href="/products?productType=featured"
-                    className="inline-block bg-[#003E29] hover:bg-[#002e1f] text-white text-[10px]   uppercase tracking-widest px-6 py-3 transition-colors"
+                    className="btn-luxe !px-6 !py-3"
                   >
                     See More Products
                   </Link>
@@ -430,32 +429,32 @@ function ProductsContent() {
             </div>
 
             {/* Fast Filters Bar */}
-            <div className="bg-[#FAF9F6] border border-zinc-100 rounded-2xl p-4 flex flex-wrap items-center gap-3">
-              <span className="text-[10px]   text-zinc-400 uppercase tracking-wider">Fast Filters:</span>
+            <div className="border p-4 flex flex-wrap items-center gap-3" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
+              <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: "#B08D57" }}>Curate:</span>
               <button
                 onClick={() => handleFilterChange("productType", filters.productType === "featured" ? "" : "featured")}
-                className={`px-3 py-1 text-[10px]   rounded-full border uppercase tracking-wider transition-colors ${filters.productType === "featured" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                className={`px-4 py-1.5 text-[10px] border uppercase tracking-[0.2em] transition-colors ${filters.productType === "featured" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-[#E9E2D5] text-neutral-600 hover:border-[#B08D57] hover:text-[#003E29]"
                   }`}
               >
                 Featured
               </button>
               <button
                 onClick={() => handleFilterChange("productType", filters.productType === "bestseller" ? "" : "bestseller")}
-                className={`px-3 py-1 text-[10px]   rounded-full border uppercase tracking-wider transition-colors ${filters.productType === "bestseller" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                className={`px-4 py-1.5 text-[10px] border uppercase tracking-[0.2em] transition-colors ${filters.productType === "bestseller" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-[#E9E2D5] text-neutral-600 hover:border-[#B08D57] hover:text-[#003E29]"
                   }`}
               >
                 Best Sellers
               </button>
               <button
                 onClick={() => handleFilterChange("productType", filters.productType === "trending" ? "" : "trending")}
-                className={`px-3 py-1 text-[10px]   rounded-full border uppercase tracking-wider transition-colors ${filters.productType === "trending" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                className={`px-4 py-1.5 text-[10px] border uppercase tracking-[0.2em] transition-colors ${filters.productType === "trending" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-[#E9E2D5] text-neutral-600 hover:border-[#B08D57] hover:text-[#003E29]"
                   }`}
               >
                 Top Rated
               </button>
               <button
                 onClick={clearFilters}
-                className="px-3 py-1 text-[10px]   rounded-full border bg-white border-zinc-200 text-zinc-400 uppercase tracking-wider hover:border-zinc-400 transition-colors"
+                className="px-4 py-1.5 text-[10px] border bg-white border-[#E9E2D5] text-neutral-400 uppercase tracking-[0.2em] hover:border-[#B08D57] hover:text-[#003E29] transition-colors"
               >
                 Reset Filters
               </button>
@@ -524,12 +523,12 @@ function ProductsContent() {
                   {[...Array(8)].map((_, i) => <ProductCardSkeleton key={i} />)}
                 </div>
               ) : products.length === 0 ? (
-                <div className="text-center py-16 border border-zinc-100 rounded-3xl bg-zinc-50">
-                  <h3 className="text-sm   text-zinc-950 mb-1">No products found</h3>
-                  <p className="text-xs text-zinc-500 mb-4">Try removing some filter choices.</p>
+                <div className="text-center py-20 border" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+                  <h3 className="font-display text-2xl font-medium text-neutral-900 mb-1">No pieces found</h3>
+                  <p className="text-xs text-neutral-500 font-light tracking-wide mb-6">Try removing some filter choices.</p>
                   <button
                     onClick={clearFilters}
-                    className="px-5 py-2 bg-[#003E29] text-white text-xs   uppercase tracking-widest hover:bg-[#002e1f] transition-colors"
+                    className="btn-luxe !px-6 !py-2.5"
                   >
                     Reset Filters
                   </button>
@@ -549,7 +548,7 @@ function ProductsContent() {
                 <button
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page === 1 || loading}
-                  className="w-10 h-10 border border-zinc-200 hover:border-black flex items-center justify-center rounded-xl text-zinc-500 hover:text-black transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-10 h-10 border border-[#E9E2D5] hover:border-[#003E29] flex items-center justify-center text-neutral-500 hover:text-[#003E29] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -559,9 +558,9 @@ function ProductsContent() {
                     <button
                       key={p}
                       onClick={() => handlePageChange(p)}
-                      className={`w-10 h-10 border   text-xs flex items-center justify-center rounded-xl transition-all ${p === pagination.page
-                        ? "bg-[#003E29] border-[#003E29] text-white scale-105"
-                        : "border-zinc-200 text-zinc-500 hover:border-[#003E29] hover:text-[#003E29]"
+                      className={`w-10 h-10 border text-xs flex items-center justify-center transition-all ${p === pagination.page
+                        ? "bg-[#003E29] border-[#003E29] text-white"
+                        : "border-[#E9E2D5] text-neutral-500 hover:border-[#003E29] hover:text-[#003E29]"
                         }`}
                     >
                       {p}
@@ -571,7 +570,7 @@ function ProductsContent() {
                 <button
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page === pagination.pages || loading}
-                  className="w-10 h-10 border border-zinc-200 hover:border-black flex items-center justify-center rounded-xl text-zinc-500 hover:text-black transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-10 h-10 border border-[#E9E2D5] hover:border-[#003E29] flex items-center justify-center text-neutral-500 hover:text-[#003E29] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -588,7 +587,7 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <div className="min-h-screen" style={{ background: "#ffffff" }}>
+    <div className="min-h-screen" style={{ background: "#FDFBF7" }}>
       <ClientOnly fallback={<div className="p-8 text-center animate-pulse text-zinc-400">Loading shop...</div>}>
         <Suspense fallback={<div className="p-8 text-center animate-pulse text-zinc-400">Loading shop...</div>}>
           <ProductsContent />

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import BrandCarousel from "@/components/sections/BrandCarousel";
 import { ProductCard } from "@/components/products/ProductCard";
+import Reveal from "@/components/ui/Reveal";
 import {
   Carousel,
   CarouselContent,
@@ -64,13 +65,13 @@ const SECTION_METADATA = {
    SKELETON LOADER
 ───────────────────────────────────────── */
 const ProductSkeleton = () => (
-  <div className="bg-white rounded-xl overflow-hidden animate-pulse border border-gray-100">
-    <div className="h-48 w-full bg-gradient-to-br from-gray-100 to-gray-200" />
+  <div className="bg-white overflow-hidden animate-pulse">
+    <div className="aspect-square w-full bg-gradient-to-br from-[#F7F3EB] to-[#EFE8DA]" />
     <div className="p-4 space-y-2">
-      <div className="h-3 w-16 bg-gray-200 rounded-full mx-auto" />
-      <div className="h-4 w-full bg-gray-100 rounded" />
-      <div className="h-4 w-3/4 mx-auto bg-gray-100 rounded" />
-      <div className="h-6 w-20 bg-gray-200 rounded-full mx-auto" />
+      <div className="h-3 w-16 bg-[#EFE8DA] mx-auto" />
+      <div className="h-4 w-full bg-[#F7F3EB]" />
+      <div className="h-4 w-3/4 mx-auto bg-[#F7F3EB]" />
+      <div className="h-5 w-20 bg-[#EFE8DA] mx-auto" />
     </div>
   </div>
 );
@@ -114,8 +115,8 @@ function FeaturedProductsCarousel({ products, isLoading }) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="absolute -left-3 top-1/2 -translate-y-1/2 h-9 w-9 bg-white border-gray-200 shadow-md hover:bg-primary hover:text-white hover:border-primary transition-all z-10" />
-        <CarouselNext className="absolute -right-3 top-1/2 -translate-y-1/2 h-9 w-9 bg-white border-gray-200 shadow-md hover:bg-primary hover:text-white hover:border-primary transition-all z-10" />
+        <CarouselPrevious className="absolute -left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-none bg-[#FDFBF7] border-[#E9E2D5] text-neutral-700 shadow-sm hover:bg-[#003E29] hover:text-white hover:border-[#003E29] transition-all z-10" />
+        <CarouselNext className="absolute -right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-none bg-[#FDFBF7] border-[#E9E2D5] text-neutral-700 shadow-sm hover:bg-[#003E29] hover:text-white hover:border-[#003E29] transition-all z-10" />
       </Carousel>
     </div>
   );
@@ -215,36 +216,38 @@ export default function HomePageContent() {
     };
 
     return (
-      <section className={`py-12 ${bgClass}`} style={{ borderBottom: "1px solid #E5E7EB" }}>
+      <section className="py-14 md:py-16" style={{ background: "#FDFBF7", borderBottom: "1px solid #E9E2D5" }}>
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
+          <Reveal className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
             {/* Left Banner */}
-            <div className="relative group overflow-hidden rounded-2xl min-h-[320px] lg:min-h-[400px] flex flex-col justify-end p-6 md:p-8 bg-neutral-900 shadow-md">
+            <div className="relative group overflow-hidden min-h-[320px] lg:min-h-[400px] flex flex-col justify-end p-7 md:p-9" style={{ background: "#002216" }}>
               <Image
                 src={banner.bannerImage}
                 alt={title}
                 fill
-                className="object-cover transition-transform duration-[2000ms] group-hover:scale-105"
+                className="object-cover transition-transform duration-[2000ms] group-hover:scale-105 opacity-90"
                 sizes="(max-width: 1024px) 100vw, 25vw"
                 priority={key === "featured"}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent z-10" />
+              <div className="absolute inset-0 z-10" style={{ background: "linear-gradient(to top, rgba(0,20,13,0.92) 0%, rgba(0,20,13,0.4) 55%, rgba(0,20,13,0.05) 100%)" }} />
               <div className="relative z-20 flex flex-col h-full justify-end text-white">
-                <span className="text-[10px] uppercase tracking-[0.25em] font-semibold text-gray-300 mb-2 block">
+                <span className="text-[9px] uppercase tracking-[0.4em] text-[#E7C983] mb-3 block">
                   {banner.tag}
                 </span>
-                <h2 className="text-2xl md:text-3xl font-light tracking-wide uppercase leading-tight mb-2   ">
-                  {banner.title}
-                  <span className="block font-semibold mt-0.5 text-xl md:text-2xl tracking-normal">{banner.subtitle}</span>
+                <h2 className="font-display text-3xl md:text-4xl font-medium tracking-wide leading-tight mb-3 capitalize">
+                  {banner.title?.toLowerCase()}
+                  {banner.subtitle && (
+                    <span className="block italic font-light mt-0.5 text-2xl md:text-3xl capitalize text-white/90">{banner.subtitle?.toLowerCase()}</span>
+                  )}
                 </h2>
-                <p className="text-xs text-gray-300 font-light mb-6 leading-relaxed max-w-xs">
+                <p className="text-xs text-white/65 font-light mb-7 leading-relaxed max-w-xs tracking-wide">
                   {banner.dateText}
                 </p>
                 <Link
                   href={banner.linkUrl}
-                  className="inline-flex items-center text-xs font-semibold uppercase tracking-widest border-b border-white pb-1 w-max transition-all hover:text-gray-300 hover:border-gray-300 hover:pl-1"
+                  className="inline-flex items-center text-[10px] uppercase tracking-[0.3em] border-b border-[#E7C983] pb-1.5 w-max transition-all text-[#E7C983] hover:text-white hover:border-white"
                 >
-                  See More Products
+                  View the Collection
                 </Link>
               </div>
             </div>
@@ -253,7 +256,7 @@ export default function HomePageContent() {
             <div className="lg:col-span-3 relative flex flex-col justify-center min-w-0">
               <FeaturedProductsCarousel products={sectionProducts} isLoading={loading} />
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
     );

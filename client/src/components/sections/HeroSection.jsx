@@ -144,36 +144,46 @@ export default function HeroSection() {
                   src={isMobile ? slide.smimg : slide.img}
                   alt={slide.title || `Slide ${index + 1}`}
                   fill
-                  className="object-cover object-center transition-transform duration-[4000ms] ease-out hover:scale-105"
+                  className="object-cover object-center hero-kenburns"
                   priority={index === 0}
                   sizes="100vw"
                 />
 
+                {/* Floating gold sparkles */}
+                <span className="sparkle absolute top-[22%] right-[18%] text-lg z-10 hidden md:block" aria-hidden="true">✦</span>
+                <span className="sparkle absolute top-[58%] right-[9%] text-xs z-10 hidden md:block" style={{ animationDelay: "1.4s" }} aria-hidden="true">✦</span>
+                <span className="sparkle absolute top-[36%] right-[30%] text-sm z-10 hidden md:block" style={{ animationDelay: "2.6s" }} aria-hidden="true">✦</span>
+                <span className="sparkle absolute bottom-[24%] left-[8%] text-xs z-10 hidden md:block" style={{ animationDelay: "2s" }} aria-hidden="true">✦</span>
+
                 {/* Left/Center Text Overlay Box */}
-                <div className="absolute inset-0 bg-black/15 flex items-center">
+                <div className="absolute inset-0 flex items-center" style={{ background: "linear-gradient(90deg, rgba(0,20,13,0.5) 0%, rgba(0,20,13,0.22) 45%, rgba(0,20,13,0) 75%)" }}>
                   <div className="max-w-7xl mx-auto px-6 sm:px-12 md:px-16 w-full">
                     <div className="max-w-xl text-white">
+                      {/* Eyebrow */}
+                      <span className="block text-[10px] sm:text-[11px] uppercase tracking-[0.45em] text-[#E7C983] mb-5 animate-fade-in">
+                        Inaayika &mdash; Handcrafted Jewellery
+                      </span>
+
                       {/* Heading */}
-                      <h1 className="text-4xl sm:text-5xl md:text-6xl   font-sans leading-tight tracking-normal mb-4 text-white drop-shadow-md animate-fade-in">
+                      <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-medium leading-[1.05] tracking-wide mb-5 text-white drop-shadow-md animate-fade-in">
                         {slide.title}
                       </h1>
 
                       {/* Subheading */}
-                      <p className="text-sm sm:text-base md:text-lg text-white/95 font-sans font-medium leading-relaxed mb-8 max-w-lg drop-shadow-sm">
+                      <p className="text-sm sm:text-[15px] text-white/85 font-light leading-relaxed tracking-wide mb-9 max-w-md drop-shadow-sm animate-fade-in-delayed">
                         {slide.subtitle}
                       </p>
 
                       {/* CTA Button */}
-                      <div>
+                      <div className="animate-fade-in-delayed">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleSlideClick(slide.ctaLink);
                           }}
-                          className="px-8 py-3.5 text-xs tracking-widest uppercase active:scale-95 transition-all shadow-lg font-semibold text-white border border-[#D4AF37]/40 hover:bg-[#002216]"
-                          style={{ background: "#003E29" }}
+                          className="btn-luxe-white active:scale-95"
                         >
-                          Shop Now
+                          Discover the Collection
                         </button>
                       </div>
                     </div>
@@ -187,25 +197,26 @@ export default function HeroSection() {
 
         {/* ── Navigation Arrows ── */}
         <CarouselPrevious className="absolute left-6 top-1/2 -translate-y-1/2 hidden md:flex
-                                     h-12 w-12 z-30
-                                     bg-white/20 hover:bg-white/40 border-none
-                                     text-white backdrop-blur-md transition-all rounded-full" />
+                                     h-12 w-12 z-30 rounded-none
+                                     bg-transparent hover:bg-white/15 border border-white/40 hover:border-white
+                                     text-white backdrop-blur-sm transition-all" />
         <CarouselNext className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex
-                                   h-12 w-12 z-30
-                                   bg-white/20 hover:bg-white/40 border-none
-                                   text-white backdrop-blur-md transition-all rounded-full" />
+                                   h-12 w-12 z-30 rounded-none
+                                   bg-transparent hover:bg-white/15 border border-white/40 hover:border-white
+                                   text-white backdrop-blur-sm transition-all" />
 
-        {/* ── Slide indicator dots ── */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+        {/* ── Slide indicator bars ── */}
+        <div className="absolute bottom-7 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => api?.scrollTo(index)}
               aria-label={`Go to slide ${index + 1}`}
-              className={`rounded-full transition-all duration-300 ${index === currentSlide
-                ? "w-8 h-2 bg-white"
-                : "w-2 h-2 bg-white/50 hover:bg-white/80"
+              className={`h-px transition-all duration-500 ${index === currentSlide
+                ? "w-10 bg-[#E7C983]"
+                : "w-5 bg-white/50 hover:bg-white/90"
                 }`}
+              style={{ height: index === currentSlide ? "2px" : "1px" }}
             />
           ))}
         </div>
