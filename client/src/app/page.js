@@ -30,7 +30,7 @@ export default function Home() {
         <TrustBadgesSection />
         {/* Featured Healthcare Offers */}
         {/* <FeaturedOffers /> */}
-        <CategoryGrid />
+        {/* <CategoryGrid /> */}
 
         {/* Watch and Buy - Video Reels */}
         <WatchAndBuySection />
