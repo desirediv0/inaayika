@@ -274,6 +274,7 @@ model Product {
   flashSaleProducts FlashSaleProduct[]
   moqSettings       MOQSetting[]
   pricingSlabs      PricingSlab[]
+  videoReelProducts VideoReelProduct[]
 }
 
 model ProductImage {
@@ -1139,6 +1140,35 @@ model ShiprocketSettings {
   updatedBy String?
 
   @@unique([id])
+}
+
+// -----------------------
+// Watch and Buy - Video Reels
+// -----------------------
+model VideoReel {
+  id          String             @id @default(uuid())
+  title       String
+  videoUrl    String
+  position    Int                @default(0)
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  products    VideoReelProduct[]
+
+  @@index([isActive, position])
+}
+
+model VideoReelProduct {
+  id          String    @id @default(uuid())
+  videoReelId String
+  productId   String
+  position    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  videoReel   VideoReel @relation(fields: [videoReelId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([videoReelId, productId])
+  @@index([videoReelId, position])
 }
 
 model ShiprocketPickupAddress {

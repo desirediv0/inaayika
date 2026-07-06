@@ -1261,3 +1261,61 @@ export const pricingSlabs = {
     });
   },
 };
+
+// ==================== Video Reels Services ====================
+export const videoReels = {
+  getReels: (params = {}) => {
+    return api.get("/api/admin/video-reels", { params });
+  },
+  getReelById: (reelId: string) => {
+    return api.get(`/api/admin/video-reels/${reelId}`);
+  },
+  createReel: (data: {
+    title: string;
+    isActive?: boolean;
+    productIds?: string[];
+    video: File;
+  }) => {
+    const formData = new FormData();
+    formData.append("title", data.title);
+    if (data.isActive !== undefined)
+      formData.append("isActive", data.isActive.toString());
+    if (data.productIds)
+      formData.append("productIds", JSON.stringify(data.productIds));
+    formData.append("video", data.video);
+
+    return api.post("/api/admin/video-reels", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  updateReel: (
+    reelId: string,
+    data: {
+      title?: string;
+      position?: number;
+      isActive?: boolean;
+      productIds?: string[];
+      video?: File | null;
+    }
+  ) => {
+    const formData = new FormData();
+    if (data.title) formData.append("title", data.title);
+    if (data.position !== undefined)
+      formData.append("position", data.position.toString());
+    if (data.isActive !== undefined)
+      formData.append("isActive", data.isActive.toString());
+    if (data.productIds)
+      formData.append("productIds", JSON.stringify(data.productIds));
+    if (data.video) formData.append("video", data.video);
+
+    return api.put(`/api/admin/video-reels/${reelId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  deleteReel: (reelId: string) => {
+    return api.delete(`/api/admin/video-reels/${reelId}`);
+  },
+  toggleActive: (reelId: string) => {
+    return api.patch(`/api/admin/video-reels/${reelId}/toggle-active`);
+  },
+};

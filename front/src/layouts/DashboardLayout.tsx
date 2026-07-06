@@ -25,6 +25,7 @@ import {
   Layers,
   Eye,
   Truck,
+  Video,
   // Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -347,6 +348,18 @@ export default function DashboardLayout() {
                 hasPermission={hasPermissionFor(
                   admin,
                   Resource.DASHBOARD,
+                  Action.READ
+                )}
+              />
+
+              {/* Video Reels - Single Item */}
+              <NavItem
+                href="/video-reels"
+                icon={<Video className="h-[1.125rem] w-[1.125rem]" />}
+                title="Video Reels"
+                hasPermission={hasPermissionFor(
+                  admin,
+                  Resource.BANNERS,
                   Action.READ
                 )}
               />
@@ -725,6 +738,19 @@ export default function DashboardLayout() {
                 hasPermission={hasPermissionFor(
                   admin,
                   Resource.DASHBOARD,
+                  Action.READ
+                )}
+              />
+
+              {/* Video Reels - Single Item */}
+              <NavItem
+                href="/video-reels"
+                icon={<Video className="h-[1.125rem] w-[1.125rem]" />}
+                title="Video Reels"
+                onClick={toggleMobileMenu}
+                hasPermission={hasPermissionFor(
+                  admin,
+                  Resource.BANNERS,
                   Action.READ
                 )}
               />

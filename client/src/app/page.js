@@ -3,6 +3,7 @@ import HeroSection from "@/components/sections/HeroSection";
 import LuxuryMarquee from "@/components/sections/LuxuryMarquee";
 import TrustBadgesSection from "@/components/sections/TrustBadgesSection";
 import HomePageContent from "@/components/sections/HomePageContent";
+import WatchAndBuySection from "@/components/sections/WatchAndBuySection";
 import { WhyBuySection } from "@/components/sections/WhyBuySection";
 // import FeaturedOffers from "@/components/sections/FeaturedOffers";
 import {
@@ -30,6 +31,9 @@ export default function Home() {
         {/* Featured Healthcare Offers */}
         {/* <FeaturedOffers /> */}
         <CategoryGrid />
+
+        {/* Watch and Buy - Video Reels */}
+        <WatchAndBuySection />
 
         {/* Dynamic product sections */}
         <HomePageContent />

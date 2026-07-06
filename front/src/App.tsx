@@ -35,6 +35,7 @@ import AnalyticsDashboard from "@/pages/AnalyticsDashboard";
 import BrandsPage from "./pages/BrandsPage";
 import ProductSectionsPage from "./pages/ProductSections";
 import BannersPage from "./pages/BannersPage";
+import VideoReelsPage from "./pages/VideoReelsPage";
 import PaymentSettingsPage from "./pages/PaymentSettingsPage";
 import PriceVisibilitySettingsPage from "./pages/PriceVisibilitySettingsPage";
 import FlashSalesPage from "./pages/FlashSalesPage";
@@ -638,6 +639,39 @@ const App = () => {
               element={
                 <ProtectedRoute resource={Resource.BANNERS} action={Action.READ}>
                   <BannersPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="video-reels/new"
+              element={
+                <ProtectedRoute
+                  resource={Resource.BANNERS}
+                  action={Action.CREATE}
+                >
+                  <VideoReelsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="video-reels/:id"
+              element={
+                <ProtectedRoute
+                  resource={Resource.BANNERS}
+                  action={Action.UPDATE}
+                >
+                  <VideoReelsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="video-reels"
+              element={
+                <ProtectedRoute resource={Resource.BANNERS} action={Action.READ}>
+                  <VideoReelsPage />
                 </ProtectedRoute>
               }
             />

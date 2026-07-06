@@ -8,7 +8,7 @@ import s3client from "../utils/s3client.js";
 const storage = multer.memoryStorage();
 export const uploadFiles = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit for PDFs and audio
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
 });
 
 // Function to process and upload image
@@ -100,6 +100,34 @@ export const uploadPDF = async (file) => {
     return filename;
   } catch (error) {
     console.error("PDF upload failed:", error);
+    throw error;
+  }
+};
+
+// Function to upload Video
+export const uploadVideo = async (file) => {
+  const { originalname, buffer, mimetype } = file;
+
+  const uploadFolder = process.env.UPLOAD_FOLDER || "GenuineGrocery";
+  const filename = `${uploadFolder}/videos/${Date.now()}-${originalname
+    .toLowerCase()
+    .split(" ")
+    .join("-")}`;
+
+  try {
+    await s3client.send(
+      new PutObjectCommand({
+        Bucket: process.env.SPACES_BUCKET,
+        Key: filename,
+        Body: buffer,
+        ACL: "public-read",
+        ContentType: mimetype || "video/mp4",
+      })
+    );
+
+    return filename;
+  } catch (error) {
+    console.error("Video upload failed:", error);
     throw error;
   }
 };
