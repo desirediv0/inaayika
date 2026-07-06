@@ -25,7 +25,6 @@ import { useDropzone } from "react-dropzone";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/context";
 
 // Helper to get product image URL
 function getProductImageUrl(product: any): string | null {
@@ -585,7 +584,6 @@ function VideoReelForm({
 
 // Video Reels List Component
 function VideoReelsList() {
-  const { t } = useLanguage();
   const [reels, setReels] = useState<VideoReelItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
