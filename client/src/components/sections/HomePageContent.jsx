@@ -25,7 +25,7 @@ const SECTION_METADATA = {
     title: "FEATURED",
     subtitle: "COLLECTIONS",
     dateText: "Handpicked handcrafted jewellery pieces selected for your style",
-    linkUrl: "/shop?type=featured"
+    linkUrl: "/products?productType=featured"
   },
   latest: {
     bannerImage: "/latest_banner.png",
@@ -41,7 +41,7 @@ const SECTION_METADATA = {
     title: "BEST",
     subtitle: "SELLERS",
     dateText: "Our most popular jewellery designs loved by clients across India",
-    linkUrl: "/shop?type=bestseller"
+    linkUrl: "/products?productType=bestseller"
   },
   trending: {
     bannerImage: "/trending_banner.png",
@@ -49,7 +49,7 @@ const SECTION_METADATA = {
     title: "TRENDING",
     subtitle: "NOW",
     dateText: "Most loved and trending handmade designs and accessories this week",
-    linkUrl: "/shop?type=trending"
+    linkUrl: "/products?productType=trending"
   },
   new: {
     bannerImage: "/new_banner.png",
@@ -57,7 +57,7 @@ const SECTION_METADATA = {
     title: "NEW",
     subtitle: "ARRIVALS",
     dateText: "Fresh handcrafted creations added to our gallery",
-    linkUrl: "/shop?type=new"
+    linkUrl: "/products?productType=new"
   }
 };
 
@@ -265,12 +265,12 @@ export default function HomePageContent() {
   const displaySections = dbSections.length > 0
     ? [...dbSections].sort((a, b) => a.displayOrder - b.displayOrder)
     : [
-        { id: "featured", slug: "featured", name: "FEATURED COLLECTIONS", description: "Handpicked handcrafted jewellery pieces selected for your style" },
-        { id: "latest", slug: "latest", name: "LATEST ADDITIONS", description: "Newly added premium jewellery collections" },
-        { id: "bestseller", slug: "bestseller", name: "BEST SELLERS", description: "Our most popular jewellery designs loved by clients across India" },
-        { id: "trending", slug: "trending", name: "TRENDING NOW", description: "Most loved and trending handmade designs and accessories this week" },
-        { id: "new", slug: "new", name: "NEW ARRIVALS", description: "Fresh handcrafted creations added to our gallery" },
-      ];
+      { id: "featured", slug: "featured", name: "FEATURED COLLECTIONS", description: "Handpicked handcrafted jewellery pieces selected for your style" },
+      { id: "latest", slug: "latest", name: "LATEST ADDITIONS", description: "Newly added premium jewellery collections" },
+      { id: "bestseller", slug: "bestseller", name: "BEST SELLERS", description: "Our most popular jewellery designs loved by clients across India" },
+      { id: "trending", slug: "trending", name: "TRENDING NOW", description: "Most loved and trending handmade designs and accessories this week" },
+      { id: "new", slug: "new", name: "NEW ARRIVALS", description: "Fresh handcrafted creations added to our gallery" },
+    ];
 
   return (
     <>
