@@ -225,9 +225,22 @@ export const Footer = () => {
               <span className="px-2 py-0.5 border border-white/15 text-[10px] text-white/50 tracking-wider">PAYPAL</span>
             </div>
 
-            {/* Right: Copyright */}
-            <div className="text-[11px] text-white/35 tracking-[0.25em] uppercase order-2 md:order-none">
-              © {new Date().getFullYear()} Inaayika
+            {/* Right: Copyright + Designed by credit */}
+            <div className="flex flex-col items-center md:items-end gap-1.5 order-2 md:order-none">
+              <div className="text-[11px] text-white/35 tracking-[0.25em] uppercase">
+                © {new Date().getFullYear()} Inaayika
+              </div>
+              <div className="text-[11px] text-white/35 tracking-[0.25em] uppercase">
+                Designed by{" "}
+                <a
+                  href="https://desirediv.com"
+                  target="_blank"
+                  rel="noopener"
+                  className="text-white/60 hover:text-[#D4AF37] transition-colors"
+                >
+                  Desire Div
+                </a>
+              </div>
             </div>
           </div>
         </div>
