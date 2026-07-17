@@ -28,10 +28,8 @@ export const Footer = () => {
       <div className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-14 text-center">
           <p className="luxe-eyebrow mb-4">Handcrafted with love, by Pooja Khan</p>
-          <p className="font-display text-3xl md:text-4xl font-medium tracking-[0.18em] uppercase text-gold-shimmer">
-            Inaayika
-          </p>
-          <img src="/logo.png" alt="Inaayika Logo" className="h-12 w-auto mx-auto mt-6 opacity-75 object-contain" />
+
+          <img src="/logo.png" alt="Inaayika Logo" className="h-20 w-auto mx-auto mt-6 opacity-75 object-contain" />
           <p className="text-white/50 text-sm font-light tracking-wide max-w-md mx-auto mt-5 leading-relaxed">
             Exclusive designs in imitation jewellery. Trusted by 50,000+ customers.
           </p>
