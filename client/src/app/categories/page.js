@@ -129,7 +129,7 @@ export default function CategoriesPage() {
             Browse Jewellery Categories
           </h1>
           <p className="text-white/65 max-w-xl mx-auto text-sm font-sans">
-            Explore our curated collections of customised hair accessories, necklaces, earrings, and bespoke jewelry kits.
+            Explore our curated collections of customised hair accessories, necklaces, earrings, and bespoke jewellery kits.
           </p>
           <div className="flex items-center justify-center gap-2 text-xs text-white/40 mt-4 font-sans">
             <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>

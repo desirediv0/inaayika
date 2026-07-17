@@ -8,21 +8,21 @@ import { FaWhatsapp } from "react-icons/fa";
 
 export const metadata = {
   title: "About Us | Inaayika — Handcrafted Premium Jewellery",
-  description: "Inaayika by Pooja Khan is a curated platform offering premium handcrafted jewelry and artisan hair accessories, designed to celebrate elegance and individuality.",
+  description: "Inaayika by Pooja Khan is a curated platform offering premium handcrafted jewellery and artisan hair accessories, designed to celebrate elegance and individuality.",
 };
 
 const stats = [
   { value: "100%", label: "Artisan Handcrafted", icon: <Sparkles className="w-5 h-5" /> },
   { value: "Premium", label: "Quality Materials", icon: <Gem className="w-5 h-5" /> },
   { value: "Worldwide", label: "Secure Shipping", icon: <ShieldCheck className="w-5 h-5" /> },
-  { value: "24/7", label: "WhatsApp Support", icon: <Heart className="w-5 h-5" /> },
+  { value: "9am to 6pm", label: "Mon - Sat Support", icon: <Heart className="w-5 h-5" /> },
 ];
 
 const values = [
   {
     icon: Award,
     title: "Artisan Sourcing",
-    description: "Each hair accessory and piece of jewelry is meticulously designed and handmade, ensuring unique variations and unmatched custom detail.",
+    description: "Each hair accessory and piece of jewellery is meticulously designed and handmade, ensuring unique variations and unmatched custom detail.",
   },
   {
     icon: Gem,
@@ -48,12 +48,12 @@ const CATEGORIES = [
   "Artisan Hair Accessories",
   "Statement Rings",
   "Premium Bracelets",
-  "Floral Jewelry Sets",
+  "Floral Jewellery Sets",
   "Customized Combs & Clips"
 ];
 
 const features = [
-  "100% Unique Handmade Jewelry",
+  "100% Unique Handmade Jewellery",
   "Secure Tracked Worldwide Transit",
   "Eco-Friendly Protected Packaging",
   "Direct WhatsApp Sizing Support",
@@ -65,7 +65,7 @@ export default function AboutPage() {
     <div className="min-h-screen bg-slate-50 font-sans">
 
       {/* Hero Section */}
-      <section className="relative py-16 md:py-24 overflow-hidden bg-black text-white">
+      <section className="relative py-16 md:py-24 overflow-hidden bg-hero-dark text-white">
         {/* Fine background grid and ambient glows */}
         <div className="absolute inset-0 bg-[radial-gradient(rgba(212,175,55,0.1)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none opacity-80" />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -92,7 +92,7 @@ export default function AboutPage() {
                 </span>
               </h1>
               <p className="text-base md:text-lg text-slate-300 mb-8 leading-relaxed">
-                Inaayika by Pooja Khan is your destination for premium handcrafted jewelry and luxury styling accessories. We bridge the gap between traditional craftsmanship and modern designs, ensuring every package delivers outstanding craftsmanship directly to your doorstep.
+                Inaayika by Pooja Khan is your destination for premium handcrafted jewellery and luxury styling accessories. We bridge the gap between traditional craftsmanship and modern designs, ensuring every package delivers outstanding craftsmanship directly to your doorstep.
               </p>
 
               {/* Bullet Features Grid */}
@@ -150,7 +150,7 @@ export default function AboutPage() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-white">Direct-to-Consumer Value</p>
-                      <p className="text-[11px] text-slate-400 leading-normal mt-0.5">By designing and sourcing our items in-house, we eliminate retail markup and pass the savings to you.</p>
+                      <p className="text-[11px] text-slate-400 leading-normal mt-0.5">By designing and sourcing our handcrafted hair accessories in-house, we eliminate retail markup and pass the savings to you.</p>
                     </div>
                   </div>
 
@@ -209,10 +209,10 @@ export default function AboutPage() {
                 Designed to make you look stunning
               </h2>
               <p className="text-slate-600 leading-relaxed mb-6 text-sm md:text-base font-sans">
-                At Inaayika, we believe in the unique character of handmade creations. Under the creative direction of Pooja Khan, we design jewelry that combines artisan techniques with current global fashion trends.
+                At Inaayika, we believe in the unique character of handmade creations. Under the creative direction of Pooja Khan, we design jewellery that combines artisan techniques with current global fashion trends.
               </p>
               <p className="text-slate-600 leading-relaxed mb-6 text-sm md:text-base font-sans">
-                Whether you need a bespoke bridal necklace, a set of customized floral jewelry, or luxury hair accessory clips to match your outfits, we specialize in tailoring pieces exactly to your size, color theme, and requirements.
+                Whether you need a bespoke bridal necklace, a set of customised floral jewellery, or luxury hair accessories to match your outfits, we specialize in tailoring pieces exactly to your size, color theme, and requirements.
               </p>
 
               {/* Quality pillars list */}
@@ -221,7 +221,7 @@ export default function AboutPage() {
                   <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-[#003E29]">
                     <Check className="w-4 h-4" />
                   </div>
-                  <span className="text-sm text-slate-800">100% Customized Sizes &amp; Color Matching</span>
+                  <span className="text-sm text-slate-800">100% Customized Sizes &amp; Color Matching**</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-[#003E29]">
@@ -235,6 +235,9 @@ export default function AboutPage() {
                   </div>
                   <span className="text-sm text-slate-800">Artisan Sourcing &amp; Safe Direct Delivery</span>
                 </div>
+                <p className="text-[10px] text-slate-400 mt-2 italic font-light">
+                  **Conditions Apply: Custom orders cannot be returned or exchanged.
+                </p>
               </div>
             </div>
 

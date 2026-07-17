@@ -41,7 +41,7 @@ const TESTIMONIALS = [
     name: "Sunita Mehta",
     role: "Collector",
     city: "Pune",
-    text: "I absolutely adore the festive sets from Inaayika. They feel premium, lightweight, and carry a distinct ethnic style that stands out from typical mass-produced jewelry.",
+    text: "I absolutely adore the festive sets from Inaayika. They feel premium, lightweight, and carry a distinct ethnic style that stands out from typical mass-produced jewellery.",
     rating: 5,
     verified: true
   },
@@ -243,7 +243,7 @@ export const TrustSection = () => {
             </h2>
           </div>
           <p className="text-gray-500 max-w-xs md:text-right text-base leading-relaxed">
-            From customized wedding adornments to elegant festive sets, Inaayika is the trusted choice for handcrafted jewelry.
+            From customized wedding adornments to elegant festive sets, Inaayika is the trusted choice for handcrafted jewellery.
           </p>
         </div>
 

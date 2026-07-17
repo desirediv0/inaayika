@@ -70,7 +70,7 @@ export default function ReturnPolicyPage() {
                             <div>
                                 <h4 className="text-sm font-semibold text-amber-900">Important Customization Notice</h4>
                                 <p className="text-xs text-amber-800 leading-relaxed mt-1">
-                                    To maintain artisan quality standards, all **customised hair accessories, bespoke jewelry, and bridal sets** are strictly **non-returnable and non-refundable** once crafting or dispatch has begun. We create these specifically to your requested sizes and designs.
+                                    To maintain artisan quality standards, all **customised hair accessories, bespoke jewellery, and bridal sets** are strictly **non-returnable and non-refundable** once crafting or dispatch has begun. We create these specifically to your requested sizes and designs.
                                 </p>
                             </div>
                         </div>

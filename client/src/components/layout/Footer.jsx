@@ -31,7 +31,7 @@ export const Footer = () => {
           <p className="font-display text-3xl md:text-4xl font-medium tracking-[0.18em] uppercase text-gold-shimmer">
             Inaayika
           </p>
-          <span className="luxe-rule mt-6" />
+          <img src="/logo.png" alt="Inaayika Logo" className="h-12 w-auto mx-auto mt-6 opacity-75 object-contain" />
           <p className="text-white/50 text-sm font-light tracking-wide max-w-md mx-auto mt-5 leading-relaxed">
             Exquisite handcrafted jewellery, designed to make every moment
             unforgettable — from our atelier to your doorstep, worldwide.
@@ -216,13 +216,12 @@ export const Footer = () => {
               </a>
             </div>
 
-            {/* Center: Simple payment representations */}
-            <div className="flex items-center gap-2 order-3 md:order-none">
+            <div className="flex items-center gap-3 order-3 md:order-none">
               <span className="text-[10px] text-white/35 uppercase tracking-[0.25em] mr-2">Secure Payments</span>
-              <span className="px-2 py-0.5 border border-white/15 text-[10px] text-white/50 tracking-wider">VISA</span>
-              <span className="px-2 py-0.5 border border-white/15 text-[10px] text-white/50 tracking-wider">MC</span>
-              <span className="px-2 py-0.5 border border-white/15 text-[10px] text-white/50 tracking-wider">UPI</span>
-              <span className="px-2 py-0.5 border border-white/15 text-[10px] text-white/50 tracking-wider">PAYPAL</span>
+              <img src="/visa.png" alt="Visa" className="h-6 w-auto object-contain bg-white/5 p-0.5 rounded" />
+              <img src="/mc.png" alt="MasterCard" className="h-6 w-auto object-contain bg-white/5 p-0.5 rounded" />
+              <img src="/upi.png" alt="UPI" className="h-6 w-auto object-contain bg-white/5 p-0.5 rounded" />
+              <img src="/paypal.png" alt="PayPal" className="h-6 w-auto object-contain bg-white/5 p-0.5 rounded" />
             </div>
 
             {/* Right: Copyright + Designed by credit */}

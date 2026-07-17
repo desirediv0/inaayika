@@ -56,7 +56,7 @@ export default function ShippingPolicyPage() {
             Shipping &amp; Delivery Policy
           </h1>
           <p className="text-white/65 max-w-xl text-base font-sans">
-            Premium transit protocols for handcrafted accessories and custom jewelry, delivered safely across India and worldwide.
+            Premium transit protocols for handcrafted accessories and custom jewellery, delivered safely across India and worldwide.
           </p>
         </div>
       </section>
@@ -93,7 +93,7 @@ export default function ShippingPolicyPage() {
                 Delivery Logistics &amp; Shipping Fees
               </h2>
               <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                We use premier express networks (Blue Dart, Delhivery, and DHL for global orders) to ensure your handcrafted jewelry arrives in perfect, pristine condition.
+                We use premier express networks (Blue Dart, Delhivery, and DHL for global orders) to ensure your handcrafted jewellery arrives in perfect, pristine condition.
               </p>
               <ul className="space-y-2.5 pl-5 list-disc text-sm text-gray-600">
                 <li><strong className="text-gray-800">Orders above ₹999:</strong> Free expedited shipping across all deliverable PIN codes in India.</li>

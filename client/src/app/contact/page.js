@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import {
-  Phone, Mail, Send, Loader2, MessageSquare,
-  ShieldCheck, ArrowRight, BadgeCheck, Clock, Sparkles, MapPin
+  Phone, Mail, Send, Loader2,
+  ArrowRight, BadgeCheck, Clock, Sparkles, MapPin
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,7 @@ export default function ContactPage() {
             Connect With <span style={{ color: "#D4AF37" }}>Our Design Team</span>
           </h1>
           <p className="text-base md:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
-            Collaborate on bespoke jewelry styling queries, custom sizing requests, or chat directly with our founder on WhatsApp.
+            Collaborate on bespoke jewellery styling queries, custom sizing requests, or chat directly with our founder on WhatsApp.
           </p>
         </div>
       </section>
@@ -89,13 +89,13 @@ export default function ContactPage() {
                 About Inaayika
               </h3>
               <p className="text-xs md:text-sm text-gray-600 leading-relaxed mb-4">
-                At Inaayika, we believe in the beauty of handmade creations. Each of our hair accessories, jewelry sets, and custom-tailored designs is lovingly crafted to reflect artisan heritage, durability, and elegance.
+                At Inaayika, we believe in the beauty of handmade creations. Each of our hair accessories, jewellery sets, and custom-tailored designs is lovingly crafted to reflect artisan heritage, durability, and elegance.
               </p>
               <div className="space-y-3">
                 <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 flex items-start gap-3">
                   <BadgeCheck className="w-5 h-5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-gray-600 leading-normal">
-                    We deliver beautifully packaged jewelry with our premium shipping partners worldwide, direct to your doorstep.
+                    We deliver beautifully packaged jewellery with our premium shipping partners worldwide, direct to your doorstep.
                   </p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 flex items-start gap-3">
@@ -175,7 +175,7 @@ export default function ContactPage() {
                   Submit Sourcing Request
                 </h2>
                 <p className="text-xs text-gray-500 mt-1">
-                  Complete this form to submit custom jewelry designs, hair accessory preferences, or order queries.
+                  Complete this form to submit custom jewellery designs, hair accessories preferences, or order queries.
                 </p>
               </div>
 

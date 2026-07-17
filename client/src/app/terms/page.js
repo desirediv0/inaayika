@@ -67,7 +67,7 @@ export default function TermsPage() {
                         <div>
                             <h2 className="font-display text-xl   text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
                                 <span className="w-1.5 h-5 bg-[#D4AF37] rounded-full" />
-                                Customised Jewelry Sourcing & Crafting
+                                Customised Jewellery Sourcing & Crafting
                             </h2>
                             <p className="text-slate-600 text-sm leading-relaxed mb-3">
                                 For all custom orders (including specialised hair accessories, bridal sets, and DIY kits):
