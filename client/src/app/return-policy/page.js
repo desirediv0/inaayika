@@ -31,7 +31,7 @@ const returnSteps = [
 
 export default function ReturnPolicyPage() {
     return (
-        <div className="bg-slate-50 min-h-screen font-sans">
+        <div className="min-h-screen font-sans" style={{ background: "#F7F3EB" }}>
             <PageHero
                 title="Return & Cancellation Policy"
                 description="Our commitment to handcrafted quality, customized orders, and secure refund processing"
@@ -44,14 +44,14 @@ export default function ReturnPolicyPage() {
                 <div className="max-w-4xl mx-auto">
 
                     {/* Return Process Timeline */}
-                    <div className="bg-white rounded-3xl p-8 border border-[#E5E7EB] shadow-sm mb-12">
+                    <div className="rounded-3xl p-8 border shadow-sm mb-12" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
                         <h2 className="font-display text-2xl text-slate-900 mb-8 text-center flex items-center justify-center gap-2">
                             <RefreshCw className="w-5.5 h-5.5 text-[#003E29]" /> Return &amp; Exchange Workflow
                         </h2>
                         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {returnSteps.map((item) => (
                                 <div key={item.step} className="text-center relative">
-                                    <div className="w-12 h-12 bg-green-50 text-[#003E29] border border-green-100 rounded-full flex items-center justify-center mx-auto mb-4 font-display text-lg">
+                                    <div className="w-12 h-12 bg-green-50/50 text-[#003E29] border border-green-100/50 rounded-full flex items-center justify-center mx-auto mb-4 font-display text-lg">
                                         {item.step}
                                     </div>
                                     <h3 className="text-slate-800 text-sm font-semibold mb-1.5">{item.title}</h3>
@@ -62,7 +62,7 @@ export default function ReturnPolicyPage() {
                     </div>
 
                     {/* Detailed Guidelines Prose */}
-                    <div className="bg-white rounded-3xl p-8 md:p-12 border border-[#E5E7EB] shadow-sm space-y-10">
+                    <div className="rounded-3xl p-8 md:p-12 border shadow-sm space-y-10" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
 
                         {/* CRITICAL WARNING ALERT */}
                         <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200/60 flex gap-4 items-start">
@@ -81,14 +81,14 @@ export default function ReturnPolicyPage() {
                                 Return Eligibility Criteria
                             </h2>
                             <p className="text-slate-600 text-sm leading-relaxed mb-4 font-semibold text-amber-900 bg-amber-50/50 p-3 rounded-xl border border-amber-100/50">
-                                Note: Only non-customized jewellery items can be returned within our 7-day return policy. Customised items are strictly non-returnable.
+                                Note: Only non-customized jewellery items can be returned within our 2-day return policy. An unboxing video is mandatory to initiate any return or exchange. Customised items are strictly non-returnable.
                             </p>
                             <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                                Eligible non-customized jewellery items can be returned within **7 days of delivery** under the following conditions:
+                                Eligible non-customized jewellery items can be returned within **2 days of delivery** under the following conditions:
                             </p>
                             <ul className="space-y-3 pl-5 list-disc text-xs md:text-sm text-slate-600">
                                 <li>The item must be completely unworn, clean, and in original packaging.</li>
-                                <li>All tags, labels, and gift boxes must remain intact.</li>
+                                <li>All tags, labels, and seal ties must remain intact. Returns will not be accepted if seal ties are broken.</li>
                                 <li>The product must not show physical scratches, damage, or wear.</li>
                             </ul>
                         </div>

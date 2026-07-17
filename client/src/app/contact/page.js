@@ -101,13 +101,13 @@ export default function ContactPage() {
                 <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 flex items-start gap-3">
                   <Clock className="w-5 h-5 text-[#003E29] flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-gray-600 leading-normal">
-                    <span className="text-gray-800 font-semibold">Support Hours:</span> 10:30 AM to 7:00 PM (Daily)
+                    <span className="text-gray-800 font-semibold">Support Hours:</span> 9:00 AM to 6:00 PM (Monday to Saturday, Except public holidays)
                   </p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-[#003E29] flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-gray-600 leading-normal">
-                    <span className="text-gray-800 font-semibold">Studio Address:</span> Pune, Maharashtra, India
+                    <span className="text-gray-800 font-semibold">Studio Address:</span> Delhi, India
                   </p>
                 </div>
               </div>

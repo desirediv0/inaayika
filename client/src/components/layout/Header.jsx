@@ -95,6 +95,27 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
+  const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
+  const [isFading, setIsFading] = useState(false);
+
+  const announcements = [
+    "Summer Sale - Extra 25% off on Orders above ₹2500",
+    "Introducing Lab-grown diamonds set in pure 925 sterling silver. Shop Now",
+    "Summer Sale - Extra 15% off on Orders above ₹1500 + 5% off on Prepaid Orders",
+    "Complimentary Doorstep Delivery Across India"
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsFading(true);
+      setTimeout(() => {
+        setCurrentAnnouncementIndex((prev) => (prev + 1) % announcements.length);
+        setIsFading(false);
+      }, 400);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   const searchInputRef = useRef(null);
   const navbarRef = useRef(null);
 
@@ -204,8 +225,12 @@ export function Navbar() {
             </div>
 
             {/* Center: Promo Text */}
-            <div className="text-center tracking-[0.35em] text-[9px] sm:text-[10px] uppercase font-light">
-              <span className="text-[#D4AF37]">✦</span>&nbsp;&nbsp;Complimentary Doorstep Delivery Across India&nbsp;&nbsp;<span className="text-[#D4AF37]">✦</span>
+            <div className="text-center tracking-[0.1em] sm:tracking-[0.2em] md:tracking-[0.3em] text-[9px] sm:text-[10px] uppercase font-light overflow-hidden h-4 flex items-center justify-center min-w-[280px] md:min-w-[400px]">
+              <div className={`transition-all duration-500 transform flex items-center justify-center gap-2 ${isFading ? "opacity-0 -translate-y-2" : "opacity-100 translate-y-0"}`}>
+                <span className="text-[#D4AF37]">✦</span>
+                <span>{announcements[currentAnnouncementIndex]}</span>
+                <span className="text-[#D4AF37]">✦</span>
+              </div>
             </div>
 
             {/* Right: Cart, Search, Help Links */}

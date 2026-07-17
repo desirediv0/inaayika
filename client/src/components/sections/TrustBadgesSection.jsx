@@ -20,7 +20,7 @@ const BADGES = [
   {
     src: "/amazing-value.svg",
     title: "Amazing Value Every Day",
-    desc: "Items prices that fit your budget",
+    desc: "Exceptional quality at competitive pricing",
     fallback: () => (
       <svg className="w-12 h-12 text-[#003E29]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
@@ -56,7 +56,7 @@ const BADGES = [
   {
     src: "/free-shipping.svg",
     title: "Completely free shipping",
-    desc: "We'll handle the shipping.",
+    desc: "On selected items",
     fallback: () => (
       <svg className="w-12 h-12 text-[#003E29]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
         <rect x="1" y="3" width="15" height="13" />

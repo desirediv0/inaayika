@@ -26,7 +26,7 @@ const principles = [
 
 export default function PrivacyPolicyPage() {
     return (
-        <div className="bg-slate-50 min-h-screen font-sans">
+        <div className="min-h-screen font-sans" style={{ background: "#F7F3EB" }}>
             <PageHero
                 title="Privacy Policy"
                 description="Our guidelines for securing customer accounts, order details, and secure payment transactions"
@@ -41,8 +41,8 @@ export default function PrivacyPolicyPage() {
                     {/* Top core pillars */}
                     <div className="grid md:grid-cols-3 gap-6 mb-12">
                         {principles.map((item, index) => (
-                            <div key={index} className="bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-sm flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-green-50 text-[#003E29] rounded-xl flex items-center justify-center mb-4">
+                            <div key={index} className="rounded-2xl p-6 border shadow-sm flex flex-col items-center text-center" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
+                                <div className="w-12 h-12 bg-green-50/50 text-[#003E29] rounded-xl flex items-center justify-center mb-4">
                                     <item.icon className="h-5.5 w-5.5" />
                                 </div>
                                 <h3 className="font-display text-slate-900 text-sm mb-2">{item.title}</h3>
@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
                     </div>
 
                     {/* Policy Details */}
-                    <div className="bg-white rounded-3xl p-8 md:p-12 border border-[#E5E7EB] shadow-sm space-y-10">
+                    <div className="rounded-3xl p-8 md:p-12 border shadow-sm space-y-10" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
 
                         <div>
                             <h2 className="font-display text-xl text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">

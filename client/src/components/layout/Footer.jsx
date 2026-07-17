@@ -33,8 +33,7 @@ export const Footer = () => {
           </p>
           <img src="/logo.png" alt="Inaayika Logo" className="h-12 w-auto mx-auto mt-6 opacity-75 object-contain" />
           <p className="text-white/50 text-sm font-light tracking-wide max-w-md mx-auto mt-5 leading-relaxed">
-            Exquisite handcrafted jewellery, designed to make every moment
-            unforgettable — from our atelier to your doorstep, worldwide.
+            Exclusive designs in imitation jewellery. Trusted by 50,000+ customers.
           </p>
         </div>
       </div>
@@ -124,17 +123,17 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/products" className={FOOTER_LINK_CLS}>
+                <Link href="/products?sort=createdAt&order=desc" className={FOOTER_LINK_CLS}>
                   New Collection
                 </Link>
               </li>
               <li>
-                <Link href="/products" className={FOOTER_LINK_CLS}>
+                <Link href="/products?search=custom" className={FOOTER_LINK_CLS}>
                   Custom Designs
                 </Link>
               </li>
               <li>
-                <Link href="/products" className={FOOTER_LINK_CLS}>
+                <Link href="/products?sort=featured&order=desc" className={FOOTER_LINK_CLS}>
                   Best Sellers
                 </Link>
               </li>

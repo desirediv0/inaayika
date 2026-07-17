@@ -35,7 +35,7 @@ const SHIPPING_CARDS = [
 
 export default function ShippingPolicyPage() {
   return (
-    <div className="min-h-screen" style={{ background: "#F7FAFC" }}>
+    <div className="min-h-screen" style={{ background: "#F7F3EB" }}>
 
       {/* ── Hero ── */}
       <section
@@ -68,8 +68,8 @@ export default function ShippingPolicyPage() {
             {SHIPPING_CARDS.map((card, i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl p-6 border transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
-                style={{ borderColor: "#E5E7EB" }}
+                className="rounded-2xl p-6 border transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}
               >
                 <div
                   className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
@@ -84,11 +84,11 @@ export default function ShippingPolicyPage() {
           </div>
 
           {/* ── Policy prose ── */}
-          <div className="bg-white rounded-3xl p-8 md:p-12 border space-y-10" style={{ borderColor: "#E5E7EB" }}>
+          <div className="rounded-3xl p-8 md:p-12 border space-y-10" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
 
             {/* Section 1 */}
             <div>
-              <h2 className="text-xl mb-4 pb-2 border-b flex items-center gap-2.5 font-display" style={{ color: "#002216", borderColor: "#E5E7EB" }}>
+              <h2 className="text-xl mb-4 pb-2 border-b flex items-center gap-2.5 font-display" style={{ color: "#002216", borderColor: "#E9E2D5" }}>
                 <span className="w-1.5 h-6 rounded-full flex-shrink-0" style={{ background: "#003E29" }} />
                 Delivery Logistics &amp; Shipping Fees
               </h2>
@@ -104,7 +104,7 @@ export default function ShippingPolicyPage() {
 
             {/* Section 2 */}
             <div>
-              <h2 className="text-xl mb-4 pb-2 border-b flex items-center gap-2.5 font-display" style={{ color: "#002216", borderColor: "#E5E7EB" }}>
+              <h2 className="text-xl mb-4 pb-2 border-b flex items-center gap-2.5 font-display" style={{ color: "#002216", borderColor: "#E9E2D5" }}>
                 <span className="w-1.5 h-6 rounded-full flex-shrink-0" style={{ background: "#D4AF37" }} />
                 No COD Policy &amp; Surcharges
               </h2>
@@ -124,7 +124,7 @@ export default function ShippingPolicyPage() {
 
             {/* Section 3 */}
             <div>
-              <h2 className="text-xl mb-4 pb-2 border-b flex items-center gap-2.5 font-display" style={{ color: "#002216", borderColor: "#E5E7EB" }}>
+              <h2 className="text-xl mb-4 pb-2 border-b flex items-center gap-2.5 font-display" style={{ color: "#002216", borderColor: "#E9E2D5" }}>
                 <span className="w-1.5 h-6 rounded-full flex-shrink-0" style={{ background: "#003E29" }} />
                 Tracking &amp; Transit Updates
               </h2>
@@ -138,7 +138,7 @@ export default function ShippingPolicyPage() {
             {/* CTA row */}
             <div
               className="pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-5"
-              style={{ borderColor: "#E5E7EB" }}
+              style={{ borderColor: "#E9E2D5" }}
             >
               <div>
                 <p className="text-sm font-semibold" style={{ color: "#002216" }}>Have specific shipping requirements?</p>
@@ -148,7 +148,7 @@ export default function ShippingPolicyPage() {
                 <a
                   href="mailto:Inaayikabypoojakhan@gmail.com"
                   className="text-xs px-4 py-2.5 rounded-xl border transition-colors hover:opacity-90 text-center"
-                  style={{ color: "#003E29", background: "rgba(0,62,41,0.06)", borderColor: "#E5E7EB" }}
+                  style={{ color: "#003E29", background: "rgba(0,62,41,0.06)", borderColor: "#E9E2D5" }}
                 >
                   Inaayikabypoojakhan@gmail.com
                 </a>

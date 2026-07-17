@@ -819,9 +819,9 @@ export default function ProductContent({ slug }) {
                     title: "Returns & Exchange",
                     icon: RefreshCw,
                     rows: [
-                      ["Easy Returns", "7-day easy window for returns"],
-                      ["Authenticity Guarantee", "Full refund if certification is not matching"],
-                      ["Support", "WhatsApp support active 10AM - 7PM"],
+                      ["Easy Returns", "2-day window, unboxing video mandatory"],
+                      ["Seal & Tags", "Must be intact (returns not accepted if seal is broken)"],
+                      ["Support", "WhatsApp support active 9AM - 6PM"],
                       ["Process", "Doorstep pickup for exchange items"],
                     ],
                   },
