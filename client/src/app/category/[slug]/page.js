@@ -243,10 +243,10 @@ export default function CategoryPage() {
                     </div>
                 ) : products.length === 0 ? (
                     <div className="text-center py-16">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: "rgba(0,94,184,0.08)" }}>
-                            <Package className="w-8 h-8" style={{ color: "#005EB8" }} />
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center border" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+                            <Package className="w-8 h-8" style={{ color: "#B08D57" }} />
                         </div>
-                        <h2 className="text-xl   mb-2" style={{ color: "#0A2540" }}>No Products Found</h2>
+                        <h2 className="text-xl   mb-2" style={{ color: "#003E29" }}>No Products Found</h2>
                         <p className="text-gray-500 mb-6">This category doesn&apos;t have any products yet.</p>
                         <Link href="/products" className="inline-flex items-center px-6 py-3 rounded-xl text-white font-semibold hover:opacity-90 transition-colors border border-[#D4AF37]/30" style={{ background: "#003E29" }}>
                             Browse All Collections

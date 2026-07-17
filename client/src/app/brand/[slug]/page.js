@@ -7,7 +7,7 @@ import { fetchApi } from "@/lib/utils";
 import {
     AlertCircle,
     ChevronLeft, ChevronRight, SlidersHorizontal,
-    Zap
+    Sparkles
 } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
 import CategoriesCarousel from "@/components/sections/CategoriesCarousel";
@@ -172,24 +172,27 @@ function BrandPageContent({ slug }) {
             </div>
 
             {/* Brand Hero Banner */}
-            <div className="relative w-full h-[180px] sm:h-[240px] rounded-3xl overflow-hidden mb-8 bg-gray-900 shadow-xl border border-white/10">
+            <div className="relative w-full h-[180px] sm:h-[240px] overflow-hidden mb-8 border border-[#B08D57]/25" style={{ background: "#002216" }}>
                 <Image
                     src={brand?.image ? `https://desirediv-storage.blr1.digitaloceanspaces.com/${brand.image}` : "/banner-background.jpg"}
                     alt={brand?.name || "Brand"}
                     fill
-                    className="object-cover opacity-60 transition-transform duration-700 hover:scale-105"
+                    className="object-cover opacity-70 transition-transform duration-700 hover:scale-105"
                     priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-transparent flex items-center">
+                <div
+                    className="absolute inset-0 flex items-center"
+                    style={{ background: "linear-gradient(to right, rgba(0,34,22,0.92) 0%, rgba(0,34,22,0.45) 55%, transparent 100%)" }}
+                >
                     <div className="px-8 md:px-12 max-w-2xl">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/30 border border-primary/40 text-primary text-[11px]   uppercase tracking-wider mb-4 animate-in fade-in slide-in-from-bottom-2">
+                        <span className="luxe-eyebrow block mb-3" style={{ color: "#E7C983" }}>
                             Brand Showcase
                         </span>
-                        <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-2 drop-shadow-md">
+                        <h1 className="font-display text-4xl md:text-5xl font-medium text-white leading-tight mb-2 tracking-wide drop-shadow-md">
                             {brand?.name || "Our Brand"}
                         </h1>
-                        <p className="text-sm md:text-base text-white/80 leading-relaxed max-w-md line-clamp-2">
-                            {brand?.description || "Explore authentic specialty medicines from our trusted partner brands."}
+                        <p className="text-sm md:text-base text-white/75 font-light tracking-wide leading-relaxed max-w-md line-clamp-2">
+                            {brand?.description || "Explore beautifully handcrafted jewellery from our curated designer collections."}
                         </p>
                     </div>
                 </div>
@@ -234,9 +237,9 @@ function BrandPageContent({ slug }) {
                     {[...Array(10)].map((_, i) => <ProductCardSkeleton key={i} />)}
                 </div>
             ) : products.length === 0 ? (
-                <div className="bg-white rounded-3xl p-16 text-center border border-dashed border-gray-200">
-                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Zap className="h-8 w-8 text-blue-400" />
+                <div className="bg-white p-16 text-center border border-dashed" style={{ borderColor: "#E9E2D5" }}>
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+                        <Sparkles className="h-8 w-8" style={{ color: "#B08D57" }} />
                     </div>
                     <h2 className="text-xl   text-gray-900 mb-2">No Products Found</h2>
                     <p className="text-gray-500 max-w-sm mx-auto">
@@ -303,7 +306,7 @@ function BrandPageContent({ slug }) {
 ───────────────────────────────────────────── */
 export default function BrandPage({ params }) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
+        <div className="min-h-screen" style={{ background: "#FDFBF7" }}>
             <div className="max-w-7xl mx-auto px-4 py-8 pb-16">
                 <ClientOnly fallback={<div className="h-64 flex items-center justify-center"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
                     <Suspense fallback={<div className="h-64 flex items-center justify-center"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>

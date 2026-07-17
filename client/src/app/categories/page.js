@@ -151,7 +151,7 @@ export default function CategoriesPage() {
                 >
                   <Icon className="w-5 h-5" style={{ color }} />
                 </div>
-                <div className="text-2xl font-black mb-0.5" style={{ color: "#0A2540" }}>
+                <div className="text-2xl font-black mb-0.5" style={{ color: "#003E29" }}>
                   {dynamic ? categories.length || "—" : value}
                 </div>
                 <div className="text-xs text-gray-500">{label}</div>

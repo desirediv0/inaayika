@@ -170,8 +170,8 @@ export default function ReviewSection({ product }) {
                   <p className="mt-2 text-gray-600 leading-relaxed">{review.comment}</p>
 
                   {review.adminReply && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-md">
-                      <p className="text-sm font-semibold text-blue-700">Response from Seller:</p>
+                    <div className="mt-4 p-3 rounded-md border" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+                      <p className="text-sm font-semibold" style={{ color: "#003E29" }}>Response from Seller:</p>
                       <p className="mt-1 text-sm text-gray-700">{review.adminReply}</p>
                       {review.adminReplyDate && <p className="mt-2 text-xs text-gray-500">Replied on {new Date(review.adminReplyDate).toLocaleDateString()}</p>}
                     </div>
@@ -189,7 +189,7 @@ export default function ReviewSection({ product }) {
             ) : <ReviewFormComponent />}
 
             {!canReview() && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-700 text-sm flex items-center">
+              <div className="mt-4 p-3 rounded-md border text-sm flex items-center" style={{ background: "#F7F3EB", borderColor: "#E9E2D5", color: "#003E29" }}>
                 <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
                 You need to purchase this product to write a review
               </div>

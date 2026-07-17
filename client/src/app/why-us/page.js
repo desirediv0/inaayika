@@ -1,168 +1,174 @@
 import {
-  BadgeCheck, Thermometer, Truck, ShieldCheck,
-  HeartHandshake, IndianRupee, Star, ArrowRight,
-  FlaskConical, Stethoscope
+  Gem, Sparkles, Truck, ShieldCheck,
+  HeartHandshake, Crown, Star, ArrowRight,
+  Gift, Globe
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Reveal from "@/components/ui/Reveal";
 
 export const metadata = {
-  title: "Why Choose Us | Inaayika — Trusted Specialty Medicines",
-  description: "Discover why patients and doctors across India trust Inaayika for genuine branded medicines, temp-controlled delivery, IVF, oncology, and specialty healthcare.",
+  title: "Why Choose Us | Inaayika — Handcrafted Premium Jewellery",
+  description:
+    "Discover why style lovers across India and beyond choose Inaayika for handcrafted jewellery — artisan craftsmanship, premium materials, bespoke designs, and personal service.",
 };
 
 const REASONS = [
   {
-    icon: BadgeCheck,
-    color: "#005EB8",
-    title: "100% Genuine Branded Medicines",
-    description: "Every product sourced from authorised distributors and verified manufacturers. No counterfeits, no grey market — guaranteed authenticity on every order.",
-  },
-  {
-    icon: Thermometer,
-    color: "#16C7D9",
-    title: "Temp-Controlled 2°C–8°C Delivery",
-    description: "Specialist handling for temperature-sensitive biologics, IVF hormones, oncology injectables, and vaccines requiring continuous temperature control from warehouse to doorstep.",
-  },
-  {
-    icon: Truck,
-    color: "#005EB8",
-    title: "Pan-India Express Delivery",
-    description: "Reliable courier partnerships across all Indian states. Express overnight slots for urgent medical needs. Real-time tracking and WhatsApp delivery updates.",
+    icon: Gem,
+    title: "Handcrafted by Artisans",
+    description:
+      "Every piece is lovingly made by hand under the personal supervision of Pooja Khan — no mass production, only meticulous craftsmanship and soul in every detail.",
   },
   {
     icon: ShieldCheck,
-    color: "#16C7D9",
-    title: "Verified Supplier Network",
-    description: "Long-standing relationships with licensed pharmaceutical distributors ensure consistent availability of specialty medicines — even rare and high-value drugs.",
+    title: "Premium, Lasting Materials",
+    description:
+      "We use carefully selected, skin-friendly materials and finishes designed to hold their shine — jewellery meant to be treasured, not replaced.",
   },
   {
-    icon: IndianRupee,
-    color: "#005EB8",
-    title: "Affordable & Transparent Pricing",
-    description: "Competitive pricing on specialty medicines with no hidden charges. Free shipping on orders above ₹999. Making quality healthcare accessible for every patient.",
+    icon: Crown,
+    title: "Bespoke & Custom Designs",
+    description:
+      "Dreaming of something one-of-a-kind? We craft custom hair accessories and jewellery tailored to your occasion, outfit, and personal style.",
+  },
+  {
+    icon: Truck,
+    title: "Pan-India & Worldwide Delivery",
+    description:
+      "Beautifully packed and insured, your order ships across India and around the globe with trackable, reliable delivery partners.",
+  },
+  {
+    icon: Gift,
+    title: "Elegant, Gift-Ready Packaging",
+    description:
+      "Each order arrives in signature Inaayika packaging — ready to gift, or to make unboxing your own treasure feel truly special.",
   },
   {
     icon: HeartHandshake,
-    color: "#16C7D9",
-    title: "Dedicated WhatsApp Support",
-    description: "Get prescription guidance, medicine availability checks, bulk order quotes, and delivery coordination — all via WhatsApp for fast, personal assistance.",
+    title: "Personal WhatsApp Concierge",
+    description:
+      "Styling advice, custom enquiries, order updates, and bulk orders — all handled personally over WhatsApp for warm, attentive service.",
   },
 ];
 
 const REVIEWS = [
-  { name: "Dr. Anita Sharma", role: "IVF Specialist, Delhi", rating: 5, text: "Reliable temp-controlled delivery for my patients' IVF medications. Never had a temperature excursion issue. Highly recommended." },
-  { name: "Ramesh Iyer", role: "Cancer Patient, Mumbai", rating: 5, text: "Got my oncology medicines delivered overnight. Genuine products, proper packaging. Inaayika saved me a lot of stress." },
-  { name: "Priya Nair", role: "Caregiver, Kochi", rating: 5, text: "Transplant medicines delivered on time with proper temperature control. The WhatsApp support team is extremely helpful and responsive." },
-  { name: "Arun Gupta", role: "Patient, Jaipur", rating: 5, text: "Affordable pricing on specialty medicines I couldn't find elsewhere. Fast delivery and 100% genuine products." },
-  { name: "Dr. Sunil Mehta", role: "Gynaecologist, Pune", rating: 5, text: "Trust Inaayika for my patients' specialty prescriptions. Consistent stock availability and professional service." },
-  { name: "Kavitha Reddy", role: "Patient, Hyderabad", rating: 5, text: "Ordered IVF medicines with same-day dispatch. Temperature perfectly maintained. Will always order from here." },
+  { name: "Ananya Rao", role: "Bride, Bengaluru", rating: 5, text: "My bridal hair accessories were beyond stunning — handcrafted to match my lehenga perfectly. I felt like royalty on my day." },
+  { name: "Sneha Kapoor", role: "Customer, Delhi", rating: 5, text: "The detailing is exquisite. You can tell each piece is made with love. Packaging was gorgeous too — felt like a luxury gift." },
+  { name: "Meera Iyer", role: "Customer, Mumbai", rating: 5, text: "Ordered a custom set for my sister's wedding. Pooja personally helped me design it over WhatsApp. Absolutely magical." },
+  { name: "Ritika Shah", role: "Customer, Ahmedabad", rating: 5, text: "Elegant, unique, and beautifully finished. I've received so many compliments. Will definitely order again." },
+  { name: "Fatima Sheikh", role: "Customer, Hyderabad", rating: 5, text: "Fast delivery and the quality is premium. These aren't your ordinary accessories — they're little works of art." },
+  { name: "Divya Menon", role: "Customer, Kochi", rating: 5, text: "The DIY kit was such a delight to work with. Beautiful materials and clear guidance. Loved creating my own piece." },
 ];
 
 const STATS = [
-  { value: "12+", label: "Specialty Categories" },
-  { value: "Pan-India", label: "Delivery Network" },
-  { value: "100%", label: "Genuine Products" },
-  { value: "24/7", label: "WhatsApp Support" },
+  { value: "50K+", label: "Happy Customers" },
+  { value: "Worldwide", label: "Trusted Delivery" },
+  { value: "100%", label: "Handcrafted" },
+  { value: "Bespoke", label: "Custom Designs" },
 ];
+
+const COLLECTIONS = ["Necklaces", "Earrings", "Hair Accessories", "Bracelets", "Rings", "DIY Kits"];
 
 export default function WhyUsPage() {
   return (
-    <div className="min-h-screen" style={{ background: "#F7FAFC" }}>
+    <div className="min-h-screen" style={{ background: "#FDFBF7" }}>
 
       {/* ── Hero ── */}
       <section
-        className="relative py-16 md:py-20 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0A2540 0%, #005EB8 60%, #0074e4 100%)" }}
+        className="relative py-20 md:py-28 overflow-hidden border-b border-[#B08D57]/20"
+        style={{ background: "radial-gradient(ellipse 80% 70% at 50% -10%, #0A4430 0%, #003E29 45%, #002216 100%)" }}
       >
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-80 h-80 rounded-full opacity-10" style={{ background: "radial-gradient(circle, #16C7D9, transparent 70%)" }} />
-          <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full opacity-10" style={{ background: "radial-gradient(circle, #16C7D9, transparent 70%)" }} />
+        {/* Serif watermark */}
+        <div aria-hidden="true" className="absolute inset-x-0 top-6 text-center pointer-events-none select-none overflow-hidden">
+          <span className="font-display italic text-[16vw] leading-none text-white/[0.04] whitespace-nowrap">Inaayika</span>
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold mb-5 border border-white/20" style={{ background: "rgba(22,199,217,0.15)", color: "#16C7D9" }}>
-            <Stethoscope className="h-4 w-4" />
-            Trusted by Patients & Doctors Across India
-          </div>
-          <h1 className="text-4xl md:text-5xl   text-white mb-5 leading-tight">
-            Why Choose<br />
-            <span style={{ color: "#16C7D9" }}>Inaayika?</span>
+          <span className="luxe-eyebrow block mb-5">The Inaayika Promise</span>
+          <h1 className="font-display text-5xl md:text-6xl font-medium tracking-wide text-white leading-[1.1] mb-6">
+            Why Choose <span className="italic text-gold-shimmer">Inaayika</span>
           </h1>
-          <p className="text-white/70 text-lg max-w-2xl mx-auto">
-            Genuine branded medicines, specialist temp-controlled delivery, and dedicated support — making specialty healthcare accessible for every patient.
+          <span className="luxe-rule mb-6" />
+          <p className="text-white/65 text-base md:text-lg font-light tracking-wide max-w-2xl mx-auto leading-relaxed">
+            Handcrafted jewellery designed to make you stand out — created with artistry,
+            premium materials, and a personal touch by Pooja Khan.
           </p>
         </div>
       </section>
 
       {/* ── Stats bar ── */}
-      <section className="border-b" style={{ background: "white", borderColor: "#DCE7F2" }}>
-        <div className="max-w-7xl mx-auto px-6 py-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <section className="border-b" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center md:divide-x" style={{ borderColor: "#E9E2D5" }}>
             {STATS.map((stat, i) => (
-              <div key={i}>
-                <p className="text-3xl md:text-4xl font-black mb-1" style={{ color: "#005EB8" }}>{stat.value}</p>
-                <p className="text-sm text-gray-500 font-medium">{stat.label}</p>
-              </div>
+              <Reveal key={i} delay={i * 0.08} className="md:px-6">
+                <p className="font-display text-4xl md:text-5xl font-medium mb-1 text-[#003E29]">{stat.value}</p>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-[#B08D57]">{stat.label}</p>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── Reasons grid ── */}
-      <section className="py-16 md:py-20">
+      <section className="py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl   mb-3" style={{ color: "#0A2540" }}>
-              What Sets Us Apart
+          <Reveal className="text-center mb-16">
+            <span className="luxe-eyebrow block mb-4">What Sets Us Apart</span>
+            <h2 className="font-display text-4xl md:text-5xl font-medium tracking-wide text-neutral-900">
+              Crafted with Intention
             </h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">
-              Not just another pharma platform — here&apos;s why patients and healthcare professionals choose Inaayika.
+            <span className="luxe-rule mt-5" />
+            <p className="text-neutral-500 font-light tracking-wide max-w-2xl mx-auto mt-5 leading-relaxed">
+              Not just another jewellery label — here&apos;s why style lovers return to Inaayika,
+              piece after piece.
             </p>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {REASONS.map((reason, i) => (
-              <div
+              <Reveal
                 key={i}
-                className="group bg-white rounded-2xl p-7 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                style={{ borderColor: "#DCE7F2" }}
+                delay={(i % 3) * 0.08}
+                className="group bg-white p-8 border transition-shadow duration-300 hover:shadow-[0_28px_55px_-30px_rgba(0,34,22,0.28)]"
+                style={{ borderColor: "#E9E2D5" }}
               >
                 <div
-                  className="w-13 h-13 w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110"
-                  style={{ background: `${reason.color}12` }}
+                  className="w-14 h-14 flex items-center justify-center mb-6 border transition-transform duration-300 group-hover:scale-105"
+                  style={{ background: "#F7F3EB", borderColor: "#E9E2D5", color: "#B08D57" }}
                 >
-                  <reason.icon className="h-6 w-6" style={{ color: reason.color }} />
+                  <reason.icon className="h-6 w-6 stroke-[1.5]" />
                 </div>
-                <h3 className="  text-lg mb-2" style={{ color: "#0A2540" }}>{reason.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{reason.description}</p>
-              </div>
+                <h3 className="font-display text-xl font-medium text-neutral-900 mb-2">{reason.title}</h3>
+                <p className="text-neutral-500 text-sm font-light leading-relaxed tracking-wide">{reason.description}</p>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Specialties banner ── */}
-      <section className="py-12" style={{ background: "white", borderTop: "1px solid #DCE7F2", borderBottom: "1px solid #DCE7F2" }}>
+      {/* ── Collections banner ── */}
+      <section className="py-14" style={{ background: "#F7F3EB", borderTop: "1px solid #E9E2D5", borderBottom: "1px solid #E9E2D5" }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-4 flex-shrink-0">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "rgba(0,94,184,0.08)" }}>
-                <FlaskConical className="h-6 w-6" style={{ color: "#005EB8" }} />
+              <div className="w-12 h-12 flex items-center justify-center border" style={{ background: "#FDFBF7", borderColor: "#E9E2D5", color: "#B08D57" }}>
+                <Sparkles className="h-6 w-6 stroke-[1.5]" />
               </div>
               <div>
-                <p className="  text-lg" style={{ color: "#0A2540" }}>Specialty Medicine Categories</p>
-                <p className="text-sm text-gray-500">IVF · Oncology · Transplant · Sexual Wellness · Paediatric · Ayurvedic & more</p>
+                <p className="font-display text-xl font-medium text-neutral-900">Explore Our Collections</p>
+                <p className="text-xs text-neutral-500 font-light tracking-wide">Handcrafted jewellery & accessories for every occasion</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {["IVF Medicines", "Anti-Cancer", "Transplants", "Temp-Controlled", "Biologics", "HGH"].map((tag) => (
-                <span
+              {COLLECTIONS.map((tag) => (
+                <Link
                   key={tag}
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold border"
-                  style={{ background: "rgba(0,94,184,0.06)", borderColor: "#DCE7F2", color: "#005EB8" }}
+                  href="/products"
+                  className="px-4 py-1.5 text-[11px] tracking-[0.15em] uppercase border transition-all"
+                  style={{ background: "#FDFBF7", borderColor: "#E9E2D5", color: "#003E29" }}
                 >
                   {tag}
-                </span>
+                </Link>
               ))}
             </div>
           </div>
@@ -170,72 +176,65 @@ export default function WhyUsPage() {
       </section>
 
       {/* ── Reviews ── */}
-      <section className="py-16 md:py-20" style={{ background: "#F7FAFC" }}>
+      <section className="py-16 md:py-24" style={{ background: "#FDFBF7" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl   mb-3" style={{ color: "#0A2540" }}>
-              What Our Patients Say
+          <Reveal className="text-center mb-16">
+            <span className="luxe-eyebrow block mb-4">Loved Across India</span>
+            <h2 className="font-display text-4xl md:text-5xl font-medium tracking-wide text-neutral-900">
+              What Our Clients Say
             </h2>
-            <p className="text-gray-500">Real experiences from patients and healthcare professionals across India.</p>
-          </div>
+            <span className="luxe-rule mt-5" />
+          </Reveal>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {REVIEWS.map((review, i) => (
-              <div key={i} className="bg-white rounded-2xl p-6 border transition-all duration-300 hover:shadow-lg" style={{ borderColor: "#DCE7F2" }}>
+              <Reveal key={i} delay={(i % 3) * 0.08} className="bg-white p-7 border transition-shadow duration-300 hover:shadow-[0_28px_55px_-30px_rgba(0,34,22,0.28)]" style={{ borderColor: "#E9E2D5" }}>
                 <div className="flex items-center gap-0.5 mb-4">
                   {[...Array(review.rating)].map((_, j) => (
-                    <Star key={j} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <Star key={j} className="h-3.5 w-3.5 fill-[#B08D57] text-[#B08D57]" />
                   ))}
                 </div>
-                <p className="text-gray-700 text-sm leading-relaxed mb-5">&quot;{review.text}&quot;</p>
+                <p className="text-neutral-600 text-sm font-light leading-relaxed tracking-wide mb-6">&ldquo;{review.text}&rdquo;</p>
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0   text-white text-sm"
-                    style={{ background: "linear-gradient(135deg, #005EB8, #16C7D9)" }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-display text-white text-sm border border-[#B08D57]/40"
+                    style={{ background: "#003E29" }}
                   >
                     {review.name.charAt(0)}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm" style={{ color: "#0A2540" }}>{review.name}</p>
-                    <p className="text-xs text-gray-400">{review.role}</p>
+                    <p className="font-medium text-sm text-neutral-900">{review.name}</p>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-[#B08D57]">{review.role}</p>
                   </div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-16" style={{ background: "#0A2540" }}>
-        <div className="max-w-7xl mx-auto px-6 text-center relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 50% 50%, rgba(22,199,217,0.08), transparent 70%)" }} />
-          <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl   text-white mb-4">
-              Ready to Experience the Difference?
-            </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto mb-8">
-              Shop genuine specialty medicines with temp-controlled delivery, transparent pricing, and 24/7 WhatsApp support.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/products">
-                <Button
-                  size="lg"
-                  className="h-13 px-10   text-white rounded-xl"
-                  style={{ background: "#005EB8" }}
-                >
-                  Shop Medicines <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <a
-                href="https://wa.me/919560247619"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 h-13 px-10 rounded-xl   text-white border-2 transition-all hover:opacity-90"
-                style={{ borderColor: "#16C7D9", color: "#16C7D9", height: "3.25rem" }}
-              >
-                Message on WhatsApp
-              </a>
-            </div>
+      <section className="py-20 md:py-24 relative overflow-hidden border-t border-[#B08D57]/20" style={{ background: "radial-gradient(ellipse 80% 80% at 50% 120%, #0A4430 0%, #003E29 45%, #002216 100%)" }}>
+        <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
+          <span className="luxe-eyebrow block mb-5">Begin Your Story</span>
+          <h2 className="font-display text-4xl md:text-5xl font-medium tracking-wide text-white mb-5">
+            Ready to Find Your Signature Piece?
+          </h2>
+          <p className="text-white/60 text-base font-light tracking-wide max-w-2xl mx-auto mb-10 leading-relaxed">
+            Explore our handcrafted collections, or reach out for a bespoke creation made just for you.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="/products" className="btn-luxe-white">
+              Explore the Collection <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+            <a
+              href="https://wa.me/918796449692"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-[11px] uppercase font-medium tracking-[0.3em] border transition-all text-[#E7C983] hover:bg-[#E7C983] hover:text-[#002216]"
+              style={{ borderColor: "#B08D57" }}
+            >
+              <Globe className="h-4 w-4" /> Message on WhatsApp
+            </a>
           </div>
         </div>
       </section>
