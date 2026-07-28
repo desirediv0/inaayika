@@ -9,10 +9,10 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				sans: ['Jost', 'sans-serif'],
-				display: ['Cormorant Garamond', 'Amethysta', 'Georgia', 'serif'],
-				serif: ['Cormorant Garamond', 'Georgia', 'serif'],
-				manrope: ['Manrope', 'sans-serif'],
+				sans: ['Playfair Display', 'serif'],
+				display: ['Playfair Display', 'serif'],
+				serif: ['Playfair Display', 'serif'],
+				manrope: ['Playfair Display', 'serif'],
 			},
 			letterSpacing: {
 				luxe: '0.3em',

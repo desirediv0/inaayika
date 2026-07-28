@@ -7,7 +7,7 @@ import Reveal from "@/components/ui/Reveal";
 
 export const WhyBuySection = () => {
   return (
-    <section className="py-16 md:py-20 font-sans" style={{ background: "#FDFBF7" }}>
+    <section className="py-12 md:py-16 font-sans" style={{ background: "#FDFBF7" }}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 

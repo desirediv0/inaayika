@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { CartProvider } from "@/lib/cart-context";
 import { AuthProvider } from "@/lib/auth-context";
 import { FloatingWhatsApp } from "@/components/ui/FloatingWhatsApp";
+import { FloatingBookCall } from "@/components/ui/FloatingBookCall";
 
 export const metadata = {
   title: "Inaayika | Handcrafted Premium Jewellery",
@@ -22,15 +23,16 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased overflow-x-hidden max-w-full w-full">
         <AuthProvider>
           <CartProvider>
             <Navbar />
-            <main className="min-h-screen">
+            <main className="min-h-screen max-w-full overflow-x-hidden">
               {children}
             </main>
             <Footer />
             <FloatingWhatsApp />
+            <FloatingBookCall />
           </CartProvider>
         </AuthProvider>
       </body>

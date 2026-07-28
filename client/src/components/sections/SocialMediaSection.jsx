@@ -9,7 +9,7 @@ const SOCIALS = [
     accent: "#E1306C",
     accentBg: "rgba(225, 48, 108, 0.08)",
     desc: "Discover the perfect blend of creativity with our exquisite collection of handmade hair accessories! Designed to add elegance to your style.",
-    stats: "50K+ Followers"
+    stats: "50,000+ Followers"
   },
   {
     name: "YouTube",

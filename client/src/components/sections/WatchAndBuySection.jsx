@@ -557,7 +557,7 @@ export default function WatchAndBuySection() {
   if (isLoading) {
     return (
       <section
-        className="relative py-16 md:py-20 overflow-hidden border-y border-[#B08D57]/20"
+        className="relative py-12 md:py-16 overflow-hidden border-y border-[#B08D57]/20"
         style={SECTION_BG}
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -577,7 +577,7 @@ export default function WatchAndBuySection() {
   return (
     <>
       <section
-        className="relative py-16 md:py-20 overflow-hidden border-y border-[#B08D57]/20"
+        className="relative py-12 md:py-16 overflow-hidden border-y border-[#B08D57]/20"
         style={SECTION_BG}
       >
         {/* Giant serif watermark */}

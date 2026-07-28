@@ -23,6 +23,7 @@ import {
 import { getPublishedBanners } from "../controllers/admin.banner.controller.js";
 import { getActiveFlashSales, getActiveProductSections } from "../controllers/public.controller.js";
 import { getActiveVideoReels } from "../controllers/admin.video-reel.controller.js";
+import { getActiveTestimonials } from "../controllers/admin.testimonial.controller.js";
 
 const router = express.Router();
 
@@ -61,5 +62,8 @@ router.get("/price-visibility-settings", getPriceVisibilitySettings);
 
 // Video Reels (Watch and Buy)
 router.get("/video-reels", getActiveVideoReels);
+
+// Testimonials
+router.get("/testimonials", getActiveTestimonials);
 
 export default router;

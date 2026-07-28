@@ -349,14 +349,14 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
         {/* Price */}
         {showPrice ? (
           <div className="flex items-center justify-center gap-2">
+            <span className="text-[14px] font-semibold tracking-[0.08em] text-neutral-900">
+              {formatCurrency(displayPrice)}
+            </span>
             {originalPrice && (
               <span className="text-xs text-neutral-400 line-through font-light">
                 {formatCurrency(originalPrice)}
               </span>
             )}
-            <span className="text-[13px] tracking-[0.08em] text-neutral-800">
-              {formatCurrency(displayPrice)}
-            </span>
           </div>
         ) : (
           <Link href="/auth" className="text-[11px] uppercase tracking-[0.2em] text-neutral-600 hover:text-[#B08D57] transition-colors">

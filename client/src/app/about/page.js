@@ -42,7 +42,7 @@ const values = [
 ];
 
 const CATEGORIES = [
-  "Bespoke Bridal Sets",
+  "Bespoke Bridal Hair Sets",
   "Handcrafted Necklaces",
   "Designer Earrings",
   "Artisan Hair Accessories",
@@ -57,15 +57,25 @@ const features = [
   "Secure Tracked Worldwide Transit",
   "Eco-Friendly Protected Packaging",
   "Direct WhatsApp Sizing Support",
-  "Trusted by 1000+ Happy Customers",
+  "Trusted by 50,000+ Happy Customers",
 ];
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="relative min-h-screen bg-slate-50 font-sans">
+
+      {/* Full Page Logo Watermark */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
+        <img
+          src="/logo.png"
+          alt=""
+          className="w-[90vw] md:w-[70vw] lg:w-[55vw] max-w-[800px] h-auto object-contain select-none opacity-[0.07]"
+          draggable={false}
+        />
+      </div>
 
       {/* Hero Section */}
-      <section className="relative py-16 md:py-24 overflow-hidden bg-hero-dark text-white">
+      <section className="relative py-16 md:py-24 overflow-hidden bg-hero-dark text-white z-10">
         {/* Fine background grid and ambient glows */}
         <div className="absolute inset-0 bg-[radial-gradient(rgba(212,175,55,0.1)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none opacity-80" />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -172,7 +182,7 @@ export default function AboutPage() {
       </section>
 
       {/* Floating Statistics Section */}
-      <section className="relative -mt-10 z-20 px-6 sm:px-8 lg:px-12">
+      <section className="relative z-10 -mt-10 px-6 sm:px-8 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {stats.map((stat, index) => (
@@ -194,7 +204,7 @@ export default function AboutPage() {
       </section>
 
       {/* Philosophy & Jewelry Categories */}
-      <section className="py-20 md:py-28 px-6 sm:px-8 lg:px-12">
+      <section className="relative z-10 py-20 md:py-28 px-6 sm:px-8 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
 
@@ -272,7 +282,7 @@ export default function AboutPage() {
       </section>
 
       {/* Pillars of Integrity (Values) */}
-      <section className="py-20 md:py-24 bg-white border-y border-slate-200 px-6 sm:px-8 lg:px-12 font-sans">
+      <section className="relative z-10 py-20 md:py-24 bg-white border-y border-slate-200 px-6 sm:px-8 lg:px-12 font-sans">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <span
@@ -309,7 +319,7 @@ export default function AboutPage() {
       </section>
 
       {/* Call to Action (CTA) Panel */}
-      <section className="py-20 px-6 sm:px-8 lg:px-12 bg-slate-50 font-sans">
+      <section className="relative z-10 py-20 px-6 sm:px-8 lg:px-12 bg-slate-50 font-sans">
         <div className="max-w-7xl mx-auto">
           <div className="relative rounded-3xl overflow-hidden py-16 px-8 md:px-16 text-center shadow-2xl bg-zinc-950 border border-zinc-800">
             {/* Ambient gold & emerald glowing spheres */}

@@ -1,140 +1,185 @@
-import { PageHero } from "@/components/ui/PageHero";
-import { Shield, Eye, Lock } from "lucide-react";
+import { Lock, Shield, Eye, Database, Cookie, UserCheck, Mail } from "lucide-react";
+import Link from "next/link";
 
 export const metadata = {
-    title: "Privacy Policy | Inaayika",
-    description: "Learn how Inaayika handles customer accounts, secure transactional data, and shipping compliance in accordance with standard e-commerce regulations.",
+  title: "Privacy Policy | INAAYIKA",
+  description: "Read INAAYIKA's Privacy Policy outlining how we collect, use, store, and protect your personal information on www.Inaayika.com.",
 };
 
-const principles = [
-    {
-        icon: Lock,
-        title: "Data Confidentiality",
-        description: "Your contact details, design selections, and order history are kept strictly confidential. We never sell or share customer data."
-    },
-    {
-        icon: Shield,
-        title: "Secure Encryption & Payments",
-        description: "All payments are processed securely with PCI-DSS compliance. We do not store your credit card or payment credentials."
-    },
-    {
-        icon: Eye,
-        title: "Transparent Crafting",
-        description: "We are transparent about our sourcing and custom creation. All designs are crafted in a clean, professional workshop environment."
-    }
-];
-
 export default function PrivacyPolicyPage() {
-    return (
-        <div className="min-h-screen font-sans" style={{ background: "#F7F3EB" }}>
-            <PageHero
-                title="Privacy Policy"
-                description="Our guidelines for securing customer accounts, order details, and secure payment transactions"
-                breadcrumbs={[{ label: "Privacy Policy" }]}
-                variant="default"
-                size="sm"
-            />
+  return (
+    <div className="min-h-screen" style={{ background: "#F7F3EB" }}>
 
-            <section className="py-16 px-6 sm:px-8 lg:px-12">
-                <div className="max-w-4xl mx-auto">
-
-                    {/* Top core pillars */}
-                    <div className="grid md:grid-cols-3 gap-6 mb-12">
-                        {principles.map((item, index) => (
-                            <div key={index} className="rounded-2xl p-6 border shadow-sm flex flex-col items-center text-center" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
-                                <div className="w-12 h-12 bg-green-50/50 text-[#003E29] rounded-xl flex items-center justify-center mb-4">
-                                    <item.icon className="h-5.5 w-5.5" />
-                                </div>
-                                <h3 className="font-display text-slate-900 text-sm mb-2">{item.title}</h3>
-                                <p className="text-slate-500 text-[11px] leading-relaxed">{item.description}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Policy Details */}
-                    <div className="rounded-3xl p-8 md:p-12 border shadow-sm space-y-10" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
-
-                        <div>
-                            <h2 className="font-display text-xl text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                                <span className="w-1.5 h-5 bg-[#003E29] rounded-full" />
-                                Introduction &amp; Regulatory Compliance
-                            </h2>
-                            <p className="text-slate-600 text-sm leading-relaxed mb-3">
-                                Inaayika (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) is committed to protecting your privacy and personal account information. This Privacy Policy details how we collect, use, and safeguard your personal details, custom orders, and payment data in compliance with the **Information Technology Act, 2000** and other applicable consumer protection regulations in India.
-                            </p>
-                        </div>
-
-                        <div>
-                            <h2 className="font-display text-xl text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                                <span className="w-1.5 h-5 bg-[#D4AF37] rounded-full" />
-                                Collection of Customer &amp; User Information
-                            </h2>
-                            <p className="text-slate-600 text-sm leading-relaxed mb-3">
-                                When you access Inaayika or request custom jewellery design sourcing, we collect necessary data to process orders safely:
-                            </p>
-                            <ul className="space-y-2 pl-5 list-disc text-xs md:text-sm text-slate-600">
-                                <li><strong>Identity &amp; Demographics:</strong> Full name, telephone numbers, shipping coordinates, billing addresses, and active email contacts.</li>
-                                <li><strong>Design Documentation:</strong> Customer specifications, design files, sizing parameters, and accessory preferences to build custom designs.</li>
-                                <li><strong>Technical Identifiers:</strong> Log analytics, secure session tokens, cookies, and IP addresses to maintain shopping sessions and prevent fraud.</li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h2 className="font-display text-xl text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                                <span className="w-1.5 h-5 bg-[#003E29] rounded-full" />
-                                Secure Payment Gateway &amp; Financial Data Protection
-                            </h2>
-                            <p className="text-slate-600 text-sm leading-relaxed mb-3">
-                                To ensure the highest level of security for your financial transactions, we integrate secure payment processing:
-                            </p>
-                            <ul className="space-y-2 pl-5 list-disc text-xs md:text-sm text-slate-600">
-                                <li>All online transactions are encrypted using industry-standard **256-bit SSL certificates**.</li>
-                                <li>Payment information (such as credit/debit card numbers, UPI PINs, net banking credentials) is processed directly on secure PCI-DSS compliant servers.</li>
-                                <li>**Inaayika does not store, capture, or have access to** your sensitive financial credentials.</li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h2 className="font-display text-xl text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                                <span className="w-1.5 h-5 bg-[#D4AF37] rounded-full" />
-                                Usage of Customer Data
-                            </h2>
-                            <p className="text-slate-600 text-sm leading-relaxed mb-3">
-                                Collected data is processed exclusively for shipping and custom crafting:
-                            </p>
-                            <ul className="space-y-2 pl-5 list-disc text-xs md:text-sm text-slate-600">
-                                <li>To customize hair accessories, necklaces, and other jewellery designs to your exact requirements.</li>
-                                <li>To share shipping logs (recipient name, address, phone number) with verified courier firms (e.g., Blue Dart, Delhivery) for delivery.</li>
-                                <li>To dispatch order status notifications, payment receipts, or shipment tracking via WhatsApp and email.</li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h2 className="font-display text-xl text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                                <span className="w-1.5 h-5 bg-[#003E29] rounded-full" />
-                                Cookies and Session Tokens
-                            </h2>
-                            <p className="text-slate-600 text-sm leading-relaxed">
-                                Our platform utilizes simple security cookies and storage variables to remember your product cart items, keep you logged into your secure profile dashboard, and analyze browser usage patterns. You can choose to disable cookies through your browser settings, but please note that some essential parts of the shop system may not work correctly as a result.
-                            </p>
-                        </div>
-
-                        <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
-                            <div>
-                                <p className="text-sm font-semibold text-slate-800">Have privacy concerns or data requests?</p>
-                                <p className="text-xs text-slate-500 mt-0.5">Contact our support desk for direct assistance.</p>
-                            </div>
-                            <a
-                                href="mailto:Inaayikabypoojakhan@gmail.com"
-                                className="text-xs text-[#003E29] bg-green-50 px-4 py-2.5 rounded-xl border border-green-100 hover:bg-green-100 transition-colors"
-                            >
-                                Inaayikabypoojakhan@gmail.com
-                            </a>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
+      {/* ── Hero ── */}
+      <section
+        className="relative py-14 md:py-20 overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #002216 0%, #003E29 60%, #005a3c 100%)" }}
+      >
+        <div className="absolute inset-0 pointer-events-none opacity-10">
+          <div className="absolute -top-20 right-0 w-96 h-96 rounded-full" style={{ background: "radial-gradient(circle, #D4AF37, transparent 70%)" }} />
+          <div className="absolute bottom-0 left-10 w-64 h-64 rounded-full" style={{ background: "radial-gradient(circle, #D4AF37, transparent 70%)" }} />
         </div>
-    );
+        <div className="relative z-10 max-w-6xl mx-auto px-6">
+          <div className="flex items-center gap-2 text-xs text-white/50 mb-4 tracking-widest uppercase">
+            <Link href="/" className="hover:text-white/90 transition-colors">Home</Link>
+            <span>/</span>
+            <span className="text-[#D4AF37]">Privacy Policy</span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-display text-white mb-4">
+            Privacy Policy
+          </h1>
+          <p className="text-white/70 max-w-2xl text-base font-sans leading-relaxed">
+            At INAAYIKA, we value the trust you place in us when sharing your personal information.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Main Content ── */}
+      <section className="py-12 px-6 font-sans">
+        <div className="max-w-5xl mx-auto">
+          
+          <div className="mb-8 p-5 rounded-2xl bg-[#003E29]/5 border border-[#003E29]/20 text-sm text-gray-800 leading-relaxed">
+            <p>
+              This Privacy Policy outlines how we collect, use, store, and protect your data when you visit our website www.Inaayika.com or purchase our handcrafted hair accessories and imitation jewelry. By accessing our website and placing an order, you agree to the collection and use of information in accordance with this policy.
+            </p>
+          </div>
+
+          <div className="rounded-3xl p-8 md:p-12 border space-y-10" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
+
+            {/* 1. Information We Collect */}
+            <div>
+              <h2 className="text-xl md:text-2xl mb-4 pb-3 border-b flex items-center gap-3 font-display font-semibold" style={{ color: "#002216", borderColor: "#E9E2D5" }}>
+                <span className="w-2 h-7 rounded-full" style={{ background: "#003E29" }} />
+                1. Information We Collect
+              </h2>
+              <p className="text-gray-600 text-sm mb-4">
+                We collect information necessary to fulfill your orders, provide customer support, and improve your shopping experience:
+              </p>
+              <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
+                <div className="p-4 rounded-xl border border-gray-200 bg-white">
+                  <p className="font-semibold text-[#002216] mb-1">👤 Personal Identifiers:</p>
+                  <p>Name, shipping address, billing address, phone number, and email address provided during checkout or account creation.</p>
+                </div>
+                <div className="p-4 rounded-xl border border-gray-200 bg-white">
+                  <p className="font-semibold text-[#002216] mb-1">🛍️ Order &amp; Transaction Details:</p>
+                  <p>Items purchased, order history, transaction dates, and preferred payment methods. <em>(Note: We do not collect or store credit card numbers, CVVs, UPI PINs, or bank passwords. All payments are processed through secure, PCI-DSS compliant payment gateways).</em></p>
+                </div>
+                <div className="p-4 rounded-xl border border-gray-200 bg-white">
+                  <p className="font-semibold text-[#002216] mb-1">💻 Technical &amp; Browsing Data:</p>
+                  <p>IP address, device type, browser type, and page browsing activity collected automatically via cookies to enhance website navigation and performance.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. How We Use Your Information */}
+            <div>
+              <h2 className="text-xl md:text-2xl mb-4 pb-3 border-b flex items-center gap-3 font-display font-semibold" style={{ color: "#002216", borderColor: "#E9E2D5" }}>
+                <span className="w-2 h-7 rounded-full" style={{ background: "#D4AF37" }} />
+                2. How We Use Your Information
+              </h2>
+              <p className="text-gray-600 text-sm mb-3">We use your data solely for legitimate business purposes, including:</p>
+              <ul className="space-y-2 list-disc pl-5 text-sm text-gray-700 leading-relaxed">
+                <li>Processing, packing, and dispatching your orders.</li>
+                <li>Sending order confirmation updates, tracking numbers, and delivery alerts via SMS, Email, or WhatsApp.</li>
+                <li>Verifying Cash on Delivery (COD) orders prior to dispatch.</li>
+                <li>Resolving customer queries, returns, exchanges, or transit claims.</li>
+                <li>Improving our product range, website performance, and promotional offers.</li>
+              </ul>
+            </div>
+
+            {/* 3. Data Sharing & Third-Party Services */}
+            <div>
+              <h2 className="text-xl md:text-2xl mb-4 pb-3 border-b flex items-center gap-3 font-display font-semibold" style={{ color: "#002216", borderColor: "#E9E2D5" }}>
+                <span className="w-2 h-7 rounded-full" style={{ background: "#003E29" }} />
+                3. Data Sharing &amp; Third-Party Services
+              </h2>
+              <p className="text-gray-600 text-sm mb-4">
+                We <strong>never sell, rent, or trade your personal information</strong> to third-party advertisers. We share your data strictly on a need-to-know basis with trusted partners who assist in operating our store:
+              </p>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div className="p-4 rounded-xl border border-gray-200 bg-white">
+                  <p className="font-semibold text-[#002216] mb-1">🚚 Logistics & Couriers</p>
+                  <p className="text-xs text-gray-600">Shiprocket, Delhivery, Blue Dart, or India Post receive name, address & phone number solely to deliver your package.</p>
+                </div>
+                <div className="p-4 rounded-xl border border-gray-200 bg-white">
+                  <p className="font-semibold text-[#002216] mb-1">💳 Payment Gateways</p>
+                  <p className="text-xs text-gray-600">Authorized payment processors (Razorpay, Paytm) handle payment verification securely.</p>
+                </div>
+                <div className="p-4 rounded-xl border border-gray-200 bg-white">
+                  <p className="font-semibold text-[#002216] mb-1">🌐 Cloud & Hosting</p>
+                  <p className="text-xs text-gray-600">E-commerce platform infrastructure used to host our online store securely.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Cookies & Website Analytics */}
+            <div>
+              <h2 className="text-xl md:text-2xl mb-4 pb-3 border-b flex items-center gap-3 font-display font-semibold" style={{ color: "#002216", borderColor: "#E9E2D5" }}>
+                <span className="w-2 h-7 rounded-full" style={{ background: "#D4AF37" }} />
+                4. Cookies &amp; Website Analytics
+              </h2>
+              <p className="text-gray-700 text-sm leading-relaxed mb-3">
+                Our website uses cookies (small text files saved on your device) to:
+              </p>
+              <ul className="space-y-2 list-disc pl-5 text-sm text-gray-700 leading-relaxed">
+                <li>Remember items in your shopping cart while you browse.</li>
+                <li>Recognize returning visitors for faster checkout.</li>
+                <li>Understand website traffic patterns to improve user navigation.</li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-2">
+                You can choose to disable cookies through your browser settings, though some website features (like saving your cart) may not function optimally as a result.
+              </p>
+            </div>
+
+            {/* 5. Data Security */}
+            <div>
+              <h2 className="text-xl md:text-2xl mb-4 pb-3 border-b flex items-center gap-3 font-display font-semibold" style={{ color: "#002216", borderColor: "#E9E2D5" }}>
+                <span className="w-2 h-7 rounded-full" style={{ background: "#003E29" }} />
+                5. Data Security
+              </h2>
+              <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 text-sm text-gray-800 leading-relaxed">
+                <p>
+                  We implement reasonable administrative, technical, and physical safeguards to keep your personal data secure against unauthorized access, alteration, or disclosure. However, no method of transmission over the Internet or electronic storage is 100% secure, and we encourage you to maintain safe browsing habits.
+                </p>
+              </div>
+            </div>
+
+            {/* 6. Your Rights */}
+            <div>
+              <h2 className="text-xl md:text-2xl mb-4 pb-3 border-b flex items-center gap-3 font-display font-semibold" style={{ color: "#002216", borderColor: "#E9E2D5" }}>
+                <span className="w-2 h-7 rounded-full" style={{ background: "#D4AF37" }} />
+                6. Your Rights
+              </h2>
+              <p className="text-gray-600 text-sm mb-3">You have the right to:</p>
+              <ul className="space-y-2 list-disc pl-5 text-sm text-gray-700 leading-relaxed">
+                <li>Access, update, or correct your personal contact details in your store profile.</li>
+                <li>Request the deletion of your account and customer history from our database (subject to record retention required for legal or tax compliance).</li>
+                <li>Opt out of marketing emails or promotional messages at any time by clicking the &quot;Unsubscribe&quot; link or contacting customer support.</li>
+              </ul>
+            </div>
+
+            {/* 7. Contact Us & Nodal Officer */}
+            <div className="pt-4 border-t border-gray-200">
+              <h2 className="text-xl font-display font-semibold text-[#002216] mb-3 flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-[#003E29]" /> 7. Contact Us &amp; Nodal Officer
+              </h2>
+              <p className="text-xs text-gray-600 mb-4">
+                In accordance with Indian Information Technology rules and Consumer Protection (E-Commerce) Rules, if you have any questions or grievances regarding your data privacy, please contact:
+              </p>
+              <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200 text-sm text-gray-800 space-y-1.5">
+                <p><strong>Data Protection &amp; Grievance Officer:</strong> Pooja Khan</p>
+                <p><strong>Brand Name:</strong> INAAYIKA</p>
+                <p><strong>Email:</strong> <a href="mailto:info@inaayika.com" className="text-[#003E29] underline">info@inaayika.com</a></p>
+                <p><strong>Contact Location:</strong> New Delhi, India – 110001</p>
+                <p className="text-xs text-gray-600 pt-2 border-t border-emerald-200/60">
+                  ⏱ <strong>Response Window:</strong> We acknowledge privacy inquiries within 48 hours and work to address them promptly.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }

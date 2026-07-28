@@ -26,6 +26,7 @@ import {
   Eye,
   Truck,
   Video,
+  Star,
   // Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -357,6 +358,18 @@ export default function DashboardLayout() {
                 href="/video-reels"
                 icon={<Video className="h-[1.125rem] w-[1.125rem]" />}
                 title="Video Reels"
+                hasPermission={hasPermissionFor(
+                  admin,
+                  Resource.BANNERS,
+                  Action.READ
+                )}
+              />
+
+              {/* Testimonials - Single Item */}
+              <NavItem
+                href="/testimonials"
+                icon={<Star className="h-[1.125rem] w-[1.125rem]" />}
+                title="Testimonials"
                 hasPermission={hasPermissionFor(
                   admin,
                   Resource.BANNERS,
@@ -747,6 +760,19 @@ export default function DashboardLayout() {
                 href="/video-reels"
                 icon={<Video className="h-[1.125rem] w-[1.125rem]" />}
                 title="Video Reels"
+                onClick={toggleMobileMenu}
+                hasPermission={hasPermissionFor(
+                  admin,
+                  Resource.BANNERS,
+                  Action.READ
+                )}
+              />
+
+              {/* Testimonials - Single Item */}
+              <NavItem
+                href="/testimonials"
+                icon={<Star className="h-[1.125rem] w-[1.125rem]" />}
+                title="Testimonials"
                 onClick={toggleMobileMenu}
                 hasPermission={hasPermissionFor(
                   admin,

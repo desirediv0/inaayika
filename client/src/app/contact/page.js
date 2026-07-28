@@ -50,7 +50,7 @@ export default function ContactPage() {
 
       {/* Hero */}
       <section
-        className="relative py-16 md:py-20 overflow-hidden"
+        className="relative py-12 md:py-16 overflow-hidden"
         style={{ background: "linear-gradient(135deg, #002216 0%, #003E29 60%, #002216 100%)" }}
       >
         <div className="absolute inset-0 pointer-events-none overflow-hidden">

@@ -123,7 +123,7 @@ const CategoryGrid = () => {
     window.location.reload();
   };
 
-  const sectionCls = `relative py-16 md:py-20 overflow-hidden border-b`;
+  const sectionCls = `relative py-12 md:py-16 overflow-hidden border-b`;
   const sectionStyle = { background: "#FDFBF7", borderColor: "#E9E2D5" };
 
   const Header = () => (

@@ -410,7 +410,7 @@ export default function ProductContent({ slug }) {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden max-w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
         {/* Breadcrumb */}
@@ -771,10 +771,10 @@ export default function ProductContent({ slug }) {
           </div>
 
           {/* Tab Content */}
-          <div className="max-w-4xl">
+          <div className="max-w-full overflow-hidden">
             {activeTab === "description" && (
               <div
-                className="prose prose-sm text-neutral-600 leading-relaxed font-light"
+                className="prose prose-sm max-w-none text-neutral-600 leading-relaxed font-light break-words overflow-x-auto [&_p]:break-words [&_table]:w-full [&_table]:block [&_table]:overflow-x-auto [&_img]:max-w-full [&_img]:h-auto [&_div]:max-w-full [&_span]:break-words"
                 dangerouslySetInnerHTML={{ __html: product.description || "No description provided." }}
               />
             )}
@@ -784,16 +784,18 @@ export default function ProductContent({ slug }) {
                 <table className="w-full">
                   <tbody>
                     <tr className="border-b border-neutral-100 bg-neutral-50/50">
-                      <td className="py-3 px-4   text-neutral-700 w-48">Style Tag</td>
-                      <td className="py-3 px-4 text-neutral-600">Handcrafted Goldsmith Premium Collection</td>
+                      <td className="py-3 px-4 font-semibold text-neutral-700 w-48">Style & Design</td>
+                      <td className="py-3 px-4 text-neutral-600">Handcrafted & Premium Assembled Jewellery / Accessory</td>
                     </tr>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-3 px-4   text-neutral-700">Care Advice</td>
-                      <td className="py-3 px-4 text-neutral-600">Avoid contact with water, perfume, and chemicals. Store in a zip-lock bag.</td>
+                      <td className="py-3 px-4 font-semibold text-neutral-700">Care Advice</td>
+                      <td className="py-3 px-4 text-neutral-600">
+                        &quot;Last On, First Off&quot; rule. Keep away from water, moisture, perfumes &amp; sprays. Store in individual air-tight zip pouches. <Link href="/product-care" className="text-[#003E29] underline font-medium ml-1">Full Care Guide →</Link>
+                      </td>
                     </tr>
                     <tr className="border-neutral-100">
-                      <td className="py-3 px-4   text-neutral-700">Material</td>
-                      <td className="py-3 px-4 text-neutral-600">925 Sterling Silver / 24K Gold Plating</td>
+                      <td className="py-3 px-4 font-semibold text-neutral-700">Craftsmanship</td>
+                      <td className="py-3 px-4 text-neutral-600">High-grade alloy metals, electroplated finish, synthetic pearls &amp; flexible jewelry wire.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -803,44 +805,55 @@ export default function ProductContent({ slug }) {
             {activeTab === "reviews" && <ReviewSection product={product} />}
 
             {activeTab === "shipping" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  {
-                    title: "Shipping & Delivery",
-                    icon: Truck,
-                    rows: [
-                      ["Metro Cities", "24 – 48 Hours"],
-                      ["Rest of India", "3 – 5 Business Days"],
-                      ["Premium Gift Wrap", "Available on checkout"],
-                      ["Free Shipping", "Available all over India"],
-                    ],
-                  },
-                  {
-                    title: "Returns & Exchange",
-                    icon: RefreshCw,
-                    rows: [
-                      ["Easy Returns", "2-day window, unboxing video mandatory"],
-                      ["Seal & Tags", "Must be intact (returns not accepted if seal is broken)"],
-                      ["Support", "WhatsApp support active 9AM - 6PM"],
-                      ["Process", "Doorstep pickup for exchange items"],
-                    ],
-                  },
-                ].map(({ title, icon: Icon, rows }) => (
-                  <div key={title} className="rounded-2xl p-6 border border-neutral-100 bg-neutral-50/40">
-                    <h3 className="text-sm   uppercase tracking-wider text-neutral-900 mb-4 flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-neutral-800" />
-                      {title}
-                    </h3>
-                    <dl className="space-y-3">
-                      {rows.map(([dt, dd]) => (
-                        <div key={dt} className="text-xs">
-                          <dt className="  text-neutral-800 uppercase tracking-wide">{dt}</dt>
-                          <dd className="text-neutral-500 mt-0.5">{dd}</dd>
-                        </div>
-                      ))}
-                    </dl>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                    {
+                      title: "Shipping & Dispatch Timelines",
+                      icon: Truck,
+                      rows: [
+                        ["Ready Stock", "Dispatched in 24–48 Hours"],
+                        ["Handmade / Custom", "Crafted in 3–5 Business Days before shipping"],
+                        ["Domestic Transit", "3–7 Working Days (Metro vs Non-Metro pin codes)"],
+                        ["Order Tracking", "Live SMS / Email / WhatsApp tracking link upon dispatch"],
+                      ],
+                    },
+                    {
+                      title: "Returns & Transit Claims",
+                      icon: RefreshCw,
+                      rows: [
+                        ["Unboxing Video", "Mandatory 360° continuous unboxing video within 24-48 hrs"],
+                        ["Return Window", "Specified per product; custom orders strictly non-returnable"],
+                        ["RTO Fee", "₹100 re-shipping fee applies if parcel returned due to wrong address"],
+                        ["Refund Time", "Processed via original method within 7–10 days of warehouse receipt"],
+                      ],
+                    },
+                  ].map(({ title, icon: Icon, rows }) => (
+                    <div key={title} className="rounded-2xl p-6 border border-neutral-100 bg-neutral-50/40">
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-900 mb-4 flex items-center gap-2">
+                        <Icon className="h-4 w-4 text-[#003E29]" />
+                        {title}
+                      </h3>
+                      <dl className="space-y-3">
+                        {rows.map(([dt, dd]) => (
+                          <div key={dt} className="text-xs">
+                            <dt className="font-semibold text-neutral-800 uppercase tracking-wide">{dt}</dt>
+                            <dd className="text-neutral-600 mt-0.5">{dd}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 flex flex-wrap items-center justify-between gap-3">
+                  <span>📹 <strong>Transit Damage Claim:</strong> Continuous 360° uncut unboxing video mandatory within 24-48 hrs of delivery.</span>
+                  <div className="flex gap-4">
+                    <Link href="/shipping-policy" className="underline font-semibold text-[#003E29]">Shipping Policy</Link>
+                    <Link href="/return-policy" className="underline font-semibold text-[#003E29]">Return Policy</Link>
+                    <Link href="/cancellation-policy" className="underline font-semibold text-[#003E29]">Cancellation Policy</Link>
                   </div>
-                ))}
+                </div>
               </div>
             )}
           </div>

@@ -17,6 +17,11 @@ import {
   FiInstagram, FiYoutube, FiShoppingBag,
 } from "react-icons/fi";
 import {
+  TbSearch, TbShoppingBag, TbHeart, TbUser, TbChevronDown, TbMenu2,
+  TbX, TbHome, TbLayoutGrid, TbPackage, TbMapPin, TbLogout,
+  TbMail, TbPhone, TbBrandWhatsapp, TbChevronRight,
+} from "react-icons/tb";
+import {
   User, Package, MapPin, Heart, LogOut,
   ChevronDown, Sparkles,
 } from "lucide-react";
@@ -57,10 +62,10 @@ function MobileNavItem({ href, icon: Icon, label, onClick, badge }) {
       onClick={onClick}
       className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-all duration-200"
     >
-      <Icon className="h-5 w-5 text-[#B08D57] flex-shrink-0 stroke-[1.5]" />
-      <span className="text-sm font-normal tracking-wide">{label}</span>
+      <Icon className="h-5.5 w-5.5 text-[#003E29] flex-shrink-0 stroke-[1.75]" />
+      <span className="text-sm font-medium tracking-wide text-gray-800">{label}</span>
       {badge > 0 && (
-        <span className="ml-auto bg-[#003E29] text-white text-[10px] px-2 py-0.5 rounded-full min-w-[20px] text-center">
+        <span className="ml-auto bg-[#003E29] text-white text-[10px] font-bold min-w-[20px] h-[20px] px-1.5 rounded-full flex items-center justify-center border border-white shadow-sm">
           {badge}
         </span>
       )}
@@ -99,10 +104,10 @@ export function Navbar() {
   const [isFading, setIsFading] = useState(false);
 
   const announcements = [
-    "Summer Sale - Extra 25% off on Orders above ₹2500",
+    "Summer Sale - Extra 25% off on Orders above ₹5000",
+    "Complimentary Free Doorstep Delivery Across India on Orders Above ₹5000",
     "Introducing Lab-grown diamonds set in pure 925 sterling silver. Shop Now",
     "Summer Sale - Extra 15% off on Orders above ₹1500 + 5% off on Prepaid Orders",
-    "Complimentary Doorstep Delivery Across India"
   ];
 
   useEffect(() => {
@@ -202,15 +207,16 @@ export function Navbar() {
         </div>
 
         {/* ── TOP INFO BAR (Green Bar) ── */}
-        <div className="text-white/90 text-[11px] font-light py-2.5 px-4" style={{ background: "#002216", letterSpacing: "0.2em" }}>
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="text-white/90 text-[11px] font-light py-2 px-3 sm:px-4 overflow-hidden w-full" style={{ background: "#002216", letterSpacing: "0.2em" }}>
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
             {/* Left: Social Links */}
-            <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
               <a
                 href="https://www.instagram.com/all_about_hair_accesories?igsh=MTJ6bXA2YnZ5M2k3Ng%3D%3D"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white/70 hover:text-[#D4AF37] transition-colors"
+                aria-label="Instagram"
+                className="text-[#E1306C] hover:scale-110 transition-transform duration-300 flex items-center justify-center"
               >
                 <FiInstagram className="h-3.5 w-3.5" />
               </a>
@@ -218,23 +224,24 @@ export function Navbar() {
                 href="https://www.youtube.com/@Inaayikabypoojakhan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white/70 hover:text-[#D4AF37] transition-colors"
+                aria-label="YouTube"
+                className="text-[#FF0000] hover:scale-110 transition-transform duration-300 flex items-center justify-center"
               >
                 <FiYoutube className="h-3.5 w-3.5" />
               </a>
             </div>
 
             {/* Center: Promo Text */}
-            <div className="text-center tracking-[0.1em] sm:tracking-[0.2em] md:tracking-[0.3em] text-[9px] sm:text-[10px] uppercase font-light overflow-hidden h-4 flex items-center justify-center min-w-[280px] md:min-w-[400px]">
-              <div className={`transition-all duration-500 transform flex items-center justify-center gap-2 ${isFading ? "opacity-0 -translate-y-2" : "opacity-100 translate-y-0"}`}>
-                <span className="text-[#D4AF37]">✦</span>
-                <span>{announcements[currentAnnouncementIndex]}</span>
-                <span className="text-[#D4AF37]">✦</span>
+            <div className="flex-1 text-center tracking-[0.05em] sm:tracking-[0.2em] md:tracking-[0.3em] text-[9px] sm:text-[10px] uppercase font-light overflow-hidden h-4 flex items-center justify-center">
+              <div className={`transition-all duration-500 transform flex items-center justify-center gap-1.5 truncate ${isFading ? "opacity-0 -translate-y-2" : "opacity-100 translate-y-0"}`}>
+                <span className="text-[#D4AF37] flex-shrink-0">✦</span>
+                <span className="truncate">{announcements[currentAnnouncementIndex]}</span>
+                <span className="text-[#D4AF37] flex-shrink-0">✦</span>
               </div>
             </div>
 
             {/* Right: Cart, Search, Help Links */}
-            <div className="flex items-center gap-5 text-[9px] sm:text-[10px] tracking-[0.25em] uppercase font-light">
+            <div className="hidden md:flex items-center gap-4 text-[9px] sm:text-[10px] tracking-[0.25em] uppercase font-light flex-shrink-0">
               <Link href="/cart" className="hover:text-[#D4AF37] transition-colors">Cart</Link>
               <button onClick={() => setIsSearchOpen(true)} className="hover:text-[#D4AF37] transition-colors uppercase tracking-[0.25em]">Search</button>
               <Link href="/contact" className="hover:text-[#D4AF37] transition-colors">Help</Link>
@@ -245,10 +252,21 @@ export function Navbar() {
         {/* ── MAIN HEADER NAVBAR ── */}
         <div className="border-b bg-transparent" style={{ borderColor: "#E9E2D5" }}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
-            <div className="relative flex items-center justify-between h-20 gap-4">
+            <div className="relative flex items-center justify-between h-20 md:h-22 gap-3 sm:gap-4">
 
-              {/* Left Side: Desktop Menu Items */}
-              <div className="hidden lg:flex items-center gap-9">
+              {/* Left Side: Logo */}
+              <div className="flex items-center flex-shrink-0">
+                <Link href="/" className="flex items-center gap-2">
+                  <img
+                    src="/logo.png"
+                    alt="Inaayika Logo"
+                    className="h-12 md:h-14 w-auto object-contain transition-transform duration-300 hover:scale-105"
+                  />
+                </Link>
+              </div>
+
+              {/* Center: Desktop Navigation Menu */}
+              <div className="hidden lg:flex items-center justify-center gap-8 xl:gap-10 mx-auto">
                 <Link href="/" className="luxe-link text-neutral-800 hover:text-[#003E29] transition-colors">
                   Home
                 </Link>
@@ -266,55 +284,47 @@ export function Navbar() {
                     Maison <FiChevronDown className="h-3 w-3" />
                   </span>
                   {activeDropdown === "pages" && (
-                    <div className="absolute left-0 top-full pt-3 z-50">
-                      <div className="bg-white border py-3 min-w-[220px]" style={{ borderColor: "#E9E2D5", boxShadow: "0 24px 50px -20px rgba(0,34,22,0.18)" }}>
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50">
+                      <div className="bg-white border py-3 min-w-[230px]" style={{ borderColor: "#E9E2D5", boxShadow: "0 24px 50px -20px rgba(0,34,22,0.18)" }}>
                         <Link href="/about" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">About Us</Link>
-                        <Link href="/contact" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Contact</Link>
+                        <Link href="/contact" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Contact Us</Link>
+                        <Link href="/why-us" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Why Choose Us</Link>
+                        <Link href="/product-care" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Product Care Guide</Link>
                         <Link href="/shipping-policy" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Shipping Policy</Link>
                         <Link href="/return-policy" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Return Policy</Link>
+                        <Link href="/cancellation-policy" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Order Cancellation</Link>
                         <Link href="/privacy-policy" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Privacy Policy</Link>
+                        <Link href="/terms" className="block px-6 py-2.5 text-[11px] tracking-[0.22em] uppercase text-neutral-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors">Terms &amp; Conditions</Link>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Center: Logo / Brand Title — absolutely centered on desktop */}
-              <div className="flex-1 lg:flex-none flex justify-center lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:z-10">
-                <Link href="/" className="flex items-center justify-center  ">
-                  <Image src="/logo.png" alt="Logo" width={80} height={80} />
-                  {/* <div className="flex flex-col items-center justify-center">
-                    <span className="font-display text-2xl md:text-3xl   tracking-[0.2em] uppercase" style={{ color: "#003E29" }}>
-                      INAAYIKA
-                    </span>
-                    <span className="text-[7px] md:text-[9px] font-sans tracking-[0.4em] text-gray-400 mt-1 uppercase">
-                      Handcrafted Jewellery
-                    </span>
-                  </div> */}
-                </Link>
-              </div>
-
-              {/* Right Side: Icons / Action Elements */}
-              <div className="flex items-center gap-2 sm:gap-4">
+              {/* Right Side: Tabler Action Icons & Cart Badge */}
+              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                 {/* Search */}
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="p-2 text-neutral-800 hover:text-[#B08D57] transition-colors"
+                  className="p-2 text-neutral-800 hover:text-[#003E29] transition-colors flex items-center justify-center"
                   aria-label="Search"
                 >
-                  <FiSearch className="h-5 w-5 stroke-[1.5]" />
+                  <TbSearch className="h-6 w-6 stroke-[1.75]" />
                 </button>
 
-                {/* Cart */}
+                {/* Cart with Fixed Badge */}
                 <ClientOnly>
                   <Link
                     href="/cart"
-                    className="p-2 text-neutral-800 hover:text-[#B08D57] transition-colors relative animate-fade-in"
+                    className="p-2 text-neutral-800 hover:text-[#003E29] transition-colors relative flex items-center justify-center animate-fade-in"
                     aria-label="Cart"
                   >
-                    <FiShoppingBag className="h-5 w-5 stroke-[1.5]" />
+                    <TbShoppingBag className="h-6 w-6 stroke-[1.75]" />
                     {cartCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 text-white text-[9px] font-medium rounded-full w-4.5 h-4.5 flex items-center justify-center border border-white" style={{ background: "#003E29" }}>
+                      <span
+                        className="absolute -top-1 -right-1 text-white text-[10px] font-extrabold rounded-full min-w-[19px] h-[19px] px-1 flex items-center justify-center border-2 border-white shadow-md pointer-events-none"
+                        style={{ background: "#003E29" }}
+                      >
                         {cartCount}
                       </span>
                     )}
@@ -324,10 +334,10 @@ export function Navbar() {
                 {/* Wishlist */}
                 <Link
                   href="/wishlist"
-                  className="p-2 text-neutral-800 hover:text-[#B08D57] transition-colors relative"
+                  className="p-2 text-neutral-800 hover:text-[#003E29] transition-colors relative flex items-center justify-center"
                   aria-label="Wishlist"
                 >
-                  <FiHeart className="h-5 w-5 stroke-[1.5]" />
+                  <TbHeart className="h-6 w-6 stroke-[1.75]" />
                 </Link>
 
                 {/* Account */}
@@ -345,7 +355,7 @@ export function Navbar() {
                   className="lg:hidden p-2 text-black hover:opacity-75 transition-opacity ml-1"
                   aria-label="Menu"
                 >
-                  <FiMenu className="h-6 w-6 stroke-[2.5]" />
+                  <TbMenu2 className="h-7 w-7 stroke-[2]" />
                 </button>
               </div>
 
@@ -472,8 +482,8 @@ function AccountDropdown({ user, isAuthenticated, activeDropdown, setActiveDropd
             <AvatarCircle name={user?.name} />
           ) : (
             <>
-              <FiUser className="h-5 w-5 stroke-[1.5]" />
-              <FiChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
+              <TbUser className="h-6 w-6 stroke-[1.75]" />
+              <TbChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
             </>
           )}
         </button>
@@ -653,12 +663,12 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
           className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
           style={{ borderColor: "#E9E2D5", background: "#F7F3EB" }}
         >
-          <Image src="/logo.png" alt="Inaayika" width={130} height={44} className="h-10 w-auto object-contain" />
+          <img src="/logo.png" alt="Inaayika Logo" className="h-10 w-auto object-contain" />
           <button
             onClick={onClose}
-            className="p-2 text-gray-500 hover:text-gray-700 transition-all"
+            className="p-2 text-gray-500 hover:text-gray-700 transition-all rounded-full hover:bg-gray-200/50"
           >
-            <FiX className="h-5 w-5" />
+            <TbX className="h-6 w-6 stroke-[2]" />
           </button>
         </div>
 
@@ -692,10 +702,10 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto py-2">
           <div className="px-2 space-y-0.5">
-            <MobileNavItem href="/products" icon={FiPackage} label="All Jewellery" onClick={onClose} />
-            <MobileNavItem href="/categories" icon={FiSearch} label="Categories" onClick={onClose} />
-            <MobileNavItem href="/wishlist" icon={FiHeart} label="Wishlist" onClick={onClose} />
-            <MobileNavItem href="/cart" icon={FiShoppingCart} label="Cart" onClick={onClose} badge={cartCount} />
+            <MobileNavItem href="/products" icon={TbShoppingBag} label="All Jewellery" onClick={onClose} />
+            <MobileNavItem href="/categories" icon={TbLayoutGrid} label="Categories" onClick={onClose} />
+            <MobileNavItem href="/wishlist" icon={TbHeart} label="Wishlist" onClick={onClose} />
+            <MobileNavItem href="/cart" icon={TbShoppingBag} label="Cart" onClick={onClose} badge={cartCount} />
           </div>
 
           {categories.length > 0 && (
@@ -705,9 +715,9 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
                   key={cat.id}
                   href={`/category/${cat.slug}`}
                   onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-all tracking-wide"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-all tracking-wide font-medium"
                 >
-                  <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "#B08D57" }} />
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#B08D57" }} />
                   {cat.name}
                 </Link>
               ))}
@@ -717,7 +727,7 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
                 className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-[0.2em] font-medium transition-colors hover:bg-[#F7F3EB]"
                 style={{ color: "#003E29" }}
               >
-                View All <FiChevronRight className="h-4 w-4" />
+                View All <TbChevronRight className="h-4 w-4" />
               </Link>
             </DrawerSection>
           )}
@@ -726,25 +736,35 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
             {isAuthenticated && (
               <DrawerSection title="Account">
                 {[
-                  { href: "/account", icon: FiUser, label: "Profile" },
-                  { href: "/account/orders", icon: FiPackage, label: "My Orders" },
-                  { href: "/account/addresses", icon: FiMapPin, label: "Addresses" },
+                  { href: "/account", icon: TbUser, label: "Profile" },
+                  { href: "/account/orders", icon: TbPackage, label: "My Orders" },
+                  { href: "/account/addresses", icon: TbMapPin, label: "Addresses" },
                 ].map(({ href, icon, label }) => (
                   <MobileNavItem key={href} href={href} icon={icon} label={label} onClick={onClose} />
                 ))}
                 <button
                   onClick={() => { handleLogout(); onClose(); }}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-all"
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all font-medium"
                 >
-                  <FiLogOut className="h-5 w-5 flex-shrink-0" />
-                  <span className="font-medium">Sign Out</span>
+                  <TbLogout className="h-5 w-5 flex-shrink-0 stroke-[1.75]" />
+                  <span>Sign Out</span>
                 </button>
               </DrawerSection>
             )}
           </ClientOnly>
 
-          <DrawerSection title="More">
-            {FOOTER_LINKS.map(({ href, label }) => (
+          <DrawerSection title="More & Policies">
+            {[
+              { href: "/about", label: "About Us" },
+              { href: "/contact", label: "Contact Us" },
+              { href: "/why-us", label: "Why Choose Us" },
+              { href: "/product-care", label: "Product Care Guide" },
+              { href: "/shipping-policy", label: "Shipping Policy" },
+              { href: "/return-policy", label: "Return Policy" },
+              { href: "/cancellation-policy", label: "Cancellation Policy" },
+              { href: "/privacy-policy", label: "Privacy Policy" },
+              { href: "/terms", label: "Terms & Conditions" },
+            ].map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -758,26 +778,24 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
 
           {/* Contact block */}
           <div
-            className="mx-3 mt-3 p-4 space-y-2.5"
-            style={{ background: "#F7F3EB", border: "1px solid #E9E2D5" }}
+            className="mx-3 mt-4 p-4 space-y-3 rounded-xl border"
+            style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}
           >
-            <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-primary transition-colors">
-              <FiMail className="h-4 w-4 flex-shrink-0" style={{ color: "#003E29" }} />
+            <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-2.5 text-xs text-gray-600 hover:text-[#003E29] transition-colors">
+              <TbMail className="h-4.5 w-4.5 flex-shrink-0 text-[#003E29]" />
               {CONTACT.email}
             </a>
-            <a href={`tel:${CONTACT.phone}`} className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-primary transition-colors">
-              <FiPhone className="h-4 w-4 flex-shrink-0" style={{ color: "#003E29" }} />
+            <a href={`tel:${CONTACT.phone}`} className="flex items-center gap-2.5 text-xs text-gray-600 hover:text-[#003E29] transition-colors">
+              <TbPhone className="h-4.5 w-4.5 flex-shrink-0 text-[#003E29]" />
               {CONTACT.phone}
             </a>
             <a
               href={`https://wa.me/${CONTACT.whatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2.5 text-xs font-semibold text-green-600 hover:text-green-700 transition-colors"
+              className="flex items-center gap-2.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors pt-1 border-t border-gray-200"
             >
-              <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-              </svg>
+              <TbBrandWhatsapp className="h-5 w-5 flex-shrink-0 text-emerald-600" />
               Message us on WhatsApp
             </a>
           </div>
@@ -789,73 +807,111 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
 
 /* ── Mobile Bottom Nav ──────────────────────── */
 function BottomNav({ pathname, isAuthenticated, cartCount, onMenuOpen }) {
+  const navItems = [
+    {
+      href: "/",
+      label: "Home",
+      icon: TbHome,
+      isActive: pathname === "/",
+    },
+    {
+      href: "/products",
+      label: "Shop",
+      icon: TbLayoutGrid,
+      isActive: pathname.startsWith("/products"),
+    },
+    {
+      href: "/cart",
+      label: "Cart",
+      icon: TbShoppingBag,
+      isCart: true,
+      isActive: pathname === "/cart",
+    },
+    {
+      href: isAuthenticated ? "/account" : "/auth",
+      label: "Account",
+      icon: TbUser,
+      isActive: pathname.startsWith("/account") || pathname.startsWith("/auth"),
+    },
+    {
+      label: "More",
+      icon: TbMenu2,
+      onClick: onMenuOpen,
+      isActive: false,
+    },
+  ];
+
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#FDFBF7] border-t z-50" style={{ borderColor: "#E9E2D5" }}>
-      <div className="grid grid-cols-5 h-14">
-        {/* Home */}
-        <Link
-          href="/"
-          className={cn("flex flex-col items-center justify-center gap-0.5 transition-colors", pathname === "/" ? "text-primary" : "text-gray-400")}
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-          <span className="text-[9px] font-semibold">Home</span>
-        </Link>
+    <nav
+      className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#FDFBF7]/95 backdrop-blur-md border-t z-50 shadow-[0_-6px_30px_rgba(0,34,22,0.08)]"
+      style={{ borderColor: "#E9E2D5" }}
+    >
+      <div className="grid grid-cols-5 h-15 items-center px-1">
+        {navItems.map((item, idx) => {
+          const Icon = item.icon;
 
-        {/* Collections */}
-        <Link
-          href="/products"
-          className={cn("flex flex-col items-center justify-center gap-0.5 transition-colors", pathname.startsWith("/products") ? "text-primary" : "text-gray-400")}
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
-          </svg>
-          <span className="text-[9px] font-semibold">Collections</span>
-        </Link>
-
-        {/* Cart — center elevated */}
-        <Link
-          href="/cart"
-          className="flex flex-col items-center justify-center gap-0.5 relative"
-        >
-          <div
-            className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg -mt-4 relative border-2 border-[#B08D57]/50"
-            style={{ background: "#003E29" }}
-          >
-            <FiShoppingCart className="h-5 w-5 text-white" />
-            <ClientOnly>
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1">
-                  {cartCount}
+          if (item.isCart) {
+            return (
+              <Link
+                key={idx}
+                href={item.href}
+                className="flex flex-col items-center justify-center relative active:scale-95 transition-transform"
+              >
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center shadow-xl -mt-5 relative border-2 border-[#D4AF37] transition-all duration-300 hover:scale-105"
+                  style={{ background: "#003E29" }}
+                >
+                  <Icon className="h-6 w-6 text-white stroke-[1.75]" />
+                  <ClientOnly>
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-red-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center px-1 border-2 border-white shadow-md">
+                        {cartCount}
+                      </span>
+                    )}
+                  </ClientOnly>
+                </div>
+                <span
+                  className={cn(
+                    "text-[10px] font-semibold tracking-wider mt-0.5 transition-colors",
+                    item.isActive ? "text-[#003E29]" : "text-gray-600"
+                  )}
+                >
+                  {item.label}
                 </span>
+              </Link>
+            );
+          }
+
+          if (item.onClick) {
+            return (
+              <button
+                key={idx}
+                onClick={item.onClick}
+                className="flex flex-col items-center justify-center gap-0.5 text-gray-500 hover:text-[#003E29] active:scale-95 transition-all py-1"
+              >
+                <Icon className="h-5.5 w-5.5 stroke-[1.75]" />
+                <span className="text-[10px] font-semibold tracking-wider">{item.label}</span>
+              </button>
+            );
+          }
+
+          return (
+            <Link
+              key={idx}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center gap-0.5 py-1 transition-all active:scale-95 relative",
+                item.isActive ? "text-[#003E29]" : "text-gray-500 hover:text-neutral-800"
               )}
-            </ClientOnly>
-          </div>
-          <span className="text-[9px] font-semibold text-gray-400 mt-0.5">Cart</span>
-        </Link>
-
-        {/* Account */}
-        <Link
-          href={isAuthenticated ? "/account" : "/auth"}
-          className={cn("flex flex-col items-center justify-center gap-0.5 transition-colors", pathname.startsWith("/account") || pathname === "/auth" ? "text-primary" : "text-gray-400")}
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" />
-          </svg>
-          <span className="text-[9px] font-semibold">Account</span>
-        </Link>
-
-        {/* More */}
-        <button
-          onClick={onMenuOpen}
-          className="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-          <span className="text-[9px] font-semibold">More</span>
-        </button>
+            >
+              <Icon className="h-5.5 w-5.5 stroke-[1.75]" />
+              <span className="text-[10px] font-semibold tracking-wider">{item.label}</span>
+              {item.isActive && (
+                <span className="w-1 h-1 rounded-full bg-[#D4AF37] absolute bottom-0" />
+              )}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

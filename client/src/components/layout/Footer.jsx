@@ -25,13 +25,23 @@ export const Footer = () => {
   return (
     <footer className="font-sans" style={{ background: "#002216" }}>
       {/* ── Brand strip ── */}
-      <div className="border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-14 text-center">
-          <p className="luxe-eyebrow mb-4">Handcrafted with love, by Pooja Khan</p>
+      <div className="border-b border-white/10 py-14 md:py-18 relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10 flex flex-col items-center">
+          <span className="text-[#D4AF37] text-xs md:text-sm uppercase tracking-[0.4em] font-medium mb-4">
+            ✦ Handcrafted with Love, by Pooja Khan ✦
+          </span>
 
-          <img src="/logo.png" alt="Inaayika Logo" className="h-20 w-auto mx-auto mt-6 opacity-75 object-contain" />
-          <p className="text-white/50 text-sm font-light tracking-wide max-w-md mx-auto mt-5 leading-relaxed">
-            Exclusive designs in imitation jewellery. Trusted by 50,000+ customers.
+          <div className="my-6">
+            <img
+              src="/logo.png"
+              alt="Inaayika Logo"
+              className="h-24 md:h-32 w-auto mx-auto object-contain filter brightness-0 invert drop-shadow-[0_0_25px_rgba(212,175,55,0.6)] transition-transform duration-300 hover:scale-105"
+            />
+          </div>
+
+          <p className="text-white/85 text-base md:text-lg font-light tracking-wide max-w-xl mx-auto leading-relaxed mt-2">
+            Exclusive designs in handcrafted &amp; imitation jewellery. <br className="hidden sm:inline" />
+            <span className="text-[#D4AF37] font-medium">Loved by 50,000+ Happy Customers Across India &amp; Globally.</span>
           </p>
         </div>
       </div>
@@ -149,7 +159,17 @@ export const Footer = () => {
               </li>
               <li>
                 <Link href="/return-policy" className={FOOTER_LINK_CLS}>
-                  Return Policy
+                  Return &amp; Replacement Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/cancellation-policy" className={FOOTER_LINK_CLS}>
+                  Order Cancellation Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/product-care" className={FOOTER_LINK_CLS}>
+                  Product Care Guide
                 </Link>
               </li>
               <li>
@@ -165,32 +185,32 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 5: Social / Follow */}
+          {/* Column 5: Social & Contact */}
           <div>
             <h4 className={FOOTER_HEADING_CLS}>Follow Us</h4>
-            <div className="flex gap-3 mb-8">
+            <div className="flex gap-3 mb-6">
               <a
                 href="https://www.instagram.com/all_about_hair_accesories?igsh=MTJ6bXA2YnZ5M2k3Ng%3D%3D"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="w-10 h-10 flex items-center justify-center border border-white/20 text-white/70 hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all duration-300"
+                className="w-10 h-10 flex items-center justify-center border border-[#E1306C]/40 text-[#E1306C] hover:bg-[#E1306C] hover:text-white transition-all duration-300 rounded-lg"
               >
-                <Instagram className="h-4 w-4 stroke-[1.5]" />
+                <Instagram className="h-4 w-4 stroke-[2]" />
               </a>
               <a
                 href="https://www.youtube.com/@Inaayikabypoojakhan"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="YouTube"
-                className="w-10 h-10 flex items-center justify-center border border-white/20 text-white/70 hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all duration-300"
+                className="w-10 h-10 flex items-center justify-center border border-[#FF0000]/40 text-[#FF0000] hover:bg-[#FF0000] hover:text-white transition-all duration-300 rounded-lg"
               >
-                <Youtube className="h-4 w-4 stroke-[1.5]" />
+                <Youtube className="h-4 w-4 stroke-[2]" />
               </a>
             </div>
 
-            <h4 className={FOOTER_HEADING_CLS.replace("mb-7", "mb-4")}>Contact</h4>
-            <p className="text-white/55 text-[13px] font-light tracking-wide mb-1.5">+91 87964 49692</p>
+            <h4 className={FOOTER_HEADING_CLS.replace("mb-7", "mb-3")}>Contact Us</h4>
+            <p className="text-white/55 text-[13px] font-light tracking-wide mb-1">+91 87964 49692</p>
             <p className="text-white/55 text-[13px] font-light tracking-wide break-all">
               Inaayikabypoojakhan@gmail.com
             </p>
@@ -200,44 +220,39 @@ export const Footer = () => {
       </div>
 
       {/* ── Bottom Bar ── */}
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-5">
-            {/* Left: Email */}
-            <div className="text-[11px] tracking-[0.25em] uppercase order-1 md:order-none">
-              <a
-                href="mailto:Inaayikabypoojakhan@gmail.com"
-                className="text-white/45 hover:text-[#D4AF37] transition-colors"
-              >
-                Inaayikabypoojakhan@gmail.com
-              </a>
-            </div>
-
-            <div className="flex items-center gap-3 order-3 md:order-none">
-              <span className="text-[10px] text-white/35 uppercase tracking-[0.25em] mr-2">Secure Payments</span>
-              <img src="/visa.png" alt="Visa" className="h-6 w-auto object-contain bg-white/5 p-0.5 rounded" />
-              <img src="/mc.png" alt="MasterCard" className="h-6 w-auto object-contain bg-white/5 p-0.5 rounded" />
-              <img src="/upi.png" alt="UPI" className="h-6 w-auto object-contain bg-white/5 p-0.5 rounded" />
-              <img src="/paypal.png" alt="PayPal" className="h-6 w-auto object-contain bg-white/5 p-0.5 rounded" />
+      <div className="border-t border-white/10 pb-28 lg:pb-8 pt-8">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            
+            {/* Payment Icons */}
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <span className="text-[10px] text-white/40 uppercase tracking-[0.25em]">100% Secure Payments</span>
+              <div className="flex items-center gap-2.5">
+                <img src="/visa.png" alt="Visa" className="h-6 w-auto object-contain bg-white/5 p-1 rounded border border-white/10" />
+                <img src="/mc.png" alt="MasterCard" className="h-6 w-auto object-contain bg-white/5 p-1 rounded border border-white/10" />
+                <img src="/upi.png" alt="UPI" className="h-6 w-auto object-contain bg-white/5 p-1 rounded border border-white/10" />
+                <img src="/paypal.png" alt="PayPal" className="h-6 w-auto object-contain bg-white/5 p-1 rounded border border-white/10" />
+              </div>
             </div>
 
             {/* Right: Copyright + Designed by credit */}
-            <div className="flex flex-col items-center md:items-end gap-1.5 order-2 md:order-none">
-              <div className="text-[11px] text-white/35 tracking-[0.25em] uppercase">
-                © {new Date().getFullYear()} Inaayika
+            <div className="flex flex-col items-center md:items-end gap-1.5 text-center md:text-right">
+              <div className="text-[11px] text-white/60 tracking-[0.25em] uppercase font-medium">
+                © {new Date().getFullYear()} INAAYIKA BY POOJA KHAN
               </div>
-              <div className="text-[11px] text-white/35 tracking-[0.25em] uppercase">
-                Designed by{" "}
+              <div className="text-[10px] text-white/40 tracking-[0.25em] uppercase">
+                Designed &amp; Developed by{" "}
                 <a
                   href="https://desirediv.com"
                   target="_blank"
-                  rel="noopener"
-                  className="text-white/60 hover:text-[#D4AF37] transition-colors"
+                  rel="noopener noreferrer"
+                  className="text-[#D4AF37] hover:underline font-bold"
                 >
-                  Desire Div
+                  DESIRE DIV
                 </a>
               </div>
             </div>
+
           </div>
         </div>
       </div>

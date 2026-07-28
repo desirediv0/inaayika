@@ -5,6 +5,8 @@ import TrustBadgesSection from "@/components/sections/TrustBadgesSection";
 import HomePageContent from "@/components/sections/HomePageContent";
 import WatchAndBuySection from "@/components/sections/WatchAndBuySection";
 import { WhyBuySection } from "@/components/sections/WhyBuySection";
+import TestimonialsCarousel from "@/components/sections/TestimonialsCarousel";
+import HomeFAQs from "@/components/sections/HomeFAQs";
 // import FeaturedOffers from "@/components/sections/FeaturedOffers";
 import {
   ColdChainBanner,
@@ -40,6 +42,12 @@ export default function Home() {
 
         {/* Cold chain delivery banner */}
         <ColdChainBanner />
+
+        {/* Testimonials Carousel */}
+        <TestimonialsCarousel />
+
+        {/* FAQ Section */}
+        <HomeFAQs />
 
         {/* Why Choose Us */}
         <WhyBuySection />

@@ -1,6 +1,6 @@
 import {
   Crown, Sparkles, Paintbrush, Truck, Users,
-  MessageSquare, Star, ArrowRight, Award, Gift
+  MessageSquare, ArrowRight, Award, Gift
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -38,7 +38,7 @@ const REASONS = [
   {
     icon: Users,
     color: "#B08D57",
-    title: "Loved by 50K+ Customers",
+    title: "Loved by 50,000+ Customers",
     description: "Trusted by thousands of style lovers across India and globally for weddings, festivals, and personal celebrations. Our reviews speak for themselves.",
   },
   {
@@ -49,17 +49,8 @@ const REASONS = [
   },
 ];
 
-const REVIEWS = [
-  { name: "Meera Deshmukh", role: "Bride, Mumbai", rating: 5, text: "I ordered the custom hair accessories for my wedding. Pooja Khan did an outstanding job! The quality of materials and packaging was extremely premium." },
-  { name: "Ananya Sen", role: "DIY Enthusiast, Kolkata", rating: 5, text: "The DIY kits are so fun and easy to use! Sourced premium beads and wires. I successfully created a matching necklace for my outfit." },
-  { name: "Shruti Hegde", role: "Customer, Bangalore", rating: 5, text: "Absolutely loved the bracelets! Fast delivery and great customer care support. Will definitely be purchasing more for gifting." },
-  { name: "Rohini Sharma", role: "Customer, Delhi", rating: 5, text: "Inaayika's hair accessories are the best in the market. True craftsmanship that you can feel in every single detail. Worth every rupee!" },
-  { name: "Jasmin Kaur", role: "Caregiver, Punjab", rating: 5, text: "Got custom matching hair pins for my bridesmaids. They were all in love! Shipping was fast and the boxes were super cute." },
-  { name: "Preeti Patel", role: "Customer, Ahmedabad", rating: 5, text: "Excellent customer service on WhatsApp. They assisted me with choosing colors and sizing. The delivery arrived perfectly on time." },
-];
-
 const STATS = [
-  { value: "50K+", label: "Happy Customers" },
+  { value: "50,000+", label: "Happy Customers" },
   { value: "Delhi Craft", label: "Artisan Workshop" },
   { value: "100%", label: "Handcrafted Promise" },
   { value: "Worldwide", label: "Tracked Shipping" },
@@ -153,11 +144,11 @@ export default function WhyUsPage() {
               </div>
               <div>
                 <p className="font-display text-lg font-medium text-neutral-900">Bridal Hair Accessories & Kits</p>
-                <p className="text-xs text-neutral-500 font-light tracking-wide mt-0.5">Artisan Hair Ornaments · Bespoke Bridal Sets · Designer Earrings · DIY Accessories</p>
+                <p className="text-xs text-neutral-500 font-light tracking-wide mt-0.5">Artisan Hair Ornaments · Bespoke Bridal Hair Sets · Designer Earrings · DIY Accessories</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 justify-center lg:justify-end">
-              {["Handcrafted", "Bridal Accessories", "Bespoke Bridal Sets", "Insured Shipping", "Keepsake Box"].map((tag) => (
+              {["Handcrafted", "Bridal Hair Accessories", "Bespoke Bridal Hair Sets", "Insured Shipping", "Keepsake Box"].map((tag) => (
                 <span
                   key={tag}
                   className="px-3.5 py-1.5 text-[10px] tracking-wider uppercase border font-medium"
@@ -171,46 +162,8 @@ export default function WhyUsPage() {
         </div>
       </section>
 
-      {/* ── Reviews ── */}
-      <section className="py-16 md:py-24" style={{ background: "#FDFBF7" }}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="luxe-eyebrow block mb-3">Happy Clients</span>
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-medium tracking-wide text-neutral-900 mb-4">
-              What Our Patrons Say
-            </h2>
-            <span className="luxe-rule" />
-            <p className="text-neutral-500 font-light text-sm max-w-xl mx-auto mt-4 tracking-wide">Real experiences from style lovers and creators across the world.</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {REVIEWS.map((review, i) => (
-              <div key={i} className="bg-white p-7 border transition-all duration-300 hover:shadow-lg" style={{ borderColor: "#E9E2D5" }}>
-                <div className="flex items-center gap-0.5 mb-4">
-                  {[...Array(review.rating)].map((_, j) => (
-                    <Star key={j} className="h-3.5 w-3.5 fill-[#B08D57] text-[#B08D57]" />
-                  ))}
-                </div>
-                <p className="text-neutral-600 text-xs font-light leading-relaxed tracking-wide mb-6 italic">&quot;{review.text}&quot;</p>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-medium text-white text-xs"
-                    style={{ background: "linear-gradient(135deg, #003E29, #B08D57)" }}
-                  >
-                    {review.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-display font-medium text-sm text-neutral-900">{review.name}</p>
-                    <p className="text-[10px] text-neutral-400 tracking-wider uppercase mt-0.5">{review.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── CTA ── */}
-      <section className="py-16 md:py-20 bg-hero-dark border-t" style={{ borderColor: "#E9E2D5" }}>
+      <section className="py-12 md:py-16 bg-hero-dark border-t" style={{ borderColor: "#E9E2D5" }}>
         <div className="max-w-7xl mx-auto px-6 text-center relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 50% 50%, rgba(176,141,87,0.06), transparent 70%)" }} />
           <div className="relative z-10">

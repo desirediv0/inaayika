@@ -1319,3 +1319,66 @@ export const videoReels = {
     return api.patch(`/api/admin/video-reels/${reelId}/toggle-active`);
   },
 };
+
+// Testimonials Management
+export const testimonials = {
+  getTestimonials: (params = {}) => {
+    return api.get("/api/admin/testimonials", { params });
+  },
+  getTestimonialById: (testimonialId: string) => {
+    return api.get(`/api/admin/testimonials/${testimonialId}`);
+  },
+  createTestimonial: (data: {
+    name: string;
+    role?: string;
+    rating?: number;
+    text: string;
+    displayOrder?: number;
+    isActive?: boolean;
+    image?: File;
+  }) => {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    if (data.role) formData.append("role", data.role);
+    if (data.rating !== undefined) formData.append("rating", data.rating.toString());
+    formData.append("text", data.text);
+    if (data.displayOrder !== undefined) formData.append("displayOrder", data.displayOrder.toString());
+    if (data.isActive !== undefined) formData.append("isActive", data.isActive.toString());
+    if (data.image) formData.append("image", data.image);
+
+    return api.post("/api/admin/testimonials", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  updateTestimonial: (
+    testimonialId: string,
+    data: {
+      name?: string;
+      role?: string;
+      rating?: number;
+      text?: string;
+      displayOrder?: number;
+      isActive?: boolean;
+      image?: File | null;
+    }
+  ) => {
+    const formData = new FormData();
+    if (data.name !== undefined) formData.append("name", data.name);
+    if (data.role !== undefined) formData.append("role", data.role || "");
+    if (data.rating !== undefined) formData.append("rating", data.rating.toString());
+    if (data.text !== undefined) formData.append("text", data.text);
+    if (data.displayOrder !== undefined) formData.append("displayOrder", data.displayOrder.toString());
+    if (data.isActive !== undefined) formData.append("isActive", data.isActive.toString());
+    if (data.image) formData.append("image", data.image);
+
+    return api.put(`/api/admin/testimonials/${testimonialId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  deleteTestimonial: (testimonialId: string) => {
+    return api.delete(`/api/admin/testimonials/${testimonialId}`);
+  },
+  toggleActive: (testimonialId: string) => {
+    return api.patch(`/api/admin/testimonials/${testimonialId}/toggle`);
+  },
+};
