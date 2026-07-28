@@ -28,7 +28,7 @@ import {
 
 /* ── Constants ─────────────────────────────── */
 const CONTACT = {
-  email: "Inaayikabypoojakhan@gmail.com",
+  email: "info@inaayika.com",
   phone: "+91 87964 49692",
   whatsapp: "918796449692",
 };

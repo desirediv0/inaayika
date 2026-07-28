@@ -85,7 +85,7 @@ function AuthForm() {
         {/* Bottom tagline */}
         <div className="relative z-10">
           <p className="text-white/30 text-xs">
-            Inaayikabypoojakhan@gmail.com &nbsp;·&nbsp; +91 87964 49692
+            info@inaayika.com &nbsp;·&nbsp; +91 87964 49692
           </p>
         </div>
       </div>

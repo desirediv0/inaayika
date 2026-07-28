@@ -8,7 +8,7 @@ export const getStoreConfig = () => {
   return {
     // Store Information
     storeName: process.env.STORE_NAME || "Inaayika",
-    storeEmail: process.env.STORE_EMAIL || "inaayika@gmail.com",
+    storeEmail: process.env.STORE_EMAIL || "info@inaayika.com",
     storePhone: process.env.STORE_PHONE || "+91 95602 47619",
     storeAddress: process.env.STORE_ADDRESS || "India",
 
@@ -24,14 +24,14 @@ export const getStoreConfig = () => {
       process.env.FROM_EMAIL ||
       process.env.STORE_EMAIL ||
       process.env.SMTP_USER ||
-      "inaayika@gmail.com",
+      "info@inaayika.com",
 
     // Website Information
     websiteUrl: process.env.WEBSITE_URL || "https://inaayika.com",
     supportEmail:
       process.env.SUPPORT_EMAIL ||
       process.env.STORE_EMAIL ||
-      "inaayika@gmail.com",
+      "info@inaayika.com",
 
     // Social Media (optional)
     socialFacebook: process.env.SOCIAL_FACEBOOK || "",

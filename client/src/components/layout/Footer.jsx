@@ -212,7 +212,9 @@ export const Footer = () => {
             <h4 className={FOOTER_HEADING_CLS.replace("mb-7", "mb-3")}>Contact Us</h4>
             <p className="text-white/55 text-[13px] font-light tracking-wide mb-1">+91 87964 49692</p>
             <p className="text-white/55 text-[13px] font-light tracking-wide break-all">
-              Inaayikabypoojakhan@gmail.com
+              <a href="mailto:info@inaayika.com" className="hover:text-[#D4AF37] transition-colors">
+                info@inaayika.com
+              </a>
             </p>
           </div>
 

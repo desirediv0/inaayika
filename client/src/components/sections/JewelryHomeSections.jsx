@@ -162,7 +162,14 @@ export function ColdChainBanner() {
             </div>
             <div className="p-8">
               <span className="text-[9px] tracking-[0.35em] uppercase" style={{ color: "#B08D57" }}>Designed by the Founder</span>
-              <h3 className="font-display text-2xl font-medium text-neutral-900 mt-1.5 mb-2">@meandshiningstars</h3>
+              <a
+                href="https://www.instagram.com/all_about_hair_accesories?igsh=MTJ6bXA2YnZ5M2k3Ng=="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block hover:opacity-80 transition-opacity"
+              >
+                <h3 className="font-display text-2xl font-medium text-neutral-900 mt-1.5 mb-2">@all_about_hair_accesories</h3>
+              </a>
               <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide">
                 Pooja Khan personally designs and supervises the creation of every singular hair accessory, ensuring unmatched quality and attention to detail.
               </p>

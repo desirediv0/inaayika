@@ -146,14 +146,14 @@ export default function ContactPage() {
 
               {/* Email Card */}
               <a
-                href="mailto:Inaayikabypoojakhan@gmail.com"
+                href="mailto:info@inaayika.com"
                 className="group bg-white rounded-2xl p-5 border border-gray-100 hover:border-[#D4AF37]/30 hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center sm:col-span-2"
               >
                 <div className="w-11 h-11 bg-amber-50 text-[#D4AF37] border border-amber-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-[#D4AF37] group-hover:text-white transition-all">
                   <Mail className="h-4.5 w-4.5" />
                 </div>
                 <h4 className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Corporate Email</h4>
-                <p className="text-xs text-[#003E29] break-all">Inaayikabypoojakhan@gmail.com</p>
+                <p className="text-xs text-[#003E29] break-all">info@inaayika.com</p>
                 <p className="text-[10px] text-gray-400 mt-1">Styling &amp; Custom order help within 24 hours</p>
               </a>
 
