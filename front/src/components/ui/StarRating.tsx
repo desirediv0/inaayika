@@ -1,33 +1,5 @@
 import { useState } from "react";
 
-function HalfStarIcon({ fill = "full" }: { fill: "full" | "half" | "empty" }) {
-  const id = `half-star-${Math.random().toString(36).slice(2, 9)}`;
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      className="h-4 w-4 inline-block"
-    >
-      <defs>
-        <linearGradient id={id}>
-          <stop
-            offset={fill === "full" ? "100%" : fill === "half" ? "50%" : "0%"}
-            stopColor="#B08D57"
-          />
-          <stop
-            offset={fill === "full" ? "100%" : fill === "half" ? "50%" : "0%"}
-            stopColor="#d1d5db"
-          />
-        </linearGradient>
-      </defs>
-      <path
-        fill={`url(#${id})`}
-        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-      />
-    </svg>
-  );
-}
-
 export function StarRatingDisplay({ rating }: { rating: number }) {
   const fullStars = Math.floor(rating);
   const hasHalf = rating % 1 >= 0.25 && rating % 1 < 0.75;
@@ -82,7 +54,6 @@ export function StarRatingInput({
     <div className="flex items-center gap-1">
       <div className="flex items-center">
         {ratings.map((r) => {
-          const isHalf = r % 1 === 0.5;
           const isFilled = r <= activeVal;
           const isHalfFilled = !isFilled && r - 0.5 <= activeVal;
 

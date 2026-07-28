@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { testimonials } from "@/api/adminService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Search,
   Plus,
@@ -12,7 +12,6 @@ import {
   Loader2,
   ArrowLeft,
   Image as ImageIcon,
-  MoreVertical,
   Quote,
   ToggleLeft,
   ToggleRight,
@@ -23,7 +22,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDropzone } from "react-dropzone";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { useLanguage } from "@/context";
 import { StarRatingInput, StarRatingDisplay } from "@/components/ui/StarRating";
 
 function TestimonialForm({
@@ -34,7 +32,6 @@ function TestimonialForm({
   testimonialId?: string;
 }) {
   const navigate = useNavigate();
-  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [formLoading, setFormLoading] = useState(mode === "edit");
   const [formData, setFormData] = useState({
@@ -234,7 +231,6 @@ function TestimonialForm({
 
 function TestimonialsList() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
