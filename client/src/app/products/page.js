@@ -82,7 +82,7 @@ function ProductsContent() {
   const [allAttributes, setAllAttributes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [viewCols, setViewCols] = useState(4); // 2, 3, 4, 5
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
 
@@ -96,7 +96,8 @@ function ProductsContent() {
     size: true
   });
 
-  const [priceRange, setPriceRange] = useState({ min: minPrice || 0, max: maxPrice || 1000 });
+  const [maxPossiblePrice, setMaxPossiblePrice] = useState(2000);
+  const [priceRange, setPriceRange] = useState({ min: minPrice ? Number(minPrice) : 0, max: maxPrice ? Number(maxPrice) : 2000 });
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [pagination, setPagination] = useState({ page: pageParam, limit: 12, total: 0, pages: 0 });
 
@@ -109,22 +110,30 @@ function ProductsContent() {
   /* ── Sync search input ── */
   useEffect(() => { setSearchInput(filters.search || ""); }, [filters.search]);
 
-  /* ── Fetch Filter Details ── */
+  /* ── Fetch Max Price and Filter Details ── */
   useEffect(() => {
     Promise.all([
       fetchApi("/public/categories"),
       fetchApi("/public/filter-attributes"),
-    ]).then(([catRes, attrRes]) => {
-      setCategories(catRes.data.categories || []);
-      setColors(attrRes.data.colors || []);
-      setSizes(attrRes.data.sizes || []);
-      if (Array.isArray(attrRes.data.attributes)) {
+      fetchApi("/public/products/max-price"),
+    ]).then(([catRes, attrRes, maxPriceRes]) => {
+      setCategories(catRes.data?.categories || []);
+      setColors(attrRes.data?.colors || []);
+      setSizes(attrRes.data?.sizes || []);
+      if (Array.isArray(attrRes.data?.attributes)) {
         setAllAttributes(attrRes.data.attributes);
       } else {
         const attrs = [];
-        if (attrRes.data.colors?.length) attrs.push({ id: "color-attr", name: "Color", values: attrRes.data.colors });
-        if (attrRes.data.sizes?.length) attrs.push({ id: "size-attr", name: "Size", values: attrRes.data.sizes });
+        if (attrRes.data?.colors?.length) attrs.push({ id: "color-attr", name: "Color", values: attrRes.data.colors });
+        if (attrRes.data?.sizes?.length) attrs.push({ id: "size-attr", name: "Size", values: attrRes.data.sizes });
         setAllAttributes(attrs);
+      }
+      if (maxPriceRes.data?.maxPrice) {
+        const fetchedMax = Math.ceil(maxPriceRes.data.maxPrice);
+        setMaxPossiblePrice(fetchedMax);
+        if (!maxPrice) {
+          setPriceRange((prev) => ({ ...prev, max: fetchedMax }));
+        }
       }
     }).catch(console.error);
   }, []);
@@ -134,38 +143,29 @@ function ProductsContent() {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        let response;
-        if (filters.productType) {
-          const q = new URLSearchParams({ limit: String(pagination.limit * pagination.page) });
-          response = await fetchApi(`/public/products/type/${filters.productType}?${q}`);
-          const all = response.data?.products || [];
-          const s = (pagination.page - 1) * pagination.limit;
-          setProducts(all.slice(s, s + pagination.limit));
-          setPagination((p) => ({ ...p, total: all.length, pages: Math.ceil(all.length / p.limit) }));
-        } else {
-          const q = new URLSearchParams({
-            page: String(pagination.page),
-            limit: String(pagination.limit),
-            sort: ["createdAt", "updatedAt", "name", "price", "featured"].includes(filters.sort) ? filters.sort : "createdAt",
-            order: filters.order,
-          });
-          if (filters.search) q.append("search", filters.search);
-          if (filters.category) q.append("category", filters.category);
-          if (filters.minPrice) q.append("minPrice", filters.minPrice);
-          if (filters.maxPrice) q.append("maxPrice", filters.maxPrice);
+        const q = new URLSearchParams({
+          page: String(pagination.page),
+          limit: String(pagination.limit),
+          sort: filters.sort || "createdAt",
+          order: filters.order || "desc",
+        });
+        if (filters.search) q.append("search", filters.search);
+        if (filters.category) q.append("category", filters.category);
+        if (filters.productType) q.append("productType", filters.productType);
+        if (filters.minPrice) q.append("minPrice", filters.minPrice);
+        if (filters.maxPrice) q.append("maxPrice", filters.maxPrice);
 
-          const attrIds = new Set();
-          if (selectedColors.length > 0) { q.append("color", selectedColors[0]); selectedColors.forEach((id) => attrIds.add(id)); }
-          if (selectedSizes.length > 0) { q.append("size", selectedSizes[0]); selectedSizes.forEach((id) => attrIds.add(id)); }
-          Object.keys(selectedAttributes).forEach((k) => {
-            if (k !== "color" && k !== "size") (selectedAttributes[k] || []).forEach((id) => attrIds.add(id));
-          });
-          if (attrIds.size > 0) q.append("attributeValueIds", [...attrIds].join(","));
+        const attrIds = new Set();
+        if (selectedColors.length > 0) { q.append("color", selectedColors[0]); selectedColors.forEach((id) => attrIds.add(id)); }
+        if (selectedSizes.length > 0) { q.append("size", selectedSizes[0]); selectedSizes.forEach((id) => attrIds.add(id)); }
+        Object.keys(selectedAttributes).forEach((k) => {
+          if (k !== "color" && k !== "size") (selectedAttributes[k] || []).forEach((id) => attrIds.add(id));
+        });
+        if (attrIds.size > 0) q.append("attributeValueIds", [...attrIds].join(","));
 
-          response = await fetchApi(`/public/products?${q}`);
-          setProducts(response.data.products || []);
-          setPagination(response.data.pagination || {});
-        }
+        const response = await fetchApi(`/public/products?${q}`);
+        setProducts(response.data?.products || []);
+        setPagination(response.data?.pagination || { page: 1, limit: 12, total: 0, pages: 0 });
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -192,11 +192,15 @@ function ProductsContent() {
     router.push(pairs.length ? `?${pairs.join("&")}` : window.location.pathname, { scroll: false });
   };
 
-  const handleFilterChange = (name, value) => {
-    const nf = { ...filters, [name]: value };
+  const handleMultipleFiltersChange = (updates) => {
+    const nf = { ...filters, ...updates };
     setFilters(nf);
     updateURL(nf);
     if (pagination.page !== 1) setPagination((p) => ({ ...p, page: 1 }));
+  };
+
+  const handleFilterChange = (name, value) => {
+    handleMultipleFiltersChange({ [name]: value });
   };
 
   const handleAttrChange = (attrName, valueId) => {
@@ -211,7 +215,7 @@ function ProductsContent() {
   const clearFilters = () => {
     const cf = { search: "", category: "", productType: "", color: "", size: "", minPrice: "", maxPrice: "", sort: "createdAt", order: "desc" };
     setFilters(cf); setSelectedColors([]); setSelectedSizes([]); setSelectedAttributes({});
-    setPriceRange({ min: 0, max: 1000 });
+    setPriceRange({ min: 0, max: maxPossiblePrice });
     updateURL(cf); setPagination((p) => ({ ...p, page: 1 }));
   };
 
@@ -224,9 +228,15 @@ function ProductsContent() {
       featured: ["featured", "desc"]
     };
     const [sort, order] = map[e.target.value] || ["createdAt", "desc"];
-    const nf = { ...filters, sort, order };
-    setFilters(nf);
-    updateURL(nf);
+    handleMultipleFiltersChange({ sort, order });
+  };
+
+  const getSortValue = () => {
+    if (filters.sort === "price" && filters.order === "asc") return "price-asc";
+    if (filters.sort === "price" && filters.order === "desc") return "price-desc";
+    if (filters.sort === "name") return "name";
+    if (filters.sort === "featured") return "featured";
+    return "default";
   };
 
   const handlePageChange = (p) => {
@@ -264,12 +274,12 @@ function ProductsContent() {
             <li key={cat.id}>
               <button
                 onClick={() => handleFilterChange("category", filters.category === cat.slug ? "" : cat.slug)}
-                className={`text-xs flex items-center justify-between w-full transition-colors ${filters.category === cat.slug ? "text-[#003E29]  " : "text-zinc-500 hover:text-zinc-950"
+                className={`text-xs flex items-center justify-between w-full transition-colors ${filters.category === cat.slug ? "text-[#003E29] font-bold" : "text-zinc-500 hover:text-zinc-950"
                   }`}
               >
                 <span>{cat.name}</span>
-                {cat.productCount !== undefined && (
-                  <span className="text-[10px] text-zinc-400 font-medium">{cat.productCount}</span>
+                {cat._count?.products !== undefined && (
+                  <span className="text-[10px] text-zinc-400 font-medium">{cat._count.products}</span>
                 )}
               </button>
             </li>
@@ -287,19 +297,21 @@ function ProductsContent() {
           <input
             type="range"
             min="0"
-            max="2000"
+            max={maxPossiblePrice}
             value={priceRange.max}
-            onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) })}
-            className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-1 rounded-lg"
+            onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 0 })}
+            className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-1.5 rounded-lg"
           />
           <div className="flex items-center justify-between text-xs text-zinc-500">
             <span>Price: ₹{priceRange.min} — ₹{priceRange.max}</span>
             <button
               onClick={() => {
-                handleFilterChange("minPrice", String(priceRange.min));
-                handleFilterChange("maxPrice", String(priceRange.max));
+                handleMultipleFiltersChange({
+                  minPrice: String(priceRange.min),
+                  maxPrice: String(priceRange.max),
+                });
               }}
-              className="px-4 py-1.5 bg-[#003E29] text-white text-[10px]   tracking-widest uppercase hover:bg-[#002e1f] transition-colors"
+              className="px-4 py-1.5 bg-[#003E29] text-white text-[10px] tracking-widest uppercase hover:bg-[#002e1f] transition-colors rounded"
             >
               Filter
             </button>
@@ -328,7 +340,7 @@ function ProductsContent() {
                         className="w-3.5 h-3.5 rounded-full border border-zinc-200"
                         style={{ backgroundColor: c.hexCode || "#fff" }}
                       />
-                      <span className={active ? "  text-[#003E29]" : ""}>{c.name}</span>
+                      <span className={active ? "font-bold text-[#003E29]" : ""}>{c.name}</span>
                     </div>
                   </button>
                 </li>
@@ -352,7 +364,7 @@ function ProductsContent() {
                 <li key={s.id}>
                   <button
                     onClick={() => handleAttrChange("Size", s.id)}
-                    className={`text-xs block text-left w-full transition-colors ${active ? "text-[#003E29]  " : "text-zinc-500 hover:text-zinc-950"
+                    className={`text-xs block text-left w-full transition-colors ${active ? "text-[#003E29] font-bold" : "text-zinc-500 hover:text-zinc-950"
                       }`}
                   >
                     {s.display || s.name}
@@ -370,14 +382,14 @@ function ProductsContent() {
     <div className="min-h-screen font-sans" style={{ background: "#FDFBF7" }}>
 
       {/* ── Header Breadcrumb & Title ── */}
-      <div className="relative w-full h-[200px] border-b flex items-center justify-center overflow-hidden mb-10" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+      <div className="relative w-full h-[160px] sm:h-[200px] border-b flex items-center justify-center overflow-hidden mb-6 sm:mb-10" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
         <div className="text-center relative z-10">
           <div className="text-[9px] uppercase tracking-[0.35em] flex items-center justify-center gap-2 mb-3" style={{ color: "#B08D57" }}>
             <Link href="/" className="hover:text-[#003E29] transition-colors">Home</Link>
             <span>·</span>
             <span>Shop</span>
           </div>
-          <h1 className="font-display text-5xl font-medium text-neutral-900 tracking-wide">The Collection</h1>
+          <h1 className="font-display text-3xl sm:text-5xl font-medium text-neutral-900 tracking-wide">The Collection</h1>
           <span className="luxe-rule mt-4" />
         </div>
         <div className="absolute right-0 top-0 bottom-0 w-[350px] opacity-20 md:opacity-100 pointer-events-none">
@@ -390,8 +402,25 @@ function ProductsContent() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
+
+        {/* Mobile Filter Toggle Accordion */}
+        <div className="block lg:hidden mb-6">
+          <button
+            onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+            className="w-full py-3 px-4 bg-white border border-[#E9E2D5] rounded-xl flex items-center justify-between text-xs uppercase tracking-wider font-semibold text-[#003E29] shadow-sm"
+          >
+            <span>Filter Options {activeCount > 0 ? `(${activeCount} Active)` : ""}</span>
+            <span>{mobileFilterOpen ? "▲ Hide" : "▼ Show Filters"}</span>
+          </button>
+          {mobileFilterOpen && (
+            <div className="mt-3 p-4 bg-white border border-[#E9E2D5] rounded-xl shadow-md space-y-4">
+              <SidebarContent />
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
 
           {/* ── Left Sidebar (3 cols) ── */}
           <aside className="lg:col-span-3 hidden lg:block border-r pr-8" style={{ borderColor: "#E9E2D5" }}>
@@ -399,13 +428,13 @@ function ProductsContent() {
           </aside>
 
           {/* ── Right Product Area (9 cols) ── */}
-          <div className="lg:col-span-9 space-y-8">
+          <div className="lg:col-span-9 space-y-6 sm:space-y-8">
 
             {/* Top Promo Banner inside Shop area */}
             <div className="relative overflow-hidden border flex flex-col md:flex-row items-stretch" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
-              <div className="p-8 md:p-12 flex flex-col justify-center flex-1">
+              <div className="p-6 md:p-12 flex flex-col justify-center flex-1">
                 <span className="luxe-eyebrow mb-3">Complimentary Shipping</span>
-                <h3 className="font-display text-2xl font-medium text-neutral-900 mb-2">Free Shipping on Orders Over ₹999</h3>
+                <h3 className="font-display text-xl sm:text-2xl font-medium text-neutral-900 mb-2">Free Shipping on Orders Over ₹999</h3>
                 <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide mb-6">
                   For the terms of the campaign, check our details page. Handcrafted adornments delivered to your doorstep.
                 </p>
@@ -418,7 +447,7 @@ function ProductsContent() {
                   </Link>
                 </div>
               </div>
-              <div className="relative w-full md:w-[35%] min-h-[200px] md:min-h-full">
+              <div className="relative w-full md:w-[35%] min-h-[160px] md:min-h-full">
                 <Image
                   src="/shop-banner.png"
                   alt="Exclusive Campaign Model"
@@ -429,39 +458,39 @@ function ProductsContent() {
             </div>
 
             {/* Fast Filters Bar */}
-            <div className="border p-4 flex flex-wrap items-center gap-3" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
+            <div className="border p-3 sm:p-4 flex flex-wrap items-center gap-2 sm:gap-3 rounded-lg" style={{ background: "#FDFBF7", borderColor: "#E9E2D5" }}>
               <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: "#B08D57" }}>Curate:</span>
               <button
                 onClick={() => handleFilterChange("productType", filters.productType === "featured" ? "" : "featured")}
-                className={`px-4 py-1.5 text-[10px] border uppercase tracking-[0.2em] transition-colors ${filters.productType === "featured" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-[#E9E2D5] text-neutral-600 hover:border-[#B08D57] hover:text-[#003E29]"
+                className={`px-3 sm:px-4 py-1.5 text-[10px] border uppercase tracking-[0.2em] transition-colors rounded ${filters.productType === "featured" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-[#E9E2D5] text-neutral-600 hover:border-[#B08D57] hover:text-[#003E29]"
                   }`}
               >
                 Featured
               </button>
               <button
                 onClick={() => handleFilterChange("productType", filters.productType === "bestseller" ? "" : "bestseller")}
-                className={`px-4 py-1.5 text-[10px] border uppercase tracking-[0.2em] transition-colors ${filters.productType === "bestseller" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-[#E9E2D5] text-neutral-600 hover:border-[#B08D57] hover:text-[#003E29]"
+                className={`px-3 sm:px-4 py-1.5 text-[10px] border uppercase tracking-[0.2em] transition-colors rounded ${filters.productType === "bestseller" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-[#E9E2D5] text-neutral-600 hover:border-[#B08D57] hover:text-[#003E29]"
                   }`}
               >
                 Best Sellers
               </button>
               <button
                 onClick={() => handleFilterChange("productType", filters.productType === "trending" ? "" : "trending")}
-                className={`px-4 py-1.5 text-[10px] border uppercase tracking-[0.2em] transition-colors ${filters.productType === "trending" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-[#E9E2D5] text-neutral-600 hover:border-[#B08D57] hover:text-[#003E29]"
+                className={`px-3 sm:px-4 py-1.5 text-[10px] border uppercase tracking-[0.2em] transition-colors rounded ${filters.productType === "trending" ? "bg-[#003E29] border-[#003E29] text-white" : "bg-white border-[#E9E2D5] text-neutral-600 hover:border-[#B08D57] hover:text-[#003E29]"
                   }`}
               >
                 Top Rated
               </button>
               <button
                 onClick={clearFilters}
-                className="px-4 py-1.5 text-[10px] border bg-white border-[#E9E2D5] text-neutral-400 uppercase tracking-[0.2em] hover:border-[#B08D57] hover:text-[#003E29] transition-colors"
+                className="px-3 sm:px-4 py-1.5 text-[10px] border bg-white border-[#E9E2D5] text-neutral-400 uppercase tracking-[0.2em] hover:border-[#B08D57] hover:text-[#003E29] transition-colors rounded"
               >
                 Reset Filters
               </button>
             </div>
 
             {/* Controls Row (Stats, Columns, Sort) */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-100 pb-5">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-200 pb-5">
 
               {/* Results counter */}
               <div className="text-xs text-zinc-500">
@@ -473,7 +502,7 @@ function ProductsContent() {
               </div>
 
               {/* Layout controls */}
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4 sm:gap-6">
 
                 {/* Column sizes for desktop grid */}
                 <div className="hidden md:flex items-center gap-1.5 border border-zinc-200 p-0.5 rounded bg-zinc-50">
@@ -484,7 +513,7 @@ function ProductsContent() {
                         setViewMode("grid");
                         setViewCols(c);
                       }}
-                      className={`text-[10px]   w-6 h-6 flex items-center justify-center transition-colors ${viewMode === "grid" && viewCols === c ? "bg-[#003E29] text-white" : "text-zinc-400 hover:text-[#003E29]"
+                      className={`text-[10px] w-6 h-6 flex items-center justify-center transition-colors rounded ${viewMode === "grid" && viewCols === c ? "bg-[#003E29] text-white" : "text-zinc-400 hover:text-[#003E29]"
                         }`}
                     >
                       {c}
@@ -492,7 +521,7 @@ function ProductsContent() {
                   ))}
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`p-1 flex items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#003E29] text-white" : "text-zinc-400 hover:text-[#003E29]"
+                    className={`p-1 flex items-center justify-center transition-colors rounded ${viewMode === "list" ? "bg-[#003E29] text-white" : "text-zinc-400 hover:text-[#003E29]"
                       }`}
                     title="List View"
                   >
@@ -501,10 +530,11 @@ function ProductsContent() {
                 </div>
 
                 {/* Sort selector */}
-                <div className="flex items-center gap-2 border border-zinc-200 rounded px-3 py-1.5 bg-white">
+                <div className="flex items-center gap-2 border border-zinc-300 rounded px-3 py-1.5 bg-white shadow-sm">
                   <select
+                    value={getSortValue()}
                     onChange={handleSortChange}
-                    className="text-xs text-zinc-700 bg-white focus:outline-none cursor-pointer"
+                    className="text-xs text-zinc-700 bg-white focus:outline-none cursor-pointer font-medium"
                   >
                     <option value="default">Default sorting</option>
                     <option value="price-asc">Price: Low to High</option>

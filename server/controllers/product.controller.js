@@ -349,6 +349,15 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     };
   });
 
+  // Handle explicit price sorting
+  if (isPriceSort) {
+    formattedProducts.sort((a, b) => {
+      const priceA = a.flashSale?.flashSalePrice ?? a.basePrice ?? a.regularPrice ?? 0;
+      const priceB = b.flashSale?.flashSalePrice ?? b.basePrice ?? b.regularPrice ?? 0;
+      return order === "asc" ? priceA - priceB : priceB - priceA;
+    });
+  }
+
   res.status(200).json(
     new ApiResponsive(
       200,

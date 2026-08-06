@@ -35,7 +35,7 @@ export const Footer = () => {
             <img
               src="/logo.png"
               alt="Inaayika Logo"
-              className="h-24 md:h-32 w-auto mx-auto object-contain filter brightness-0 invert drop-shadow-[0_0_25px_rgba(212,175,55,0.6)] transition-transform duration-300 hover:scale-105"
+              className="h-20 md:h-28 w-auto mx-auto object-contain transition-transform duration-300 hover:scale-105"
             />
           </div>
 

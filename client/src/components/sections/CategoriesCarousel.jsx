@@ -50,7 +50,6 @@ const CategoriesCarousel = () => {
         <Carousel setApi={setApi} opts={{ align: "start", dragFree: true }} className="w-full">
           <CarouselContent className="-ml-2">
             {categories.map((cat, index) => {
-              const { Icon, color } = getPharmaIcon(cat.name, cat.slug);
               return (
                 <CarouselItem key={cat.id} className="pl-2 basis-[80px] sm:basis-[90px] md:basis-[100px]">
                   <Link href={`/category/${cat.slug}`}>
@@ -62,8 +61,7 @@ const CategoriesCarousel = () => {
                     >
                       {/* Icon / Image box */}
                       <div
-                        className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg border"
-                        style={{ background: `${color}10`, borderColor: `${color}25` }}
+                        className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg border bg-[#F7F3EB] border-[#E9E2D5] group-hover:border-[#003E29]/30"
                       >
                         {cat.image ? (
                           <Image
@@ -74,11 +72,13 @@ const CategoriesCarousel = () => {
                             className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300"
                           />
                         ) : (
-                          <Icon size={28} style={{ color }} className="group-hover:scale-110 transition-transform duration-300" />
+                          <div className="w-8 h-8 rounded-full bg-[#003E29]/10 flex items-center justify-center text-[#003E29] group-hover:scale-110 transition-transform">
+                            <span className="text-xs font-bold text-[#003E29]">{cat.name.charAt(0)}</span>
+                          </div>
                         )}
                       </div>
                       {/* Name */}
-                      <span className="text-[10px] sm:text-[11px] font-semibold text-center leading-tight text-gray-600 group-hover:text-primary transition-colors max-w-[72px] line-clamp-2">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-center leading-tight text-neutral-700 group-hover:text-[#003E29] transition-colors max-w-[72px] line-clamp-2">
                         {cat.name}
                       </span>
                     </motion.div>

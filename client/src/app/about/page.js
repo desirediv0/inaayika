@@ -12,10 +12,10 @@ export const metadata = {
 };
 
 const stats = [
-  { value: "100%", label: "Artisan Handcrafted", icon: <Sparkles className="w-5 h-5" /> },
-  { value: "Premium", label: "Quality Materials", icon: <Gem className="w-5 h-5" /> },
-  { value: "Worldwide", label: "Secure Shipping", icon: <ShieldCheck className="w-5 h-5" /> },
-  { value: "9am to 6pm", label: "Mon - Sat Support", icon: <Heart className="w-5 h-5" /> },
+  { value: "100%", label: "Artisan Handcrafted", icon: <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { value: "Premium", label: "Quality Materials", icon: <Gem className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { value: "Worldwide", label: "Secure Shipping", icon: <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { value: "9am - 6pm", label: "Mon - Sat Support", icon: <Heart className="w-4 h-4 sm:w-5 sm:h-5" /> },
 ];
 
 const values = [
@@ -62,20 +62,20 @@ const features = [
 
 export default function AboutPage() {
   return (
-    <div className="relative min-h-screen bg-slate-50 font-sans">
+    <div className="relative min-h-screen bg-slate-50 font-sans overflow-x-hidden">
 
       {/* Full Page Logo Watermark */}
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
         <img
           src="/logo.png"
           alt=""
-          className="w-[90vw] md:w-[70vw] lg:w-[55vw] max-w-[800px] h-auto object-contain select-none opacity-[0.07]"
+          className="w-[80vw] md:w-[60vw] lg:w-[50vw] max-w-[600px] h-auto object-contain select-none opacity-[0.05]"
           draggable={false}
         />
       </div>
 
       {/* Hero Section */}
-      <section className="relative py-16 md:py-24 overflow-hidden bg-hero-dark text-white z-10">
+      <section className="relative py-12 sm:py-16 md:py-24 overflow-hidden bg-hero-dark text-white z-10">
         {/* Fine background grid and ambient glows */}
         <div className="absolute inset-0 bg-[radial-gradient(rgba(212,175,55,0.1)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none opacity-80" />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -83,45 +83,45 @@ export default function AboutPage() {
           <div className="absolute bottom-10 left-20 w-80 h-80 rounded-full blur-3xl opacity-15" style={{ background: "radial-gradient(circle, #003E29, transparent)" }} />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
 
             {/* Hero Left Content */}
             <div className="lg:col-span-7 max-w-3xl">
               <div
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 border animate-fade-in uppercase tracking-wider"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4 sm:mb-6 border animate-fade-in uppercase tracking-wider"
                 style={{ background: "rgba(212,175,55,0.1)", borderColor: "rgba(212,175,55,0.3)", color: "#D4AF37" }}
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Artisan Custom Design Studio
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-display tracking-tight mb-6 leading-[1.1] text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display tracking-tight mb-4 sm:mb-6 leading-[1.15] text-white">
                 Handcrafted Elegance, <br />
                 <span className="bg-gradient-to-r from-[#D4AF37] to-emerald-400 bg-clip-text text-transparent">
                   Designed For You
                 </span>
               </h1>
-              <p className="text-base md:text-lg text-slate-300 mb-8 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-slate-300 mb-6 sm:mb-8 leading-relaxed">
                 Inaayika by Pooja Khan is your destination for premium handcrafted jewellery and luxury styling accessories. We bridge the gap between traditional craftsmanship and modern designs, ensuring every package delivers outstanding craftsmanship directly to your doorstep.
               </p>
 
               {/* Bullet Features Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
                 {features.map((feature, i) => (
                   <div key={i} className="flex items-center gap-2.5">
                     <div className="w-5 h-5 rounded-full bg-emerald-950 flex items-center justify-center text-emerald-400 border border-emerald-800 flex-shrink-0">
                       <Check className="w-3 h-3" />
                     </div>
-                    <span className="text-sm font-medium text-slate-200">{feature}</span>
+                    <span className="text-xs sm:text-sm font-medium text-slate-200">{feature}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-4">
-                <Link href="/products">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+                <Link href="/products" className="w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="text-white px-8 h-12 rounded-xl font-semibold gap-2 bg-[#003E29] hover:bg-[#002216] shadow-lg shadow-emerald-900/20 hover:shadow-emerald-900/40 transition-all border-0"
+                    className="w-full sm:w-auto text-white px-6 sm:px-8 h-12 rounded-xl font-semibold gap-2 bg-[#003E29] hover:bg-[#002216] shadow-lg shadow-emerald-900/20 hover:shadow-emerald-900/40 transition-all border-0 justify-center"
                   >
                     Explore Products <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -130,11 +130,12 @@ export default function AboutPage() {
                   href="https://wa.me/918796449692"
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="w-full sm:w-auto"
                 >
                   <Button
                     size="lg"
                     variant="outline"
-                    className="px-8 h-12 rounded-xl font-semibold border border-zinc-800 text-slate-200 bg-transparent hover:bg-zinc-900 transition-colors"
+                    className="w-full sm:w-auto px-6 sm:px-8 h-12 rounded-xl font-semibold border border-zinc-800 text-slate-200 bg-transparent hover:bg-zinc-900 transition-colors justify-center"
                   >
                     <FaWhatsapp className="mr-2 text-emerald-400" /> WhatsApp Styling Desk
                   </Button>
@@ -143,20 +144,20 @@ export default function AboutPage() {
             </div>
 
             {/* Hero Right: Design Heritage & Authenticity */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative bg-zinc-950/90 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-zinc-800 shadow-2xl hover:shadow-3xl transition-all duration-300">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-800">
-                  <span className="text-xs uppercase tracking-wider text-zinc-400">Artisan Integrity &amp; Quality</span>
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-900">
+            <div className="lg:col-span-5 relative mt-4 lg:mt-0">
+              <div className="relative bg-zinc-950/90 backdrop-blur-md rounded-2xl p-4 sm:p-6 md:p-8 border border-zinc-800 shadow-2xl hover:shadow-3xl transition-all duration-300">
+                <div className="flex items-center justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-zinc-800">
+                  <span className="text-[11px] sm:text-xs uppercase tracking-wider text-zinc-400">Artisan Integrity &amp; Quality</span>
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-900">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                     Inaayika Verified
                   </span>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-900 transition-all">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                      <Gem className="w-5 h-5" />
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-start gap-3 sm:gap-3.5 p-3 sm:p-3.5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-900 transition-all">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                      <Gem className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-white">Direct-to-Consumer Value</p>
@@ -164,9 +165,9 @@ export default function AboutPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-900 transition-all">
-                    <div className="w-9 h-9 rounded-lg bg-yellow-950 text-[#D4AF37] flex items-center justify-center flex-shrink-0">
-                      <ShieldCheck className="w-5 h-5" />
+                  <div className="flex items-start gap-3 sm:gap-3.5 p-3 sm:p-3.5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-900 transition-all">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-yellow-950 text-[#D4AF37] flex items-center justify-center flex-shrink-0">
+                      <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-white">Exquisite Materials Only</p>
@@ -182,20 +183,24 @@ export default function AboutPage() {
       </section>
 
       {/* Floating Statistics Section */}
-      <section className="relative z-10 -mt-10 px-6 sm:px-8 lg:px-12">
+      <section className="relative z-10 -mt-6 sm:-mt-10 px-4 sm:px-8 lg:px-12">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center gap-4"
+                className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 md:p-6 border border-slate-200 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center gap-2.5 sm:gap-4 min-w-0"
               >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-emerald-50 text-[#003E29] flex-shrink-0">
+                <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl flex items-center justify-center bg-emerald-50 text-[#003E29] flex-shrink-0">
                   {stat.icon}
                 </div>
-                <div>
-                  <p className="text-xl md:text-2xl font-display text-slate-900">{stat.value}</p>
-                  <p className="text-slate-500 text-xs tracking-tight">{stat.label}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-base sm:text-xl md:text-2xl font-bold font-display text-slate-900 leading-tight truncate sm:whitespace-normal">
+                    {stat.value}
+                  </p>
+                  <p className="text-slate-500 text-[11px] sm:text-xs tracking-tight leading-tight mt-0.5 sm:mt-1 font-medium">
+                    {stat.label}
+                  </p>
                 </div>
               </div>
             ))}
@@ -204,9 +209,9 @@ export default function AboutPage() {
       </section>
 
       {/* Philosophy & Jewelry Categories */}
-      <section className="relative z-10 py-20 md:py-28 px-6 sm:px-8 lg:px-12">
+      <section className="relative z-10 py-12 sm:py-20 md:py-28 px-4 sm:px-8 lg:px-12">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-start">
 
             {/* Core Mission Copy */}
             <div className="lg:col-span-5">
@@ -215,35 +220,35 @@ export default function AboutPage() {
               >
                 Our Legacy
               </span>
-              <h2 className="text-3xl md:text-4xl font-display text-slate-950 mb-6 leading-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-display text-slate-950 mb-4 sm:mb-6 leading-tight">
                 Designed to make you look stunning
               </h2>
-              <p className="text-slate-600 leading-relaxed mb-6 text-sm md:text-base font-sans">
+              <p className="text-slate-600 leading-relaxed mb-4 sm:mb-6 text-sm md:text-base font-sans">
                 At Inaayika, we believe in the unique character of handmade creations. Under the creative direction of Pooja Khan, we design jewellery that combines artisan techniques with current global fashion trends.
               </p>
-              <p className="text-slate-600 leading-relaxed mb-6 text-sm md:text-base font-sans">
+              <p className="text-slate-600 leading-relaxed mb-4 sm:mb-6 text-sm md:text-base font-sans">
                 Whether you need a bespoke bridal necklace, a set of customised floral jewellery, or luxury hair accessories to match your outfits, we specialize in tailoring pieces exactly to your size, color theme, and requirements.
               </p>
 
               {/* Quality pillars list */}
-              <div className="space-y-4 mt-8 pt-6 border-t border-slate-200 font-sans">
+              <div className="space-y-3 sm:space-y-4 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-200 font-sans">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-[#003E29]">
-                    <Check className="w-4 h-4" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-[#003E29] flex-shrink-0">
+                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
-                  <span className="text-sm text-slate-800">100% Customized Sizes &amp; Color Matching**</span>
+                  <span className="text-xs sm:text-sm text-slate-800">100% Customized Sizes &amp; Color Matching**</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-[#003E29]">
-                    <Check className="w-4 h-4" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-[#003E29] flex-shrink-0">
+                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
-                  <span className="text-sm text-slate-800">Eco-Friendly Premium Packaging Box</span>
+                  <span className="text-xs sm:text-sm text-slate-800">Eco-Friendly Premium Packaging Box</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-[#003E29]">
-                    <Check className="w-4 h-4" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-[#003E29] flex-shrink-0">
+                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
-                  <span className="text-sm text-slate-800">Artisan Sourcing &amp; Safe Direct Delivery</span>
+                  <span className="text-xs sm:text-sm text-slate-800">Artisan Sourcing &amp; Safe Direct Delivery</span>
                 </div>
                 <p className="text-[10px] text-slate-400 mt-2 italic font-light">
                   **Conditions Apply: Custom orders cannot be returned or exchanged.
@@ -252,25 +257,25 @@ export default function AboutPage() {
             </div>
 
             {/* Specialty Categories Grid */}
-            <div className="lg:col-span-7 bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm font-sans">
-              <div className="mb-6">
-                <h3 className="text-xl font-display text-slate-900">Custom Sourcing &amp; Range</h3>
+            <div className="lg:col-span-7 bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-200 shadow-sm font-sans w-full">
+              <div className="mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl font-display text-slate-900">Custom Sourcing &amp; Range</h3>
                 <p className="text-xs text-slate-500 mt-1">Our current designer portfolio items available for direct customization.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5">
                 {CATEGORIES.map((cat, index) => {
                   return (
                     <div
                       key={index}
-                      className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#003E29]/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                      className="flex items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#003E29]/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 min-w-0"
                     >
                       <div
-                        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm bg-emerald-50 text-[#003E29]"
+                        className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm bg-emerald-50 text-[#003E29]"
                       >
-                        <Gem className="w-4 h-4" />
+                        <Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </div>
-                      <span className="text-sm font-medium text-slate-800">{cat}</span>
+                      <span className="text-xs sm:text-sm font-medium text-slate-800 truncate">{cat}</span>
                     </div>
                   );
                 })}
@@ -282,35 +287,35 @@ export default function AboutPage() {
       </section>
 
       {/* Pillars of Integrity (Values) */}
-      <section className="relative z-10 py-20 md:py-24 bg-white border-y border-slate-200 px-6 sm:px-8 lg:px-12 font-sans">
+      <section className="relative z-10 py-12 sm:py-20 md:py-24 bg-white border-y border-slate-200 px-4 sm:px-8 lg:px-12 font-sans">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <span
-              className="inline-block px-3 py-1 text-xs uppercase tracking-wider rounded-full mb-4 bg-emerald-50 text-[#003E29]"
+              className="inline-block px-3 py-1 text-xs uppercase tracking-wider rounded-full mb-3 sm:mb-4 bg-emerald-50 text-[#003E29]"
             >
               Our Core Values
             </span>
-            <h2 className="text-3xl md:text-4xl font-display text-slate-950 mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-display text-slate-950 mb-3 sm:mb-4">
               Why Customers Love Inaayika
             </h2>
-            <p className="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+            <p className="text-slate-500 max-w-xl mx-auto text-xs sm:text-sm md:text-base leading-relaxed">
               We stand by our craftsmanship. Creativity, detailing, and client fulfillment are integrated into every design we send.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {values.map((value, index) => {
               const Icon = value.icon;
               return (
                 <div
                   key={index}
-                  className="group bg-slate-50/40 rounded-2xl p-6 border border-slate-200 transition-all duration-300 hover:bg-white hover:shadow-xl hover:-translate-y-1"
+                  className="group bg-slate-50/40 rounded-2xl p-4 sm:p-6 border border-slate-200 transition-all duration-300 hover:bg-white hover:shadow-xl hover:-translate-y-1"
                 >
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 bg-emerald-50 text-[#003E29] group-hover:bg-[#003E29] group-hover:text-white transition-all duration-300">
-                    <Icon className="h-5 w-5" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-4 sm:mb-5 bg-emerald-50 text-[#003E29] group-hover:bg-[#003E29] group-hover:text-white transition-all duration-300">
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
-                  <h3 className="text-base font-display text-slate-900 mb-2">{value.title}</h3>
-                  <p className="text-slate-600 text-xs md:text-sm leading-relaxed">{value.description}</p>
+                  <h3 className="text-sm sm:text-base font-display text-slate-900 mb-1.5 sm:mb-2">{value.title}</h3>
+                  <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{value.description}</p>
                 </div>
               );
             })}
@@ -319,26 +324,26 @@ export default function AboutPage() {
       </section>
 
       {/* Call to Action (CTA) Panel */}
-      <section className="relative z-10 py-20 px-6 sm:px-8 lg:px-12 bg-slate-50 font-sans">
+      <section className="relative z-10 py-12 sm:py-20 px-4 sm:px-8 lg:px-12 bg-slate-50 font-sans">
         <div className="max-w-7xl mx-auto">
-          <div className="relative rounded-3xl overflow-hidden py-16 px-8 md:px-16 text-center shadow-2xl bg-zinc-950 border border-zinc-800">
+          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden py-10 sm:py-16 px-5 sm:px-10 md:px-16 text-center shadow-2xl bg-zinc-950 border border-zinc-800">
             {/* Ambient gold & emerald glowing spheres */}
             <div className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ background: "radial-gradient(circle, #D4AF37, transparent)" }} />
             <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ background: "radial-gradient(circle, #003E29, transparent)" }} />
 
             <div className="relative z-10 max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl text-white font-display mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl text-white font-display mb-3 sm:mb-4">
                 Want a custom design?
               </h2>
-              <p className="text-slate-300 max-w-xl mx-auto mb-8 leading-relaxed text-sm md:text-base">
+              <p className="text-slate-300 max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed text-xs sm:text-sm md:text-base">
                 Get real-time answers for customized hair accessories, bridal sets, or coordinate color matching directly with founder Pooja Khan on WhatsApp.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center w-full">
                 <Link href="/products" className="w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="w-full sm:w-auto text-white px-8 h-12 rounded-xl font-semibold bg-[#003E29] hover:bg-[#002216] transition-colors shadow-lg shadow-emerald-900/20 border-0"
+                    className="w-full sm:w-auto text-white px-6 sm:px-8 h-12 rounded-xl font-semibold bg-[#003E29] hover:bg-[#002216] transition-colors shadow-lg shadow-emerald-900/20 border-0 justify-center"
                   >
                     Browse Collections
                   </Button>
@@ -352,7 +357,7 @@ export default function AboutPage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full sm:w-auto px-8 h-12 rounded-xl font-semibold border-2 border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition-all bg-transparent"
+                    className="w-full sm:w-auto px-6 sm:px-8 h-12 rounded-xl font-semibold border-2 border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition-all bg-transparent justify-center"
                   >
                     <FaWhatsapp className="mr-2 text-emerald-400" /> WhatsApp Pooja Khan
                   </Button>
@@ -366,3 +371,4 @@ export default function AboutPage() {
     </div>
   );
 }
+
