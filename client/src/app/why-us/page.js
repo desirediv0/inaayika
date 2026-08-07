@@ -161,29 +161,6 @@ export default function WhyUsPage() {
           </div>
         </div>
       </section>
-            <div className="flex items-center gap-4 flex-shrink-0">
-              <div className="w-12 h-12 border flex items-center justify-center" style={{ background: "#FDFBF7", borderColor: "#E9E2D5", color: "#B08D57" }}>
-                <Gift className="h-6 w-6 stroke-[1.5]" />
-              </div>
-              <div>
-                <p className="font-display text-lg font-medium text-neutral-900">Bridal Hair Accessories & Kits</p>
-                <p className="text-xs text-neutral-500 font-light tracking-wide mt-0.5">Artisan Hair Ornaments · Bespoke Bridal Hair Sets · Designer Earrings · DIY Accessories</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 justify-center lg:justify-end">
-              {["Handcrafted", "Bridal Hair Accessories", "Bespoke Bridal Hair Sets", "Insured Shipping", "Keepsake Box"].map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3.5 py-1.5 text-[10px] tracking-wider uppercase border font-medium"
-                  style={{ background: "#FDFBF7", borderColor: "#E9E2D5", color: "#B08D57" }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── CTA ── */}
       <section className="py-12 md:py-16 bg-hero-dark border-t" style={{ borderColor: "#E9E2D5" }}>

@@ -124,7 +124,7 @@ router.post("/flavors", isAdmin, upload.single("image"), async (req, res) => {
     // Upload image to S3 if provided
     if (req.file) {
       // Use the upload folder from environment variable for consistency
-      const uploadFolder = process.env.UPLOAD_FOLDER || "GenuineGrocery";
+      const uploadFolder = process.env.UPLOAD_FOLDER || "Inaayika";
       imageKey = `${uploadFolder}/flavors/${uuidv4()}-${req.file.originalname.replace(
         /\s+/g,
         "-"
@@ -225,7 +225,7 @@ router.patch(
         }
 
         // Upload new image using the environment variable
-        const uploadFolder = process.env.UPLOAD_FOLDER || "GenuineGrocery";
+        const uploadFolder = process.env.UPLOAD_FOLDER || "Inaayika";
         imageKey = `${uploadFolder}/flavors/${uuidv4()}-${req.file.originalname.replace(
           /\s+/g,
           "-"

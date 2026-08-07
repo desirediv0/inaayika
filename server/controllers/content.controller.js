@@ -262,7 +262,7 @@ const getFaqs = asyncHandler(async (req, res) => {
       return res.status(200).json(
         new ApiResponsive(200, {
           faqs,
-          metaTitle: "Frequently Asked Questions | GenuineGrocery",
+          metaTitle: "Frequently Asked Questions | Inaayika",
           metaDescription:
             "Find answers to common questions about our products and services.",
         })
@@ -368,9 +368,9 @@ const getContactInfo = asyncHandler(async (req, res) => {
           lng: 72.8777,
         },
         socialLinks: {
-          facebook: "https://facebook.com/GenuineGrocery",
-          instagram: "https://instagram.com/GenuineGrocery",
-          twitter: "https://twitter.com/GenuineGrocery",
+          facebook: "https://facebook.com/Inaayika",
+          instagram: "https://instagram.com/Inaayika",
+          twitter: "https://twitter.com/Inaayika",
         },
       };
 

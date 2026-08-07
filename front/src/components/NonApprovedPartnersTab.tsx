@@ -47,7 +47,7 @@ export default function NonApprovedPartnersTab() {
     const [approveId, setApproveId] = useState<string | null>(null);
     const [approveLoading, setApproveLoading] = useState(false);
     const [approveApiError, setApproveApiError] = useState("");
-    const [customPassword, setCustomPassword] = useState("GenuineGrocery");
+    const [customPassword, setCustomPassword] = useState("Inaayika");
     const [passwordCopied, setPasswordCopied] = useState(false);
 
     // Success dialog after approval
@@ -81,7 +81,7 @@ export default function NonApprovedPartnersTab() {
     const openApproveDialog = (id: string) => {
         setApproveId(id);
         setApproveApiError("");
-        setCustomPassword("GenuineGrocery");
+        setCustomPassword("Inaayika");
         setPasswordCopied(false);
         setApproveDialogOpen(true);
     };
@@ -90,11 +90,11 @@ export default function NonApprovedPartnersTab() {
         setApproveDialogOpen(false);
         setApproveId(null);
         setApproveApiError("");
-        setCustomPassword("GenuineGrocery");
+        setCustomPassword("Inaayika");
     };
 
     const handleApprove = async () => {
-        const passwordToSend = customPassword.trim().length >= 6 ? customPassword.trim() : "GenuineGrocery";
+        const passwordToSend = customPassword.trim().length >= 6 ? customPassword.trim() : "Inaayika";
 
         setApproveLoading(true);
         setApproveApiError("");

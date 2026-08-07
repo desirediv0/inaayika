@@ -33,7 +33,7 @@ export const processAndUploadImage = async (file, subfolder = "images") => {
     const fileExtension = originalname.split(".").pop().toLowerCase();
 
     // Use UPLOAD_FOLDER from environment variables for consistency
-    const uploadFolder = process.env.UPLOAD_FOLDER || "GenuineGrocery";
+    const uploadFolder = process.env.UPLOAD_FOLDER || "Inaayika";
     const filename = `${uploadFolder}/${subfolder}/${timestamp}-${sanitizedName}`;
 
     console.log(`🔧 Target filename: ${filename}`);
@@ -80,7 +80,7 @@ export const uploadPDF = async (file) => {
   const { originalname, buffer, mimetype } = file;
 
   // Use UPLOAD_FOLDER from environment variables
-  const uploadFolder = process.env.UPLOAD_FOLDER || "GenuineGrocery";
+  const uploadFolder = process.env.UPLOAD_FOLDER || "Inaayika";
   const filename = `${uploadFolder}/pdfs/${Date.now()}-${originalname
     .toLowerCase()
     .split(" ")
@@ -108,7 +108,7 @@ export const uploadPDF = async (file) => {
 export const uploadVideo = async (file) => {
   const { originalname, buffer, mimetype } = file;
 
-  const uploadFolder = process.env.UPLOAD_FOLDER || "GenuineGrocery";
+  const uploadFolder = process.env.UPLOAD_FOLDER || "Inaayika";
   const filename = `${uploadFolder}/videos/${Date.now()}-${originalname
     .toLowerCase()
     .split(" ")
@@ -137,7 +137,7 @@ export const uploadAudio = async (file) => {
   const { originalname, buffer, mimetype } = file;
 
   // Use UPLOAD_FOLDER from environment variables
-  const uploadFolder = process.env.UPLOAD_FOLDER || "GenuineGrocery";
+  const uploadFolder = process.env.UPLOAD_FOLDER || "Inaayika";
   const filename = `${uploadFolder}/audio/${Date.now()}-${originalname
     .toLowerCase()
     .split(" ")

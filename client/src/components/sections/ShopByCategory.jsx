@@ -9,7 +9,7 @@ const categories = [
     name: "Amplifier",
     slug: "amplifier",
     description: "Professional sound systems",
-    image: "/GenuineGrocery.jpg",
+    image: "/Inaayika.jpg",
     products: "25+ Products"
   },
   {
@@ -37,7 +37,7 @@ const categories = [
     name: "Mixer",
     slug: "mixer",
     description: "Next-gen technology",
-    image: "/GenuineGrocery.jpg",
+    image: "/Inaayika.jpg",
     products: "12+ Products"
   },
   {

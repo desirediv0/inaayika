@@ -1461,7 +1461,7 @@ export const requestAccountDeletion = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email: user.email,
-      subject: "Confirm Account Deletion - GenuineGrocery",
+      subject: "Confirm Account Deletion - Inaayika",
       html: getDeleteTemplate(deletionLink),
     });
 
