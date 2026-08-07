@@ -168,7 +168,7 @@ export function ColdChainBanner() {
                 rel="noopener noreferrer"
                 className="inline-block hover:opacity-80 transition-opacity"
               >
-                <h3 className="font-display text-2xl font-medium text-neutral-900 mt-1.5 mb-2">@all_about_hair_accesories</h3>
+                <h3 className="font-display text-lg sm:text-2xl font-medium text-neutral-900 mt-1.5 mb-2 break-all break-words max-w-full leading-snug">@all_about_hair_accesories</h3>
               </a>
               <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide">
                 Pooja Khan personally designs and supervises the creation of every singular hair accessory, ensuring unmatched quality and attention to detail.

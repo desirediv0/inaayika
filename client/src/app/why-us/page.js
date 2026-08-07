@@ -64,35 +64,35 @@ export default function WhyUsPage() {
 
       {/* ── Hero ── */}
       <section
-        className="relative py-16 md:py-24 overflow-hidden bg-hero-dark"
+        className="relative pt-20 pb-16 md:py-24 overflow-hidden bg-hero-dark max-w-full"
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-80 h-80 rounded-full opacity-5" style={{ background: "radial-gradient(circle, #B08D57, transparent 70%)" }} />
           <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full opacity-5" style={{ background: "radial-gradient(circle, #B08D57, transparent 70%)" }} />
         </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold mb-6 border" style={{ background: "rgba(176,141,87,0.06)", borderColor: "rgba(176,141,87,0.15)", color: "#E7C983" }}>
-            <Award className="h-4 w-4" style={{ color: "#E7C983" }} />
-            The Inaayika Promise
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold mb-6 border max-w-full" style={{ background: "rgba(176,141,87,0.06)", borderColor: "rgba(176,141,87,0.15)", color: "#E7C983" }}>
+            <Award className="h-4 w-4 flex-shrink-0" style={{ color: "#E7C983" }} />
+            <span className="truncate">The Inaayika Promise</span>
           </div>
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight font-medium tracking-wide">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight font-medium tracking-wide break-words">
             Why Choose <br className="sm:hidden" />
             <span className="italic text-gold-shimmer">Inaayika?</span>
           </h1>
-          <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+          <p className="text-white/70 text-sm sm:text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed tracking-wide break-words">
             Discover the art of handcrafted perfection, custom hair accessories, and DIY jewellery kits designed personally by Pooja Khan and crafted with pure love.
           </p>
         </div>
       </section>
 
       {/* ── Stats bar ── */}
-      <section className="border-b" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
-        <div className="max-w-7xl mx-auto px-6 py-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x" style={{ borderColor: "#E9E2D5" }}>
+      <section className="border-b overflow-hidden" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 text-center" style={{ borderColor: "#E9E2D5" }}>
             {STATS.map((stat, i) => (
-              <div key={i} className="first:border-none border-neutral-300/30">
-                <p className="font-display text-3xl md:text-4xl font-medium mb-1 text-gold-shimmer">{stat.value}</p>
-                <p className="text-xs uppercase tracking-widest text-neutral-500 font-medium mt-1">{stat.label}</p>
+              <div key={i} className="px-2 py-2 min-w-0 border-r border-neutral-300/40 last:border-r-0 md:border-r md:last:border-r-0">
+                <p className="font-display text-lg sm:text-2xl md:text-4xl font-medium mb-1 text-gold-shimmer break-words leading-tight">{stat.value}</p>
+                <p className="text-[10px] sm:text-xs uppercase tracking-wider text-neutral-500 font-medium mt-1 leading-snug break-words">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -100,24 +100,24 @@ export default function WhyUsPage() {
       </section>
 
       {/* ── Reasons grid ── */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
+      <section className="py-12 md:py-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 md:mb-16">
             <span className="luxe-eyebrow block mb-3">Our Core Values</span>
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-medium tracking-wide text-neutral-900 mb-4">
+            <h2 className="font-display text-2xl sm:text-4xl lg:text-5xl font-medium tracking-wide text-neutral-900 mb-4 break-words">
               What Sets Us Apart
             </h2>
             <span className="luxe-rule" />
-            <p className="text-neutral-500 font-light text-sm max-w-2xl mx-auto mt-4 tracking-wide leading-relaxed">
+            <p className="text-neutral-500 font-light text-xs sm:text-sm max-w-2xl mx-auto mt-4 tracking-wide leading-relaxed break-words">
               We don&apos;t just sell accessories — we provide a journey of handcrafted elegance, creative self-expression, and exceptional service.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {REASONS.map((reason, i) => (
               <div
                 key={i}
-                className="group bg-white p-8 border transition-all duration-300 hover:shadow-[0_24px_50px_-20px_rgba(0,34,22,0.15)] hover:-translate-y-1"
+                className="group bg-white p-6 sm:p-8 border transition-all duration-300 hover:shadow-[0_24px_50px_-20px_rgba(0,34,22,0.15)] hover:-translate-y-1 min-w-0"
                 style={{ borderColor: "#E9E2D5" }}
               >
                 <div
@@ -126,8 +126,8 @@ export default function WhyUsPage() {
                 >
                   <reason.icon className="h-5 w-5 stroke-[1.5]" style={{ color: reason.color }} />
                 </div>
-                <h3 className="font-display text-xl font-medium text-neutral-900 mb-3">{reason.title}</h3>
-                <p className="text-neutral-500 text-xs font-light leading-relaxed tracking-wide">{reason.description}</p>
+                <h3 className="font-display text-lg sm:text-xl font-medium text-neutral-900 mb-3 break-words">{reason.title}</h3>
+                <p className="text-neutral-500 text-xs font-light leading-relaxed tracking-wide break-words">{reason.description}</p>
               </div>
             ))}
           </div>
@@ -135,9 +135,32 @@ export default function WhyUsPage() {
       </section>
 
       {/* ── Specialties banner ── */}
-      <section className="py-12 border-t border-b" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+      <section className="py-10 md:py-12 border-t border-b overflow-hidden" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 md:gap-8">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="w-12 h-12 border flex items-center justify-center flex-shrink-0" style={{ background: "#FDFBF7", borderColor: "#E9E2D5", color: "#B08D57" }}>
+                <Gift className="h-6 w-6 stroke-[1.5]" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-display text-base sm:text-lg font-medium text-neutral-900 truncate">Bridal Hair Accessories & Kits</p>
+                <p className="text-xs text-neutral-500 font-light tracking-wide mt-0.5 break-words">Artisan Hair Ornaments · Bespoke Bridal Hair Sets · Designer Earrings · DIY Accessories</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-center lg:justify-end max-w-full">
+              {["Handcrafted", "Bridal Hair Accessories", "Bespoke Bridal Hair Sets", "Insured Shipping", "Keepsake Box"].map((tag) => (
+                <span
+                  key={tag}
+                  className="px-3 py-1 text-[10px] tracking-wider uppercase border font-medium break-words text-center"
+                  style={{ background: "#FDFBF7", borderColor: "#E9E2D5", color: "#B08D57" }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
             <div className="flex items-center gap-4 flex-shrink-0">
               <div className="w-12 h-12 border flex items-center justify-center" style={{ background: "#FDFBF7", borderColor: "#E9E2D5", color: "#B08D57" }}>
                 <Gift className="h-6 w-6 stroke-[1.5]" />

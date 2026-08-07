@@ -96,8 +96,20 @@ function ProductsContent() {
     size: true
   });
 
-  const [maxPossiblePrice, setMaxPossiblePrice] = useState(2000);
-  const [priceRange, setPriceRange] = useState({ min: minPrice ? Number(minPrice) : 0, max: maxPrice ? Number(maxPrice) : 2000 });
+  const [selectedPredefinedRange, setSelectedPredefinedRange] = useState(() => {
+    if (!minPrice && !maxPrice) return "all";
+    const minN = Number(minPrice || 10);
+    const maxN = Number(maxPrice || 10000);
+    if (minN === 10 && maxN === 499) return "under499";
+    if (minN === 500 && maxN === 999) return "500-999";
+    if (minN === 1000 && maxN === 2499) return "1000-2499";
+    if (minN === 2500 && maxN === 4999) return "2500-4999";
+    if (minN === 5000 && maxN === 10000) return "5000-10000";
+    if (minN === 10 && maxN === 10000) return "all";
+    return "custom";
+  });
+  const [maxPossiblePrice, setMaxPossiblePrice] = useState(10000);
+  const [priceRange, setPriceRange] = useState({ min: minPrice ? Number(minPrice) : 10, max: maxPrice ? Number(maxPrice) : 10000 });
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [pagination, setPagination] = useState({ page: pageParam, limit: 12, total: 0, pages: 0 });
 
@@ -215,7 +227,8 @@ function ProductsContent() {
   const clearFilters = () => {
     const cf = { search: "", category: "", productType: "", color: "", size: "", minPrice: "", maxPrice: "", sort: "createdAt", order: "desc" };
     setFilters(cf); setSelectedColors([]); setSelectedSizes([]); setSelectedAttributes({});
-    setPriceRange({ min: 0, max: maxPossiblePrice });
+    setPriceRange({ min: 10, max: 10000 });
+    setSelectedPredefinedRange("all");
     updateURL(cf); setPagination((p) => ({ ...p, page: 1 }));
   };
 
@@ -293,17 +306,107 @@ function ProductsContent() {
         isOpen={!!openSections.price}
         onToggle={() => setOpenSections((p) => ({ ...p, price: !p.price }))}
       >
-        <div className="space-y-4">
-          <input
-            type="range"
-            min="0"
-            max={maxPossiblePrice}
-            value={priceRange.max}
-            onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 0 })}
-            className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-1.5 rounded-lg"
-          />
-          <div className="flex items-center justify-between text-xs text-zinc-500">
-            <span>Price: ₹{priceRange.min} — ₹{priceRange.max}</span>
+        <div className="space-y-4 pt-1">
+          {/* Dropdown Box for Pre-defined Price Ranges */}
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">
+              Select Price Range
+            </label>
+            <select
+              value={selectedPredefinedRange}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedPredefinedRange(val);
+                let min = 10;
+                let max = 10000;
+                if (val === "under499") { min = 10; max = 499; }
+                else if (val === "500-999") { min = 500; max = 999; }
+                else if (val === "1000-2499") { min = 1000; max = 2499; }
+                else if (val === "2500-4999") { min = 2500; max = 4999; }
+                else if (val === "5000-10000") { min = 5000; max = 10000; }
+                else if (val === "all") { min = 10; max = 10000; }
+
+                if (val !== "custom") {
+                  setPriceRange({ min, max });
+                  handleMultipleFiltersChange({
+                    minPrice: String(min),
+                    maxPrice: String(max),
+                  });
+                }
+              }}
+              className="w-full p-2 bg-white border border-[#E9E2D5] text-xs font-medium text-zinc-800 rounded focus:outline-none focus:border-[#003E29] cursor-pointer shadow-sm"
+            >
+              <option value="all">All Prices (₹10 - ₹10,000)</option>
+              <option value="under499">Under ₹499</option>
+              <option value="500-999">₹500 - ₹999</option>
+              <option value="1000-2499">₹1,000 - ₹2,499</option>
+              <option value="2500-4999">₹2,500 - ₹4,999</option>
+              <option value="5000-10000">₹5,000 - ₹10,000</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+
+          {/* Smooth Range Slider (10 to 10000) */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">
+              <span>Max: ₹{priceRange.max}</span>
+              <span>₹10,000</span>
+            </div>
+            <input
+              type="range"
+              min="10"
+              max="10000"
+              step="10"
+              value={priceRange.max}
+              onChange={(e) => {
+                const newMax = parseInt(e.target.value) || 10000;
+                setPriceRange((prev) => ({ ...prev, max: newMax }));
+                setSelectedPredefinedRange("custom");
+              }}
+              className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-2 rounded-lg transition-all"
+            />
+          </div>
+
+          {/* Direct Min & Max Inputs */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <span className="text-[9px] uppercase tracking-wider text-zinc-400 block mb-0.5 font-semibold">Min ₹</span>
+              <input
+                type="number"
+                min="10"
+                max="10000"
+                value={priceRange.min}
+                onChange={(e) => {
+                  const val = Math.max(10, Math.min(10000, parseInt(e.target.value) || 10));
+                  setPriceRange((prev) => ({ ...prev, min: val }));
+                  setSelectedPredefinedRange("custom");
+                }}
+                className="w-full px-2.5 py-1.5 border border-[#E9E2D5] rounded text-xs text-zinc-800 bg-white font-medium focus:outline-none focus:border-[#003E29]"
+              />
+            </div>
+            <span className="text-zinc-400 text-xs mt-3">—</span>
+            <div className="flex-1">
+              <span className="text-[9px] uppercase tracking-wider text-zinc-400 block mb-0.5 font-semibold">Max ₹</span>
+              <input
+                type="number"
+                min="10"
+                max="10000"
+                value={priceRange.max}
+                onChange={(e) => {
+                  const val = Math.max(10, Math.min(10000, parseInt(e.target.value) || 10000));
+                  setPriceRange((prev) => ({ ...prev, max: val }));
+                  setSelectedPredefinedRange("custom");
+                }}
+                className="w-full px-2.5 py-1.5 border border-[#E9E2D5] rounded text-xs text-zinc-800 bg-white font-medium focus:outline-none focus:border-[#003E29]"
+              />
+            </div>
+          </div>
+
+          {/* Filter Action Button */}
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs font-semibold text-[#003E29]">
+              Price: ₹{priceRange.min} — ₹{priceRange.max}
+            </span>
             <button
               onClick={() => {
                 handleMultipleFiltersChange({
@@ -311,7 +414,7 @@ function ProductsContent() {
                   maxPrice: String(priceRange.max),
                 });
               }}
-              className="px-4 py-1.5 bg-[#003E29] text-white text-[10px] tracking-widest uppercase hover:bg-[#002e1f] transition-colors rounded"
+              className="px-4 py-1.5 bg-[#003E29] text-white text-[10px] tracking-widest uppercase hover:bg-[#002e1f] transition-colors rounded shadow-sm font-semibold"
             >
               Filter
             </button>

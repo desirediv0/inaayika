@@ -65,11 +65,15 @@
   }
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   body {
     font-family: 'Playfair Display', serif;
     @apply bg-background text-foreground font-sans antialiased;
     letter-spacing: 0.01em;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   ::selection {
     background: rgba(176, 141, 87, 0.25);

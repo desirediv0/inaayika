@@ -55,7 +55,7 @@ export const Footer = () => {
             <h4 className={FOOTER_HEADING_CLS}>The Maison</h4>
             <ul className="space-y-3.5">
               <li>
-                <Link href="/about" className={FOOTER_LINK_CLS}>
+                <Link href="/why-us" className={FOOTER_LINK_CLS}>
                   Inaayika Inside
                 </Link>
               </li>

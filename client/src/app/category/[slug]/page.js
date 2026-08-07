@@ -39,6 +39,8 @@ export default function CategoryPage() {
     const [error, setError] = useState(null);
     const [sortOption, setSortOption] = useState("newest");
     const [viewMode, setViewMode] = useState("grid");
+    const [selectedPredefinedRange, setSelectedPredefinedRange] = useState("all");
+    const [priceRange, setPriceRange] = useState({ min: 10, max: 10000 });
 
     const [pagination, setPagination] = useState({
         page: 1,
@@ -62,9 +64,11 @@ export default function CategoryPage() {
                     default: break;
                 }
 
-                const response = await fetchApi(
-                    `/public/categories/${slug}/products?page=${pagination.page}&limit=${pagination.limit}&sort=${sort}&order=${order}`
-                );
+                let url = `/public/categories/${slug}/products?page=${pagination.page}&limit=${pagination.limit}&sort=${sort}&order=${order}`;
+                if (priceRange.min > 10) url += `&minPrice=${priceRange.min}`;
+                if (priceRange.max < 10000) url += `&maxPrice=${priceRange.max}`;
+
+                const response = await fetchApi(url);
 
                 setCategory(response.data.category);
                 setProducts(response.data.products || []);
@@ -80,7 +84,7 @@ export default function CategoryPage() {
         if (slug) {
             fetchCategoryAndProducts();
         }
-    }, [slug, pagination.page, pagination.limit, sortOption]);
+    }, [slug, pagination.page, pagination.limit, sortOption, priceRange.min, priceRange.max]);
 
     const handlePageChange = (newPage) => {
         if (newPage < 1 || newPage > pagination.pages) return;
@@ -195,43 +199,94 @@ export default function CategoryPage() {
             {/* Products Section */}
             <div className="max-w-7xl mx-auto px-6 py-6 md:py-8">
                 {/* Toolbar */}
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 bg-white rounded-2xl p-4 border shadow-sm" style={{ borderColor: "#DCE7F2" }}>
-                    <div className="text-gray-500 text-sm font-medium">
-                        Showing <span className="text-gray-900  ">{products.length}</span> products found
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-3">
-                        {/* View Mode */}
-                        <div className="flex items-center bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
-                            <button
-                                onClick={() => setViewMode("grid")}
-                                className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-primary text-white" : "text-gray-400 hover:text-gray-600"}`}
-                                title="Grid View"
-                            >
-                                <Grid className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => setViewMode("list")}
-                                className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-primary text-white" : "text-gray-400 hover:text-gray-600"}`}
-                                title="List View"
-                            >
-                                <List className="w-4 h-4" />
-                            </button>
+                <div className="flex flex-col gap-4 mb-6 bg-white rounded-2xl p-4 border shadow-sm" style={{ borderColor: "#DCE7F2" }}>
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div className="text-gray-500 text-sm font-medium">
+                            Showing <span className="text-gray-900 font-bold">{products.length}</span> products found
                         </div>
 
-                        {/* Sort */}
-                        <div className="relative flex-1 sm:flex-none">
+                        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                            {/* View Mode */}
+                            <div className="flex items-center bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
+                                <button
+                                    onClick={() => setViewMode("grid")}
+                                    className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-primary text-white" : "text-gray-400 hover:text-gray-600"}`}
+                                    title="Grid View"
+                                >
+                                    <Grid className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setViewMode("list")}
+                                    className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-primary text-white" : "text-gray-400 hover:text-gray-600"}`}
+                                    title="List View"
+                                >
+                                    <List className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {/* Sort */}
+                            <div className="relative flex-1 sm:flex-none">
+                                <select
+                                    value={sortOption}
+                                    onChange={handleSortChange}
+                                    className="w-full appearance-none bg-white border border-gray-200 text-gray-700 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium cursor-pointer shadow-sm"
+                                >
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="name-asc">A to Z</option>
+                                    <option value="name-desc">Z to A</option>
+                                </select>
+                                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Price Filter Sub-bar */}
+                    <div className="pt-3 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Price Range:</span>
                             <select
-                                value={sortOption}
-                                onChange={handleSortChange}
-                                className="w-full appearance-none bg-white border border-gray-200 text-gray-700 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium cursor-pointer shadow-sm"
+                                value={selectedPredefinedRange}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setSelectedPredefinedRange(val);
+                                    let min = 10;
+                                    let max = 10000;
+                                    if (val === "under499") { min = 10; max = 499; }
+                                    else if (val === "500-999") { min = 500; max = 999; }
+                                    else if (val === "1000-2499") { min = 1000; max = 2499; }
+                                    else if (val === "2500-4999") { min = 2500; max = 4999; }
+                                    else if (val === "5000-10000") { min = 5000; max = 10000; }
+                                    else if (val === "all") { min = 10; max = 10000; }
+                                    setPriceRange({ min, max });
+                                }}
+                                className="px-3 py-1.5 bg-white border border-gray-200 text-xs font-medium text-gray-800 rounded-lg focus:outline-none focus:border-[#003E29] cursor-pointer shadow-sm w-full sm:w-auto"
                             >
-                                <option value="newest">Newest First</option>
-                                <option value="oldest">Oldest First</option>
-                                <option value="name-asc">A to Z</option>
-                                <option value="name-desc">Z to A</option>
+                                <option value="all">All Prices (₹10 - ₹10,000)</option>
+                                <option value="under499">Under ₹499</option>
+                                <option value="500-999">₹500 - ₹999</option>
+                                <option value="1000-2499">₹1,000 - ₹2,499</option>
+                                <option value="2500-4999">₹2,500 - ₹4,999</option>
+                                <option value="5000-10000">₹5,000 - ₹10,000</option>
+                                <option value="custom">Custom Slider</option>
                             </select>
-                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        </div>
+
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <input
+                                type="range"
+                                min="10"
+                                max="10000"
+                                step="10"
+                                value={priceRange.max}
+                                onChange={(e) => {
+                                    const newMax = parseInt(e.target.value) || 10000;
+                                    setPriceRange((prev) => ({ ...prev, max: newMax }));
+                                    setSelectedPredefinedRange("custom");
+                                }}
+                                className="accent-[#003E29] cursor-pointer bg-zinc-200 h-2 rounded-lg flex-1 sm:w-48"
+                            />
+                            <span className="text-xs font-semibold text-[#003E29] whitespace-nowrap">₹{priceRange.min} — ₹{priceRange.max}</span>
                         </div>
                     </div>
                 </div>
