@@ -252,7 +252,7 @@ export function Navbar() {
         {/* ── MAIN HEADER NAVBAR ── */}
         <div className="border-b bg-transparent" style={{ borderColor: "#E9E2D5" }}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
-            <div className="relative flex items-center justify-between h-20 md:h-22 gap-3 sm:gap-4">
+            <div className="relative flex items-center justify-between h-24 md:h-28 gap-3 sm:gap-4 py-2">
 
               {/* Left Side: Logo */}
               <div className="flex items-center flex-shrink-0">
@@ -260,7 +260,7 @@ export function Navbar() {
                   <img
                     src="/logo.png"
                     alt="Inaayika Logo"
-                    className="h-12 md:h-14 w-auto object-contain transition-transform duration-300 hover:scale-105"
+                    className="h-16 sm:h-20 md:h-24 w-auto object-contain transition-transform duration-300 hover:scale-105"
                   />
                 </Link>
               </div>
@@ -663,7 +663,7 @@ function MobileMenu({ isOpen, onClose, user, isAuthenticated, categories, cartCo
           className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
           style={{ borderColor: "#E9E2D5", background: "#F7F3EB" }}
         >
-          <img src="/logo.png" alt="Inaayika Logo" className="h-10 w-auto object-contain" />
+          <img src="/logo.png" alt="Inaayika Logo" className="h-14 w-auto object-contain" />
           <button
             onClick={onClose}
             className="p-2 text-gray-500 hover:text-gray-700 transition-all rounded-full hover:bg-gray-200/50"
