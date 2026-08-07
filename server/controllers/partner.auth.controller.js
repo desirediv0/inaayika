@@ -134,7 +134,7 @@ export const forgotPartnerPassword = asyncHandler(async (req, res) => {
         // Send reset email
         await sendEmail({
             email: partner.email,
-            subject: 'Reset Your Partner Password - GenuineGrocery',
+            subject: 'Reset Your Partner Password - INAAYIKA',
             html: getPartnerResetTemplate(resetLink)
         });
 

@@ -58,10 +58,10 @@ export default function ReturnPolicyPage() {
               </div>
               <div className="flex-1">
                 <h3 className="font-display text-lg font-bold text-[#002216] mb-1">
-                  Important Mandatory Unboxing Video Requirement (24 - 48 Hours)
+                  Important Mandatory Unboxing Video Requirement (24 Hours)
                 </h3>
                 <p className="text-gray-700 text-sm leading-relaxed">
-                  If you receive a damaged product or a different product than ordered, you <strong>MUST provide a 360° continuous (uncut/unedited) unboxing video recorded from scratch</strong> to process transit damage claims (whether returnable or non-returnable). Contact INAAYIKA customer care immediately at <strong>+91 8796449692</strong> within <strong>24 - 48 hours of delivery</strong>. Failure to do so may forfeit your claim. The defective or incorrect product will be recalled and replaced or refunded promptly.
+                  If you receive a damaged product or a different product than ordered, you <strong>MUST provide a 360° continuous (uncut/unedited) unboxing video recorded from scratch</strong> to process transit damage claims (whether returnable or non-returnable). Contact INAAYIKA customer care immediately at <strong>+91 8796449692</strong> within <strong>24 hours of delivery</strong>. Failure to do so may forfeit your claim. The defective or incorrect product will be recalled and replaced or refunded promptly.
                 </p>
               </div>
             </div>

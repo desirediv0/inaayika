@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Mail, Lock, User, Phone, ArrowRight,
-  Eye, EyeOff, Loader2, ShieldCheck, Gift, BadgeCheck
+  Eye, EyeOff, Loader2, ShieldCheck, Gift, BadgeCheck, KeyRound
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,9 +29,17 @@ function AuthForm() {
 
   const tabFromUrl = searchParams.get("tab") || "login";
   const [activeTab, setActiveTab] = useState(tabFromUrl);
+  const [pendingEmail, setPendingEmail] = useState("");
 
   useEffect(() => { setActiveTab(tabFromUrl); }, [tabFromUrl]);
   useEffect(() => { if (isAuthenticated) router.push("/"); }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("registeredEmail");
+      if (stored) setPendingEmail(stored);
+    }
+  }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -61,7 +69,7 @@ function AuthForm() {
 
         {/* Center copy */}
         <div className="relative z-10">
-          <h2 className="text-3xl xl:text-4xl   text-white leading-tight mb-4">
+          <h2 className="text-3xl xl:text-4xl text-white leading-tight mb-4 font-display">
             Your Premium<br />
             <span style={{ color: "#D4AF37" }}>Jewellery Brand</span>
           </h2>
@@ -104,26 +112,47 @@ function AuthForm() {
           {/* Card */}
           <div className="bg-white rounded-2xl card-shadow-lg border overflow-hidden" style={{ borderColor: "#E5E7EB" }}>
 
+            {/* Pending OTP Alert Banner */}
+            {pendingEmail && activeTab !== "verify" && (
+              <div className="mx-6 mt-6 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between gap-2 shadow-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <KeyRound className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                  <span className="truncate">OTP sent to <strong>{pendingEmail}</strong></span>
+                </div>
+                <button
+                  onClick={() => handleTabChange("verify")}
+                  className="px-3 py-1 bg-[#003E29] text-white rounded-lg text-[11px] font-semibold hover:bg-[#002216] transition-colors flex-shrink-0"
+                >
+                  Enter Code
+                </button>
+              </div>
+            )}
+
             {/* Tabs */}
             <div className="flex border-b" style={{ borderColor: "#E5E7EB" }}>
-              {["login", "register"].map((tab) => (
+              {[
+                { id: "login", label: "Sign In" },
+                { id: "register", label: "Register" },
+                { id: "verify", label: "Verify OTP" },
+              ].map((tab) => (
                 <button
-                  key={tab}
-                  onClick={() => handleTabChange(tab)}
-                  className="flex-1 py-4 text-sm font-semibold transition-all capitalize"
-                  style={activeTab === tab
+                  key={tab.id}
+                  onClick={() => handleTabChange(tab.id)}
+                  className="flex-1 py-4 text-xs sm:text-sm font-semibold transition-all capitalize"
+                  style={activeTab === tab.id
                     ? { color: "#003E29", borderBottom: "3px solid #D4AF37", background: "rgba(0,62,41,0.03)" }
                     : { color: "#6b7280" }
                   }
                 >
-                  {tab === "login" ? "Sign In" : "Register"}
+                  {tab.label}
                 </button>
               ))}
             </div>
 
             <div className="p-7 md:p-9">
-              {activeTab === "login" && <LoginForm />}
-              {activeTab === "register" && <RegisterForm />}
+              {activeTab === "login" && <LoginForm onSwitchTab={handleTabChange} />}
+              {activeTab === "register" && <RegisterForm onSwitchTab={handleTabChange} />}
+              {activeTab === "verify" && <VerifyOtpForm defaultEmail={pendingEmail} />}
             </div>
           </div>
 
@@ -139,7 +168,7 @@ function AuthForm() {
   );
 }
 
-function LoginForm() {
+function LoginForm({ onSwitchTab }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -161,8 +190,23 @@ function LoginForm() {
       setTimeout(() => router.push(returnUrl ? decodeURIComponent(returnUrl) : "/"), 300);
     } catch (error) {
       const msg = error.message || "Login failed. Please check your credentials.";
-      if (msg.toLowerCase().includes("verify") || msg.toLowerCase().includes("verification")) {
-        toast.error(<div>{msg}{" "}<Link href="/resend-verification" className="font-medium underline text-black">Resend verification</Link></div>);
+      const isVerify = msg.toLowerCase().includes("verify") || msg.toLowerCase().includes("verification");
+      if (isVerify) {
+        if (typeof window !== "undefined") localStorage.setItem("registeredEmail", email);
+        toast.error(
+          <div className="space-y-1.5">
+            <p className="font-semibold">{msg}</p>
+            <div className="flex items-center gap-3 text-xs pt-1">
+              <Link href={`/verify-otp?email=${encodeURIComponent(email)}`} className="underline font-bold text-[#003E29]">
+                🔑 Enter OTP Code
+              </Link>
+              <Link href={`/resend-verification?email=${encodeURIComponent(email)}`} className="underline text-gray-700">
+                Resend OTP
+              </Link>
+            </div>
+          </div>,
+          { duration: 8000 }
+        );
       } else {
         toast.error(msg);
       }
@@ -174,15 +218,15 @@ function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="mb-7">
-        <h1 className="text-2xl   mb-1" style={{ color: "#002216" }}>Welcome Back</h1>
+        <h1 className="text-2xl mb-1 font-display" style={{ color: "#002216" }}>Welcome Back</h1>
         <p className="text-gray-400 text-sm">Sign in to your Inaayika account</p>
       </div>
 
       {/* Email */}
       <div>
-        <label className="block text-xs   uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>Email Address</label>
+        <label className="block text-xs uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>Email Address</label>
         <div className="relative">
-          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gray-400" style={{ width: 18, height: 18 }} />
+          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" style={{ width: 18, height: 18 }} />
           <input
             type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
             placeholder="you@example.com"
@@ -194,7 +238,7 @@ function LoginForm() {
       {/* Password */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-xs   uppercase tracking-wider" style={{ color: "#002216" }}>Password</label>
+          <label className="block text-xs uppercase tracking-wider" style={{ color: "#002216" }}>Password</label>
           <Link href="/forgot-password" className="text-xs font-medium hover:underline" style={{ color: "#003E29" }}>Forgot password?</Link>
         </div>
         <div className="relative">
@@ -219,15 +263,25 @@ function LoginForm() {
         {isSubmitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Signing in...</> : <>Sign In <ArrowRight className="h-4 w-4 text-[#D4AF37]" /></>}
       </button>
 
-      <p className="text-center text-sm text-gray-400">
-        No account?{" "}
-        <Link href="/auth?tab=register" className="font-semibold hover:underline" style={{ color: "#003E29" }}>Register here</Link>
-      </p>
+      <div className="space-y-1.5 pt-2 text-center text-xs text-gray-500">
+        <p>
+          No account?{" "}
+          <button type="button" onClick={() => onSwitchTab("register")} className="font-semibold hover:underline" style={{ color: "#003E29" }}>
+            Register here
+          </button>
+        </p>
+        <p>
+          Have an OTP code?{" "}
+          <button type="button" onClick={() => onSwitchTab("verify")} className="font-semibold hover:underline" style={{ color: "#003E29" }}>
+            Verify OTP Here
+          </button>
+        </p>
+      </div>
     </form>
   );
 }
 
-function RegisterForm() {
+function RegisterForm({ onSwitchTab }) {
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -267,7 +321,27 @@ function RegisterForm() {
       localStorage.setItem("registeredEmail", formData.email);
       setTimeout(() => router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`), 600);
     } catch (error) {
-      toast.error(error.message || "Registration failed. Please try again.");
+      const msg = error.message || "Registration failed. Please try again.";
+      const isAlreadyReg = msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already exists");
+      if (isAlreadyReg) {
+        if (typeof window !== "undefined") localStorage.setItem("registeredEmail", formData.email);
+        toast.error(
+          <div className="space-y-1.5">
+            <p className="font-semibold">{msg}</p>
+            <div className="flex items-center gap-3 text-xs pt-1">
+              <Link href={`/verify-otp?email=${encodeURIComponent(formData.email)}`} className="underline font-bold text-[#003E29]">
+                🔑 Enter OTP Code
+              </Link>
+              <Link href={`/resend-verification?email=${encodeURIComponent(formData.email)}`} className="underline text-gray-700">
+                Resend OTP
+              </Link>
+            </div>
+          </div>,
+          { duration: 8000 }
+        );
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -276,7 +350,7 @@ function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="mb-6">
-        <h1 className="text-2xl   mb-1" style={{ color: "#002216" }}>Create Account</h1>
+        <h1 className="text-2xl mb-1 font-display" style={{ color: "#002216" }}>Create Account</h1>
         <p className="text-gray-400 text-sm">Join Inaayika today</p>
       </div>
 
@@ -286,7 +360,7 @@ function RegisterForm() {
         { label: "Phone Number", name: "phone", type: "tel", icon: Phone, placeholder: "+91 9876543210" },
       ].map(({ label, name, type, icon: Icon, placeholder }) => (
         <div key={name}>
-          <label className="block text-xs   uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>{label}</label>
+          <label className="block text-xs uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>{label}</label>
           <div className="relative">
             <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" style={{ width: 18, height: 18 }} />
             <input
@@ -299,7 +373,7 @@ function RegisterForm() {
 
       {/* Password */}
       <div>
-        <label className="block text-xs   uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>Password</label>
+        <label className="block text-xs uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>Password</label>
         <div className="relative">
           <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" style={{ width: 18, height: 18 }} />
           <input
@@ -315,7 +389,7 @@ function RegisterForm() {
 
       {/* Confirm Password */}
       <div>
-        <label className="block text-xs   uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>Confirm Password</label>
+        <label className="block text-xs uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>Confirm Password</label>
         <div className="relative">
           <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" style={{ width: 18, height: 18 }} />
           <input
@@ -334,10 +408,139 @@ function RegisterForm() {
         {isSubmitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating account...</> : <>Create Account <ArrowRight className="h-4 w-4 text-[#D4AF37]" /></>}
       </button>
 
-      <p className="text-center text-sm text-gray-400">
-        Already have an account?{" "}
-        <Link href="/auth?tab=login" className="font-semibold hover:underline" style={{ color: "#003E29" }}>Sign In</Link>
-      </p>
+      <div className="space-y-1.5 pt-2 text-center text-xs text-gray-500">
+        <p>
+          Already have an account?{" "}
+          <button type="button" onClick={() => onSwitchTab("login")} className="font-semibold hover:underline" style={{ color: "#003E29" }}>
+            Sign In
+          </button>
+        </p>
+        <p>
+          Already received your OTP code?{" "}
+          <button type="button" onClick={() => onSwitchTab("verify")} className="font-semibold hover:underline" style={{ color: "#003E29" }}>
+            Verify OTP Here
+          </button>
+        </p>
+      </div>
+    </form>
+  );
+}
+
+function VerifyOtpForm({ defaultEmail = "" }) {
+  const [email, setEmail] = useState(defaultEmail || "");
+  const [otp, setOtp] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const { verifyOtp, resendVerification } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!email && typeof window !== "undefined") {
+      const stored = localStorage.getItem("registeredEmail");
+      if (stored) setEmail(stored);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    if (!email) { toast.error("Email address is required"); return; }
+    if (!/^\d{6}$/.test(otp)) { toast.error("Enter 6-digit OTP code"); return; }
+
+    setIsSubmitting(true);
+    try {
+      await verifyOtp(email, otp);
+      toast.success("Email verified successfully! Logging you in...");
+      if (typeof window !== "undefined") localStorage.removeItem("registeredEmail");
+      setTimeout(() => router.push("/"), 500);
+    } catch (err) {
+      toast.error(err.message || "Failed to verify OTP. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email) { toast.error("Enter your email address to resend OTP"); return; }
+    try {
+      await resendVerification(email);
+      toast.success("New OTP code sent to your email!");
+      setResendCooldown(30);
+    } catch (err) {
+      toast.error(err.message || "Failed to resend OTP");
+    }
+  };
+
+  return (
+    <form onSubmit={handleVerify} className="space-y-5">
+      <div className="mb-6">
+        <h1 className="text-2xl mb-1 font-display" style={{ color: "#002216" }}>Verify Email OTP</h1>
+        <p className="text-gray-400 text-sm">Enter the 6-digit code sent to your registered email</p>
+      </div>
+
+      <div>
+        <label className="block text-xs uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>Email Address</label>
+        <div className="relative">
+          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" style={{ width: 18, height: 18 }} />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            required
+            className={`${inputCls} ${inputFocus}`}
+            style={inputStyle}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs uppercase tracking-wider mb-1.5" style={{ color: "#002216" }}>6-Digit OTP Code</label>
+        <div className="relative">
+          <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" style={{ width: 18, height: 18 }} />
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="\d{6}"
+            maxLength={6}
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/[^\d]/g, ""))}
+            placeholder="Enter 6-digit code (e.g. 123456)"
+            required
+            className={`${inputCls} ${inputFocus} tracking-widest font-mono text-base font-semibold`}
+            style={inputStyle}
+          />
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full h-12 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:bg-[#002216] disabled:opacity-60 mt-2 border border-[#D4AF37]/30 shadow-md"
+        style={{ background: "#003E29" }}
+      >
+        {isSubmitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Verifying OTP...</> : <>Verify OTP Code <ArrowRight className="h-4 w-4 text-[#D4AF37]" /></>}
+      </button>
+
+      <div className="flex items-center justify-between text-xs pt-2">
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={resendCooldown > 0}
+          className="text-[#003E29] font-medium hover:underline disabled:text-gray-400"
+        >
+          {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend OTP Code"}
+        </button>
+        <button type="button" onClick={() => onSwitchTab?.("login")} className="text-gray-500 hover:underline">
+          Back to Sign In
+        </button>
+      </div>
     </form>
   );
 }

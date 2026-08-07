@@ -17,7 +17,7 @@ const HIGHLIGHT_CARDS = [
     icon: Truck,
     color: "#D4AF37",
     title: "Domestic Delivery",
-    description: "Estimated domestic transit time is 3–7 working days across India, depending on metro vs. non-metro pin codes.",
+    description: "Estimated domestic transit time is 4–5 working days across India, depending on metro vs. non-metro pin codes.",
   },
   {
     icon: Package,
@@ -103,7 +103,7 @@ export default function ShippingPolicyPage() {
 
                 <div className="bg-amber-50/60 border border-amber-200/60 p-4 rounded-xl">
                   <p className="font-semibold text-amber-900 mb-1">🚚 Delivery Timelines &amp; Free Shipping:</p>
-                  <p className="mb-1">Estimated domestic transit time is <strong>3–7 working days</strong>, depending on metro vs. non-metro pin codes across India.</p>
+                  <p className="mb-1">Estimated domestic transit time is <strong>4–5 working days</strong>, depending on metro vs. non-metro pin codes across India.</p>
                   <p className="text-xs font-semibold text-[#003E29]">🎉 Free Delivery is available on all orders above ₹5000 across India!</p>
                 </div>
 

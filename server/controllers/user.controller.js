@@ -150,7 +150,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: "Your OTP for Email Verification - GenuineGrocery",
+      subject: "Your OTP for Email Verification - INAAYIKA",
       html: getEmailOtpTemplate(otpCode, 10),
     });
 
@@ -456,7 +456,7 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: "Reset Your Password - GenuineGrocery",
+      subject: "Reset Your Password - INAAYIKA",
       html: getResetTemplate(resetLink),
     });
 
@@ -1743,7 +1743,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: "Your OTP for Email Verification - GenuineGrocery",
+      subject: "Your OTP for Email Verification - INAAYIKA",
       html: getEmailOtpTemplate(otpCode, 10),
     });
 

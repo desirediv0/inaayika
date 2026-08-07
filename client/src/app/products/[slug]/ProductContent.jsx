@@ -264,8 +264,8 @@ export default function ProductContent({ slug }) {
   const getDeliveryDates = () => {
     const today = new Date();
     const format = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const start = new Date(today); start.setDate(today.getDate() + 3);
-    const end = new Date(today); end.setDate(today.getDate() + 6);
+    const start = new Date(today); start.setDate(today.getDate() + 4);
+    const end = new Date(today); end.setDate(today.getDate() + 5);
     return `${format(start).toUpperCase()} - ${format(end).toUpperCase()}`;
   };
 
@@ -615,7 +615,7 @@ export default function ProductContent({ slug }) {
             <div className="flex items-center gap-3 py-3 px-4 bg-neutral-50 rounded-xl border border-neutral-100 text-xs text-neutral-700 mb-6">
               <Truck className="h-4.5 w-4.5 text-neutral-800" />
               <span>
-                <strong>2-3 DAY DELIVERY</strong> <span className="text-neutral-400">|</span> Speedy & fully insured delivery!
+                <strong>4-5 DAY DELIVERY</strong> <span className="text-neutral-400">|</span> Speedy & fully insured delivery!
               </span>
             </div>
 
@@ -814,7 +814,7 @@ export default function ProductContent({ slug }) {
                       rows: [
                         ["Ready Stock", "Dispatched in 24–48 Hours"],
                         ["Handmade / Custom", "Crafted in 3–5 Business Days before shipping"],
-                        ["Domestic Transit", "3–7 Working Days (Metro vs Non-Metro pin codes)"],
+                        ["Domestic Transit", "4–5 Working Days (Metro vs Non-Metro pin codes)"],
                         ["Order Tracking", "Live SMS / Email / WhatsApp tracking link upon dispatch"],
                       ],
                     },
@@ -822,7 +822,7 @@ export default function ProductContent({ slug }) {
                       title: "Returns & Transit Claims",
                       icon: RefreshCw,
                       rows: [
-                        ["Unboxing Video", "Mandatory 360° continuous unboxing video within 24-48 hrs"],
+                        ["Unboxing Video", "Mandatory 360° continuous unboxing video within 24 hrs"],
                         ["Return Window", "Specified per product; custom orders strictly non-returnable"],
                         ["RTO Fee", "₹100 re-shipping fee applies if parcel returned due to wrong address"],
                         ["Refund Time", "Processed via original method within 7–10 days of warehouse receipt"],
@@ -847,7 +847,7 @@ export default function ProductContent({ slug }) {
                 </div>
 
                 <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 flex flex-wrap items-center justify-between gap-3">
-                  <span>📹 <strong>Transit Damage Claim:</strong> Continuous 360° uncut unboxing video mandatory within 24-48 hrs of delivery.</span>
+                  <span>📹 <strong>Transit Damage Claim:</strong> Continuous 360° uncut unboxing video mandatory within 24 hrs of delivery.</span>
                   <div className="flex gap-4">
                     <Link href="/shipping-policy" className="underline font-semibold text-[#003E29]">Shipping Policy</Link>
                     <Link href="/return-policy" className="underline font-semibold text-[#003E29]">Return Policy</Link>

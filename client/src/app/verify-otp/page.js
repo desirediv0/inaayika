@@ -14,7 +14,14 @@ function VerifyOtpContent() {
     const { verifyOtp, resendVerification } = useAuth();
 
     const initialEmail = useMemo(
-        () => searchParams.get("email") || "",
+        () => {
+            const queryEmail = searchParams.get("email");
+            if (queryEmail) return queryEmail;
+            if (typeof window !== "undefined") {
+                return localStorage.getItem("registeredEmail") || "";
+            }
+            return "";
+        },
         [searchParams]
     );
     const [email, setEmail] = useState(initialEmail);
@@ -23,7 +30,7 @@ function VerifyOtpContent() {
     const [resendCooldown, setResendCooldown] = useState(0);
 
     useEffect(() => {
-        setEmail(initialEmail);
+        if (initialEmail) setEmail(initialEmail);
     }, [initialEmail]);
 
     useEffect(() => {
@@ -40,6 +47,7 @@ function VerifyOtpContent() {
         setIsSubmitting(true);
         try {
             await verifyOtp(email, otp);
+            if (typeof window !== "undefined") localStorage.removeItem("registeredEmail");
             toast.success("Verification successful! Logging you in...");
 
             // Give context state a moment to update

@@ -89,20 +89,21 @@ export const getEmailOtpTemplate = (otp, expiresInMinutes = 10, storeConfig = nu
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your OTP - ${store.storeName}</title>
+    <title>Your Verification OTP - ${store.storeName}</title>
     <style>
         ${BASE_STYLES}
-        .otp { font-size: 42px; letter-spacing: 14px; font-weight: 900; color: #003E29; background: rgba(0,62,41,0.06); padding: 22px; border-radius: 14px; display: inline-block; margin: 20px 0; border: 1px solid #E5E7EB; }
+        .otp-box { font-size: 38px; letter-spacing: 12px; font-weight: 900; color: #003E29; background: #F7F3EB; padding: 20px 30px; border-radius: 16px; display: inline-block; margin: 24px 0; border: 2px dashed #B08D57; font-family: monospace; }
     </style>
 </head>
 <body>
     <div class="container">
-        ${HEADER_HTML("Verification Code", "Security Code", store)}
+        ${HEADER_HTML("Account Verification OTP", "Email Security Code", store)}
         <div class="content" style="text-align: center;">
-            <p>Use the code below to verify your account at <strong>${store.storeName}</strong>:</p>
-            <div class="otp">${otp}</div>
-            <p style="font-size: 14px; color: #ef4444; font-weight: 600;">This code expires in ${expiresInMinutes} minutes.</p>
-            <p style="font-size: 13px; color: #9ca3af;">If you did not request this code, please ignore this email.</p>
+            <h2 style="color: #002216; margin-bottom: 12px;">Your 6-Digit OTP Code</h2>
+            <p style="font-size: 15px; color: #4b5563;">Use the verification code below to verify your account at <strong>${store.storeName}</strong>:</p>
+            <div class="otp-box">${otp}</div>
+            <p style="font-size: 14px; color: #dc2626; font-weight: 600; margin-top: 8px;">⏳ This OTP code expires in ${expiresInMinutes} minutes.</p>
+            <p style="font-size: 13px; color: #9ca3af; margin-top: 16px;">Copy and paste this code on the registration/verification screen. If you did not request this, please ignore this email.</p>
         </div>
         ${FOOTER_HTML(store)}
     </div>
