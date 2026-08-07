@@ -27,6 +27,17 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   // The actual sort field for Prisma: price isn't on Product model
   const effectiveSort = isPriceSort ? "createdAt" : sort;
 
+  const parsedMin = minPrice !== undefined && minPrice !== null && minPrice !== "" ? parseFloat(minPrice) : null;
+  const parsedMax = maxPrice !== undefined && maxPrice !== null && maxPrice !== "" ? parseFloat(maxPrice) : null;
+
+  let effectiveMinPrice = parsedMin;
+  let effectiveMaxPrice = parsedMax;
+
+  if (parsedMin !== null && parsedMax !== null && parsedMin > parsedMax) {
+    effectiveMinPrice = parsedMax;
+    effectiveMaxPrice = parsedMin;
+  }
+
   // Normalize search: treat + as space (when querystrings use + for spaces)
   const normalizedSearch =
     typeof search === "string" ? search.replace(/\+/g, " ") : "";
@@ -87,21 +98,21 @@ export const getAllProducts = asyncHandler(async (req, res) => {
       },
     }),
     // Filter by price range via variants
-    ...((minPrice || maxPrice) && {
+    ...((effectiveMinPrice !== null || effectiveMaxPrice !== null) && {
       variants: {
         some: {
           AND: [
             { isActive: true },
             // Min price
-            ...(minPrice
+            ...(effectiveMinPrice !== null
               ? [
                 {
                   OR: [
-                    { price: { gte: parseFloat(minPrice) } },
+                    { price: { gte: effectiveMinPrice } },
                     {
                       AND: [
                         { salePrice: { not: null } },
-                        { salePrice: { gte: parseFloat(minPrice) } },
+                        { salePrice: { gte: effectiveMinPrice } },
                       ],
                     },
                   ],
@@ -109,20 +120,20 @@ export const getAllProducts = asyncHandler(async (req, res) => {
               ]
               : []),
             // Max price
-            ...(maxPrice
+            ...(effectiveMaxPrice !== null
               ? [
                 {
                   OR: [
                     {
                       AND: [
                         { salePrice: { not: null } },
-                        { salePrice: { lte: parseFloat(maxPrice) } },
+                        { salePrice: { lte: effectiveMaxPrice } },
                       ],
                     },
                     {
                       AND: [
                         { salePrice: null },
-                        { price: { lte: parseFloat(maxPrice) } },
+                        { price: { lte: effectiveMaxPrice } },
                       ],
                     },
                   ],

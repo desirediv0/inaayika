@@ -100,10 +100,23 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
     limit = 10,
     sort = "createdAt",
     order = "desc",
+    minPrice,
+    maxPrice,
   } = req.query;
 
   const isPriceSort = sort === "price";
   const effectiveSort = isPriceSort ? "createdAt" : sort;
+
+  const parsedMin = minPrice !== undefined && minPrice !== null && minPrice !== "" ? parseFloat(minPrice) : null;
+  const parsedMax = maxPrice !== undefined && maxPrice !== null && maxPrice !== "" ? parseFloat(maxPrice) : null;
+
+  let effectiveMinPrice = parsedMin;
+  let effectiveMaxPrice = parsedMax;
+
+  if (parsedMin !== null && parsedMax !== null && parsedMin > parsedMax) {
+    effectiveMinPrice = parsedMax;
+    effectiveMaxPrice = parsedMin;
+  }
 
   // Find the category by slug
   const category = await prisma.category.findUnique({
@@ -121,36 +134,71 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
   // Get category ID
   const categoryIds = [category.id];
 
-  // Count total products in this category and its subcategories
-  const totalProducts = await prisma.product.count({
-    where: {
-      categories: {
-        some: {
-          category: {
-            id: {
-              in: categoryIds,
-            },
+  const whereConditions = {
+    categories: {
+      some: {
+        category: {
+          id: {
+            in: categoryIds,
           },
         },
       },
-      isActive: true,
     },
+    isActive: true,
+    ...((effectiveMinPrice !== null || effectiveMaxPrice !== null) && {
+      variants: {
+        some: {
+          AND: [
+            { isActive: true },
+            ...(effectiveMinPrice !== null
+              ? [
+                {
+                  OR: [
+                    { price: { gte: effectiveMinPrice } },
+                    {
+                      AND: [
+                        { salePrice: { not: null } },
+                        { salePrice: { gte: effectiveMinPrice } },
+                      ],
+                    },
+                  ],
+                },
+              ]
+              : []),
+            ...(effectiveMaxPrice !== null
+              ? [
+                {
+                  OR: [
+                    {
+                      AND: [
+                        { salePrice: { not: null } },
+                        { salePrice: { lte: effectiveMaxPrice } },
+                      ],
+                    },
+                    {
+                      AND: [
+                        { salePrice: null },
+                        { price: { lte: effectiveMaxPrice } },
+                      ],
+                    },
+                  ],
+                },
+              ]
+              : []),
+          ],
+        },
+      },
+    }),
+  };
+
+  // Count total products in this category and its subcategories
+  const totalProducts = await prisma.product.count({
+    where: whereConditions,
   });
 
   // Get paginated products
   const products = await prisma.product.findMany({
-    where: {
-      categories: {
-        some: {
-          category: {
-            id: {
-              in: categoryIds,
-            },
-          },
-        },
-      },
-      isActive: true,
-    },
+    where: whereConditions,
     include: {
       images: {
         where: { isPrimary: true },

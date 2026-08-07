@@ -346,25 +346,51 @@ function ProductsContent() {
             </select>
           </div>
 
-          {/* Smooth Range Slider (10 to 10000) */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">
-              <span>Max: ₹{priceRange.max}</span>
-              <span>₹10,000</span>
+          {/* Min & Max Range Sliders (10 to 10000) */}
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mb-1">
+                <span>Min Price: ₹{priceRange.min}</span>
+              </div>
+              <input
+                type="range"
+                min="10"
+                max="10000"
+                step="10"
+                value={priceRange.min}
+                onChange={(e) => {
+                  const newMin = parseInt(e.target.value) || 10;
+                  setPriceRange((prev) => ({
+                    min: newMin,
+                    max: prev.max < newMin ? newMin : prev.max,
+                  }));
+                  setSelectedPredefinedRange("custom");
+                }}
+                className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-1.5 rounded-lg transition-all"
+              />
             </div>
-            <input
-              type="range"
-              min="10"
-              max="10000"
-              step="10"
-              value={priceRange.max}
-              onChange={(e) => {
-                const newMax = parseInt(e.target.value) || 10000;
-                setPriceRange((prev) => ({ ...prev, max: newMax }));
-                setSelectedPredefinedRange("custom");
-              }}
-              className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-2 rounded-lg transition-all"
-            />
+            <div>
+              <div className="flex justify-between text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mb-1">
+                <span>Max Price: ₹{priceRange.max}</span>
+                <span>Max: ₹10,000</span>
+              </div>
+              <input
+                type="range"
+                min="10"
+                max="10000"
+                step="10"
+                value={priceRange.max}
+                onChange={(e) => {
+                  const newMax = parseInt(e.target.value) || 10000;
+                  setPriceRange((prev) => ({
+                    min: prev.min > newMax ? 10 : prev.min,
+                    max: newMax,
+                  }));
+                  setSelectedPredefinedRange("custom");
+                }}
+                className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-1.5 rounded-lg transition-all"
+              />
+            </div>
           </div>
 
           {/* Direct Min & Max Inputs */}
@@ -378,7 +404,10 @@ function ProductsContent() {
                 value={priceRange.min}
                 onChange={(e) => {
                   const val = Math.max(10, Math.min(10000, parseInt(e.target.value) || 10));
-                  setPriceRange((prev) => ({ ...prev, min: val }));
+                  setPriceRange((prev) => ({
+                    min: val,
+                    max: prev.max < val ? val : prev.max,
+                  }));
                   setSelectedPredefinedRange("custom");
                 }}
                 className="w-full px-2.5 py-1.5 border border-[#E9E2D5] rounded text-xs text-zinc-800 bg-white font-medium focus:outline-none focus:border-[#003E29]"
@@ -394,7 +423,10 @@ function ProductsContent() {
                 value={priceRange.max}
                 onChange={(e) => {
                   const val = Math.max(10, Math.min(10000, parseInt(e.target.value) || 10000));
-                  setPriceRange((prev) => ({ ...prev, max: val }));
+                  setPriceRange((prev) => ({
+                    min: prev.min > val ? 10 : prev.min,
+                    max: val,
+                  }));
                   setSelectedPredefinedRange("custom");
                 }}
                 className="w-full px-2.5 py-1.5 border border-[#E9E2D5] rounded text-xs text-zinc-800 bg-white font-medium focus:outline-none focus:border-[#003E29]"
@@ -405,13 +437,16 @@ function ProductsContent() {
           {/* Filter Action Button */}
           <div className="flex items-center justify-between pt-1">
             <span className="text-xs font-semibold text-[#003E29]">
-              Price: ₹{priceRange.min} — ₹{priceRange.max}
+              Price: ₹{Math.min(priceRange.min, priceRange.max)} — ₹{Math.max(priceRange.min, priceRange.max)}
             </span>
             <button
               onClick={() => {
+                const finalMin = Math.min(priceRange.min, priceRange.max);
+                const finalMax = Math.max(priceRange.min, priceRange.max);
+                setPriceRange({ min: finalMin, max: finalMax });
                 handleMultipleFiltersChange({
-                  minPrice: String(priceRange.min),
-                  maxPrice: String(priceRange.max),
+                  minPrice: String(finalMin),
+                  maxPrice: String(finalMax),
                 });
               }}
               className="px-4 py-1.5 bg-[#003E29] text-white text-[10px] tracking-widest uppercase hover:bg-[#002e1f] transition-colors rounded shadow-sm font-semibold"
