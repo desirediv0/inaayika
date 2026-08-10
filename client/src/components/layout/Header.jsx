@@ -260,7 +260,7 @@ export function Navbar() {
                   <img
                     src="/logo.png"
                     alt="Inaayika Logo"
-                    className="h-16 sm:h-20 md:h-24 w-auto object-contain transition-transform duration-300 hover:scale-105"
+                    className="h-20 sm:h-24 md:h-28 w-auto object-contain transition-transform duration-300 hover:scale-105"
                   />
                 </Link>
               </div>
