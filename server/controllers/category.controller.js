@@ -25,10 +25,8 @@ export const getAllCategories = asyncHandler(async (req, res) => {
 
   // Format the response with image URLs
   const formattedCategories = categories.map((category) => {
-    const isGoldRings = category.name.toLowerCase() === "gold rings";
     return {
       ...category,
-      name: isGoldRings ? "1grm Gold Plated Jewellery" : category.name,
       image: category.image ? getFileUrl(category.image) : null,
     };
   });
@@ -69,10 +67,8 @@ export const getCategoriesWithSubCategories = asyncHandler(async (req, res) => {
 
   // Format the response with image URLs
   const formattedCategories = categories.map((category) => {
-    const isGoldRings = category.name.toLowerCase() === "gold rings";
     return {
       ...category,
-      name: isGoldRings ? "1grm Gold Plated Jewellery" : category.name,
       image: category.image ? getFileUrl(category.image) : null,
       subCategories: category.subCategories.map((subCat) => ({
         ...subCat,
@@ -125,10 +121,6 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
 
   if (!category) {
     throw new ApiError(404, "Category not found");
-  }
-
-  if (category.name.toLowerCase() === "gold rings") {
-    category.name = "1grm Gold Plated Jewellery";
   }
 
   // Get category ID

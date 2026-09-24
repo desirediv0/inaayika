@@ -52,7 +52,7 @@ export const Footer = () => {
 
           {/* Column 1: About */}
           <div>
-            <h4 className={FOOTER_HEADING_CLS}>The Maison</h4>
+            <h4 className={FOOTER_HEADING_CLS}>Our Policies</h4>
             <ul className="space-y-3.5">
               <li>
                 <Link href="/about" className={FOOTER_LINK_CLS}>

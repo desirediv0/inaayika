@@ -106,7 +106,6 @@ export function Navbar() {
   const announcements = [
     "Summer Sale - Extra 25% off on Orders above ₹5000",
     "Complimentary Free Doorstep Delivery Across India on Orders Above ₹5000",
-    "Introducing Lab-grown diamonds set in pure 925 sterling silver. Shop Now",
     "Summer Sale - Extra 15% off on Orders above ₹1500 + 5% off on Prepaid Orders",
   ];
 
@@ -281,7 +280,7 @@ export function Navbar() {
 
                 <div className="relative group" onMouseEnter={() => setActiveDropdown("pages")} onMouseLeave={() => setActiveDropdown(null)}>
                   <span className="flex items-center gap-1.5 text-xs uppercase font-medium tracking-[0.28em] text-neutral-800 hover:text-[#003E29] transition-colors cursor-pointer">
-                    Maison <FiChevronDown className="h-3 w-3" />
+                    Our Policies <FiChevronDown className="h-3 w-3" />
                   </span>
                   {activeDropdown === "pages" && (
                     <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50">
