@@ -22,6 +22,7 @@ function normalizeSlide(slide) {
     title: slide.title || slide.headline || "",
     subtitle: slide.subtitle || slide.subheadline || "",
     ctaLink: slide.ctaLink || slide.link || "/products",
+    isAdminBanner: slide.isAdminBanner || false,
   };
 }
 
@@ -32,6 +33,7 @@ function bannerToSlide(banner) {
     title: banner.title || "",
     subtitle: banner.subtitle || "",
     ctaLink: banner.link || "/products",
+    isAdminBanner: true,
   });
 }
 
@@ -112,7 +114,14 @@ export default function HeroSection() {
     return () => api.off("select", onSelect);
   }, [api]);
 
-  const handleSlideClick = (ctaLink) => router.push(ctaLink || "/products");
+  const handleSlideClick = (ctaLink) => {
+    const destination = ctaLink || "/products";
+    if (/^https?:\/\//i.test(destination)) {
+      window.location.assign(destination);
+      return;
+    }
+    router.push(destination);
+  };
 
   /* ── Loading skeleton ── */
   if (isLoading) {
@@ -136,59 +145,78 @@ export default function HeroSection() {
           {slides.map((slide, index) => (
             <CarouselItem key={index} className="p-0">
               <div
-                className="relative w-full h-[65vh] sm:h-[75vh] md:h-[85vh] overflow-hidden cursor-pointer"
+                className={`relative w-full overflow-hidden ${
+                  slide.isAdminBanner
+                    ? "aspect-[9/16] md:aspect-video bg-[#003E29]"
+                    : "h-[65vh] sm:h-[75vh] md:h-[85vh]"
+                } ${slide.ctaLink ? "cursor-pointer" : ""}`}
                 onClick={() => handleSlideClick(slide.ctaLink)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleSlideClick(slide.ctaLink);
+                  }
+                }}
+                role={slide.ctaLink ? "link" : undefined}
+                tabIndex={slide.ctaLink ? 0 : undefined}
+                aria-label={slide.ctaLink ? `Open ${slide.title || `banner ${index + 1}`}` : undefined}
               >
                 {/* Hero Background Image */}
                 <Image
                   src={isMobile ? slide.smimg : slide.img}
                   alt={slide.title || `Slide ${index + 1}`}
                   fill
-                  className="object-cover object-center hero-kenburns"
+                  className={slide.isAdminBanner
+                    ? "object-contain object-center"
+                    : "object-cover object-center hero-kenburns"}
                   priority={index === 0}
                   sizes="100vw"
                 />
 
-                {/* Floating gold sparkles */}
-                <span className="sparkle absolute top-[22%] right-[18%] text-lg z-10 hidden md:block" aria-hidden="true">✦</span>
-                <span className="sparkle absolute top-[58%] right-[9%] text-xs z-10 hidden md:block" style={{ animationDelay: "1.4s" }} aria-hidden="true">✦</span>
-                <span className="sparkle absolute top-[36%] right-[30%] text-sm z-10 hidden md:block" style={{ animationDelay: "2.6s" }} aria-hidden="true">✦</span>
-                <span className="sparkle absolute bottom-[24%] left-[8%] text-xs z-10 hidden md:block" style={{ animationDelay: "2s" }} aria-hidden="true">✦</span>
+                {!slide.isAdminBanner && (
+                  <>
+                    {/* Floating gold sparkles */}
+                    <span className="sparkle absolute top-[22%] right-[18%] text-lg z-10 hidden md:block" aria-hidden="true">✦</span>
+                    <span className="sparkle absolute top-[58%] right-[9%] text-xs z-10 hidden md:block" style={{ animationDelay: "1.4s" }} aria-hidden="true">✦</span>
+                    <span className="sparkle absolute top-[36%] right-[30%] text-sm z-10 hidden md:block" style={{ animationDelay: "2.6s" }} aria-hidden="true">✦</span>
+                    <span className="sparkle absolute bottom-[24%] left-[8%] text-xs z-10 hidden md:block" style={{ animationDelay: "2s" }} aria-hidden="true">✦</span>
 
-                {/* Left/Center Text Overlay Box */}
-                <div className="absolute inset-0 flex items-center" style={{ background: "linear-gradient(90deg, rgba(0,20,13,0.5) 0%, rgba(0,20,13,0.22) 45%, rgba(0,20,13,0) 75%)" }}>
-                  <div className="max-w-7xl mx-auto px-6 sm:px-12 md:px-16 w-full">
-                    <div className="max-w-xl text-white">
-                      {/* Eyebrow */}
-                      <span className="block text-[10px] sm:text-[11px] uppercase tracking-[0.45em] text-[#E7C983] mb-5 animate-fade-in">
-                        Inaayika &mdash; Handcrafted Jewellery
-                      </span>
+                    {/* Left/Center Text Overlay Box */}
+                    <div className="absolute inset-0 flex items-center" style={{ background: "linear-gradient(90deg, rgba(0,20,13,0.5) 0%, rgba(0,20,13,0.22) 45%, rgba(0,20,13,0) 75%)" }}>
+                      <div className="max-w-7xl mx-auto px-6 sm:px-12 md:px-16 w-full">
+                        <div className="max-w-xl text-white">
+                          {/* Eyebrow */}
+                          <span className="block text-[10px] sm:text-[11px] uppercase tracking-[0.45em] text-[#E7C983] mb-5 animate-fade-in">
+                            Inaayika &mdash; Handcrafted Jewellery
+                          </span>
 
-                      {/* Heading */}
-                      <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-medium leading-[1.05] tracking-wide mb-5 text-white drop-shadow-md animate-fade-in">
-                        {slide.title}
-                      </h1>
+                          {/* Heading */}
+                          <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-medium leading-[1.05] tracking-wide mb-5 text-white drop-shadow-md animate-fade-in">
+                            {slide.title}
+                          </h1>
 
-                      {/* Subheading */}
-                      <p className="text-sm sm:text-[15px] text-white/85 font-light leading-relaxed tracking-wide mb-9 max-w-md drop-shadow-sm animate-fade-in-delayed">
-                        {slide.subtitle}
-                      </p>
+                          {/* Subheading */}
+                          <p className="text-sm sm:text-[15px] text-white/85 font-light leading-relaxed tracking-wide mb-9 max-w-md drop-shadow-sm animate-fade-in-delayed">
+                            {slide.subtitle}
+                          </p>
 
-                      {/* CTA Button */}
-                      <div className="animate-fade-in-delayed">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSlideClick(slide.ctaLink);
-                          }}
-                          className="btn-luxe-white active:scale-95"
-                        >
-                          Discover the Collection
-                        </button>
+                          {/* CTA Button */}
+                          <div className="animate-fade-in-delayed">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSlideClick(slide.ctaLink);
+                              }}
+                              className="btn-luxe-white active:scale-95"
+                            >
+                              Discover the Collection
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </>
+                )}
 
               </div>
             </CarouselItem>
@@ -196,30 +224,32 @@ export default function HeroSection() {
         </CarouselContent>
 
         {/* ── Navigation Arrows ── */}
-        <CarouselPrevious className="absolute left-6 top-1/2 -translate-y-1/2 hidden md:flex
+        {slides.length > 1 && <CarouselPrevious className="absolute left-6 top-1/2 -translate-y-1/2 hidden md:flex
                                      h-12 w-12 z-30 rounded-none
                                      bg-transparent hover:bg-white/15 border border-white/40 hover:border-white
-                                     text-white backdrop-blur-sm transition-all" />
-        <CarouselNext className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex
+                                     text-white backdrop-blur-sm transition-all" />}
+        {slides.length > 1 && <CarouselNext className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex
                                    h-12 w-12 z-30 rounded-none
                                    bg-transparent hover:bg-white/15 border border-white/40 hover:border-white
-                                   text-white backdrop-blur-sm transition-all" />
+                                   text-white backdrop-blur-sm transition-all" />}
 
         {/* ── Slide indicator bars ── */}
-        <div className="absolute bottom-7 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => api?.scrollTo(index)}
-              aria-label={`Go to slide ${index + 1}`}
-              className={`h-px transition-all duration-500 ${index === currentSlide
-                ? "w-10 bg-[#E7C983]"
-                : "w-5 bg-white/50 hover:bg-white/90"
-                }`}
-              style={{ height: index === currentSlide ? "2px" : "1px" }}
-            />
-          ))}
-        </div>
+        {slides.length > 1 && (
+          <div className="absolute bottom-7 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => api?.scrollTo(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                className={`h-px transition-all duration-500 ${index === currentSlide
+                  ? "w-10 bg-[#E7C983]"
+                  : "w-5 bg-white/50 hover:bg-white/90"
+                  }`}
+                style={{ height: index === currentSlide ? "2px" : "1px" }}
+              />
+            ))}
+          </div>
+        )}
       </Carousel>
     </div>
   );

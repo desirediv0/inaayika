@@ -1018,6 +1018,13 @@ model PriceVisibilitySetting {
   @@unique([id])
 }
 
+model AnnouncementSettings {
+  id        String   @id @default("global")
+  messages  String[] @default([])
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
+
 // -----------------------
 // MOQ (Minimum Order Quantity) & Bulk Pricing
 // -----------------------

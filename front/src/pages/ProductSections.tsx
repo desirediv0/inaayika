@@ -638,11 +638,11 @@ export default function ProductSectionsPage() {
                       {currentSection.image && (
                         <div className="mt-4 space-y-1">
                           <span className="text-xs font-medium text-[#4B5563] block">Section Background Image:</span>
-                          <div className="relative rounded-lg overflow-hidden h-24 w-48 border border-[#E5E7EB] bg-gray-50">
+                          <div className="relative w-fit max-w-full rounded-lg border border-[#E5E7EB] bg-gray-50">
                             <img
                               src={currentSection.image}
                               alt="Banner Preview"
-                              className="h-full w-full object-cover"
+                              className="block max-h-72 max-w-full object-contain"
                             />
                           </div>
                         </div>
@@ -954,7 +954,7 @@ export default function ProductSectionsPage() {
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                     />
                   ) : (
                     <ImageIcon className="h-4 w-4 text-[#9CA3AF]" />
@@ -1115,7 +1115,7 @@ export default function ProductSectionsPage() {
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                     />
                   ) : (
                     <ImageIcon className="h-4 w-4 text-[#9CA3AF]" />

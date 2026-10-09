@@ -48,6 +48,7 @@ import PaymentGatewaySettingsPage from "./pages/PaymentGatewaySettingsPage";
 import ShiprocketSettingsPage from "./pages/ShiprocketSettingsPage";
 import ShippingSettingsPage from "./pages/ShippingSettingsPage";
 import SettingsPage from "./pages/SettingsPage";
+import AnnouncementSettingsPage from "./pages/AnnouncementSettingsPage";
 import { LanguageProvider } from "./context/LanguageContext";
 
 // Protected Route Component
@@ -379,6 +380,18 @@ const App = () => {
                   action={Action.UPDATE}
                 >
                   <PaymentSettingsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="announcement-settings"
+              element={
+                <ProtectedRoute
+                  resource={Resource.SETTINGS}
+                  action={Action.UPDATE}
+                >
+                  <AnnouncementSettingsPage />
                 </ProtectedRoute>
               }
             />

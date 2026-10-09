@@ -27,6 +27,7 @@ import {
   Truck,
   Video,
   Star,
+  Megaphone,
   // Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -253,7 +254,7 @@ export default function DashboardLayout() {
         support: true,
         settings: false,
       });
-    } else if (path.startsWith("/settings") || path.startsWith("/moq-settings") || path.startsWith("/pricing-slabs") || path.startsWith("/payment-settings") || path.startsWith("/payment-gateway-settings") || path.startsWith("/price-visibility-settings") || path.startsWith("/shiprocket-settings") || path.startsWith("/shipping-settings")) {
+    } else if (path.startsWith("/settings") || path.startsWith("/moq-settings") || path.startsWith("/pricing-slabs") || path.startsWith("/payment-settings") || path.startsWith("/payment-gateway-settings") || path.startsWith("/price-visibility-settings") || path.startsWith("/shiprocket-settings") || path.startsWith("/shipping-settings") || path.startsWith("/announcement-settings")) {
       setOpenSections({
         products: false,
         orders: false,
@@ -590,6 +591,16 @@ export default function DashboardLayout() {
                 onToggle={() => toggleSection("settings")}
                 children={[
 
+                  {
+                    href: "/announcement-settings",
+                    title: "Announcement Bar",
+                    icon: <Megaphone className="h-3 w-3" />,
+                    hasPermission: hasPermissionFor(
+                      admin,
+                      Resource.SETTINGS,
+                      Action.UPDATE
+                    ),
+                  },
                   {
                     href: "/price-visibility-settings",
                     title: t("nav.price_visibility"),

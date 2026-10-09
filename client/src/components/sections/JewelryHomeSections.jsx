@@ -121,7 +121,7 @@ export function FeaturedCategoriesSection() {
 export function ColdChainBanner() {
   const TRUST_ITEMS = [
     { value: "Delhi Craft", label: "Customised Hair Accessories", icon: Crown, desc: "Bespoke hair pieces crafted with premium material in Delhi." },
-    { value: "50,000+ Happy Customers", label: "Loved Across India", icon: Users, desc: "Trusted by thousands for their special occasions and celebrations." },
+    { value: "Thousands of Happy Customers", label: "Loved Across India", icon: Users, desc: "Trusted by thousands for their special occasions and celebrations." },
     { value: "5-10 Days Shipping", label: "Fast & Insured Delivery", icon: Truck, desc: "We pack with love and ship quickly using premium delivery partners." },
     { value: "Worldwide Delivery", label: "No COD, Ships Globally", icon: Globe, desc: "Secure shipping channels offering trackable global delivery options." },
     { value: "DIY Accessories", label: "Craft Your Own Style", icon: Sparkles, desc: "Explore DIY kits to customize and design your own matching ornaments." },

@@ -38,7 +38,7 @@ const REASONS = [
   {
     icon: Users,
     color: "#B08D57",
-    title: "Loved by 50,000+ Customers",
+    title: "Loved by Thousands of Customers",
     description: "Trusted by thousands of style lovers across India and globally for weddings, festivals, and personal celebrations. Our reviews speak for themselves.",
   },
   {
@@ -50,7 +50,7 @@ const REASONS = [
 ];
 
 const STATS = [
-  { value: "50,000+", label: "Happy Customers" },
+  { value: "Thousands", label: "Happy Customers" },
   { value: "Delhi Craft", label: "Artisan Workshop" },
   { value: "100%", label: "Handcrafted Promise" },
   { value: "Worldwide", label: "Tracked Shipping" },

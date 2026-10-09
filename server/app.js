@@ -40,6 +40,7 @@ import adminPaymentGatewayRoutes from "./routes/admin.payment-gateway.routes.js"
 import adminShiprocketRoutes from "./routes/admin.shiprocket.routes.js";
 import adminVideoReelRoutes from "./routes/admin.video-reel.routes.js";
 import adminTestimonialRoutes from "./routes/admin.testimonial.routes.js";
+import adminAnnouncementRoutes from "./routes/admin.announcement.routes.js";
 
 const app = express();
 
@@ -164,6 +165,7 @@ app.use("/api/admin", adminPaymentGatewayRoutes);
 app.use("/api/admin/shiprocket", adminShiprocketRoutes);
 app.use("/api/admin", adminVideoReelRoutes);
 app.use("/api/admin", adminTestimonialRoutes);
+app.use("/api/admin", adminAnnouncementRoutes);
 
 // Shiprocket webhook (public endpoint)
 app.use("/api/webhooks/shiprocket", adminShiprocketRoutes);

@@ -57,7 +57,7 @@ const features = [
   "Secure Tracked Worldwide Transit",
   "Eco-Friendly Protected Packaging",
   "Direct WhatsApp Sizing Support",
-  "Trusted by 50,000+ Happy Customers",
+  "Trusted by thousands of happy customers",
 ];
 
 export default function AboutPage() {
@@ -371,4 +371,3 @@ export default function AboutPage() {
     </div>
   );
 }
-

@@ -261,6 +261,9 @@ export const products = {
   deleteImage: (imageId: string) => {
     return api.delete(`/api/admin/products/images/${imageId}`);
   },
+  setImageAsPrimary: (imageId: string) => {
+    return api.patch(`/api/admin/products/images/${imageId}/set-primary`);
+  },
   // Product Variants
   manageVariants: (
     productId: string,
@@ -737,6 +740,12 @@ export const settings = {
       },
     });
   },
+};
+
+export const announcementSettings = {
+  get: () => api.get("/api/admin/announcement-settings"),
+  update: (messages: string[]) =>
+    api.patch("/api/admin/announcement-settings", { messages }),
 };
 
 // Flash Sales Management

@@ -592,14 +592,6 @@ export default function VariantCard({
 
     if (!imageToRemove) return;
 
-    // Prevent removing the only image
-    if (currentImages.length === 1) {
-      toast.error(
-        "Cannot remove the only image. Variants must have at least one image."
-      );
-      return;
-    }
-
     try {
       // Check if it's a real variant (not a temporary UUID)
       const isRealVariantId =
@@ -626,19 +618,12 @@ export default function VariantCard({
             order: i,
           }));
 
-          // If we removed the primary image, set the first remaining as primary
-          if (imageToRemove.isPrimary && reorderedImages.length > 0) {
-            reorderedImages[0].isPrimary = true;
-
-            // Update primary on server if there's an ID
-            if (reorderedImages[0].id) {
-              try {
-                await products.setVariantImageAsPrimary(reorderedImages[0].id);
-              } catch (error) {
-                console.error("Error setting new primary image:", error);
-              }
-            }
-          }
+          const primaryIndex = imageToRemove.isPrimary
+            ? 0
+            : reorderedImages.findIndex((image) => image.isPrimary);
+          reorderedImages.forEach((image, index) => {
+            image.isPrimary = primaryIndex >= 0 && index === primaryIndex;
+          });
 
           onImagesChange(index, reorderedImages);
           toast.success("Image deleted successfully");
@@ -673,10 +658,12 @@ export default function VariantCard({
           order: i,
         }));
 
-        // If we removed the primary image, set the first remaining as primary
-        if (imageToRemove.isPrimary && reorderedImages.length > 0) {
-          reorderedImages[0].isPrimary = true;
-        }
+        const primaryIndex = imageToRemove.isPrimary
+          ? 0
+          : reorderedImages.findIndex((image) => image.isPrimary);
+        reorderedImages.forEach((image, index) => {
+          image.isPrimary = primaryIndex >= 0 && index === primaryIndex;
+        });
 
         onImagesChange(index, reorderedImages);
 
@@ -1375,10 +1362,11 @@ export default function VariantCard({
                           size="sm"
                           onClick={() => handleRemoveImage(imageIndex)}
                           className="h-7 text-xs"
-                          title="Remove image"
+                          title="Delete image"
+                          aria-label={`Delete variant image ${imageIndex + 1}`}
                         >
                           <X className="h-3 w-3 mr-1" />
-                          Remove
+                          Delete
                         </Button>
                       </div>
                     </div>

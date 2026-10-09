@@ -40,8 +40,8 @@ export const Footer = () => {
           </div>
 
           <p className="text-white/85 text-base md:text-lg font-light tracking-wide max-w-xl mx-auto leading-relaxed mt-2">
-            Exclusive designs in handcrafted &amp; imitation jewellery. <br className="hidden sm:inline" />
-            <span className="text-[#D4AF37] font-medium">Loved by 50,000+ Happy Customers Across India &amp; Globally.</span>
+            Exclusive designs in handcrafted jewellery, hair accessories, and imitation jewellery. <br className="hidden sm:inline" />
+            <span className="text-[#D4AF37] font-medium">Loved by thousands of happy customers across India &amp; globally.</span>
           </p>
         </div>
       </div>

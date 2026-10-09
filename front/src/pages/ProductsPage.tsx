@@ -321,6 +321,7 @@ export function ProductForm({
     url: string;
     id?: string;
     isPrimary?: boolean;
+    file?: File;
   }
 
   // Handle image drop for upload
@@ -358,22 +359,19 @@ export function ProductForm({
     // Create local previews for the UI
     const newPreviews = validFiles.map((file) => ({
       url: URL.createObjectURL(file),
+      file,
       isPrimary: false,
     }));
 
-    setImageFiles((prev) => {
-      // Set first image as primary if there are no existing images
-      if (prev.length === 0 && newPreviews.length > 0) {
-        newPreviews[0].isPrimary = true;
-      }
+    if (imagePreviews.length === 0 && newPreviews.length > 0) {
+      newPreviews[0].isPrimary = true;
+    }
 
-      return [...prev, ...validFiles];
-    });
-
+    setImageFiles((prev) => [...prev, ...validFiles]);
     setImagePreviews((prev) => [...prev, ...newPreviews]);
 
     toast.success(`${validFiles.length} image(s) added successfully`);
-  }, []);
+  }, [imagePreviews.length]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -399,20 +397,22 @@ export function ProductForm({
     const imageToRemove = imagePreviews[index];
 
     if (imageToRemove.id) {
-      // Check if this is the only image
-      if (imagePreviews.length === 1) {
-        toast.error(
-          "Cannot delete the only image. Products must have at least one image."
-        );
-        return;
-      }
-
-      // This is an existing image, delete from server
       products
         .deleteImage(imageToRemove.id)
         .then(() => {
           toast.success("Image deleted successfully");
-          setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+          setImagePreviews((prev) => {
+            const remaining = prev.filter((_, i) => i !== index);
+            const nextPrimaryIndex = imageToRemove.isPrimary
+              ? 0
+              : remaining.findIndex((image) => image.isPrimary);
+
+            return remaining.map((image, remainingIndex) => ({
+              ...image,
+              isPrimary:
+                nextPrimaryIndex >= 0 && remainingIndex === nextPrimaryIndex,
+            }));
+          });
         })
         .catch((error) => {
           console.error("Error deleting image:", error);
@@ -427,22 +427,47 @@ export function ProductForm({
       // Revoke the object URL to avoid memory leaks
       URL.revokeObjectURL(imagePreviews[index].url);
 
-      // Remove from both arrays
-      setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-      setImageFiles((prev) => prev.filter((_, i) => i !== index));
+      setImagePreviews((prev) => {
+        const remaining = prev.filter((_, i) => i !== index);
+        if (!imageToRemove.isPrimary || remaining.length === 0) return remaining;
+
+        return remaining.map((image, remainingIndex) => ({
+          ...image,
+          isPrimary: remainingIndex === 0,
+        }));
+      });
+      if (imageToRemove.file) {
+        setImageFiles((prev) =>
+          prev.filter((file) => file !== imageToRemove.file)
+        );
+      }
     }
   };
 
   // Set an image as primary
-  const setPrimaryImage = (index: number) => {
-    // Update image previews with the new primary image
+  const setPrimaryImage = async (index: number) => {
+    const selectedImage = imagePreviews[index];
+    if (!selectedImage) return;
+
+    if (mode === "edit" && selectedImage.id) {
+      try {
+        await products.setImageAsPrimary(selectedImage.id);
+      } catch (error: any) {
+        console.error("Error setting product image as primary:", error);
+        toast.error(
+          error.response?.data?.message || "Failed to set primary image"
+        );
+        return;
+      }
+    }
+
     setImagePreviews((prev) => {
-      const updated = prev.map((preview, i) => ({
+      return prev.map((preview, i) => ({
         ...preview,
         isPrimary: i === index,
       }));
-      return updated;
     });
+    toast.success("Primary image updated");
   };
 
   // Fetch attributes and their values
@@ -599,11 +624,15 @@ export function ProductForm({
 
             // Setup image previews
             if (productData.images && productData.images.length > 0) {
+              const primaryIndex = Math.max(
+                productData.images.findIndex((img: any) => img.isPrimary),
+                0
+              );
               setImagePreviews(
-                productData.images.map((img: any) => ({
+                productData.images.map((img: any, index: number) => ({
                   url: img.url,
                   id: img.id,
-                  isPrimary: img.isPrimary || false,
+                  isPrimary: index === primaryIndex,
                 }))
               );
             }
@@ -634,12 +663,18 @@ export function ProductForm({
                     isActive:
                       variant.isActive !== undefined ? variant.isActive : true,
                     images: Array.isArray(variant.images)
-                      ? variant.images.map((img: any) => ({
-                        url: img.url,
-                        id: img.id,
-                        isPrimary: img.isPrimary || false,
-                        isNew: false,
-                      }))
+                      ? (() => {
+                          const primaryIndex = Math.max(
+                            variant.images.findIndex((img: any) => img.isPrimary),
+                            0
+                          );
+                          return variant.images.map((img: any, index: number) => ({
+                            url: img.url,
+                            id: img.id,
+                            isPrimary: index === primaryIndex,
+                            isNew: false,
+                          }));
+                        })()
                       : [],
                   })
                 );
@@ -1026,13 +1061,15 @@ export function ProductForm({
           imageFiles
         );
 
-        // Add primary image index — only count new files (imageFiles), not existing server images
+        // Only choose a new primary when the user marked one of the uploaded files primary.
         const newImagePreviews = imagePreviews.filter((img) => !img.id);
         const primaryNewIndex = newImagePreviews.findIndex((img) => img.isPrimary === true);
         if (primaryNewIndex >= 0) {
           formData.append("primaryImageIndex", String(primaryNewIndex));
-        } else {
+        } else if (mode === "create") {
           formData.append("primaryImageIndex", "0");
+        } else {
+          formData.append("primaryImageIndex", "-1");
         }
 
         // Append each image file with proper field name for multer
@@ -2042,7 +2079,7 @@ export function ProductForm({
                             </span>
                           )}
                         </div>
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex space-x-1">
+                        <div className="absolute top-2 right-2 flex space-x-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                           {!preview.isPrimary && (
                             <Button
                               type="button"
@@ -2050,6 +2087,8 @@ export function ProductForm({
                               size="icon"
                               className="h-7 w-7 bg-white hover:bg-primary hover:text-white"
                               onClick={() => setPrimaryImage(index)}
+                              aria-label={`Set image ${index + 1} as primary`}
+                              title="Set as primary"
                             >
                               <Star className="h-4 w-4" />
                             </Button>
@@ -2060,6 +2099,8 @@ export function ProductForm({
                             size="icon"
                             className="h-7 w-7 bg-white hover:bg-destructive hover:text-white"
                             onClick={() => removeImage(index)}
+                            aria-label={`Delete image ${index + 1}`}
+                            title="Delete image"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

@@ -39,7 +39,7 @@ export const WhyChooseSection = () => {
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="text-primary font-semibold text-sm uppercase tracking-wider">Why Choose Us</span>
           <h2 className="font-display text-3xl md:text-4xl   text-foreground mt-2 mb-4">
-            Trusted by 50,000+ Happy Families
+            Trusted by Thousands of Happy Families
           </h2>
           <p className="text-muted-foreground">
             Join thousands of satisfied customers who trust us for their daily nutritional and grocery needs.

@@ -572,7 +572,7 @@ function ProductsContent() {
             <div className="relative overflow-hidden border flex flex-col md:flex-row items-stretch" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
               <div className="p-6 md:p-12 flex flex-col justify-center flex-1">
                 <span className="luxe-eyebrow mb-3">Complimentary Shipping</span>
-                <h3 className="font-display text-xl sm:text-2xl font-medium text-neutral-900 mb-2">Free Shipping on Orders Over ₹999</h3>
+                <h3 className="font-display text-xl sm:text-2xl font-medium text-neutral-900 mb-2">Free Shipping on Orders Over ₹1,999</h3>
                 <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide mb-6">
                   For the terms of the campaign, check our details page. Handcrafted adornments delivered to your doorstep.
                 </p>

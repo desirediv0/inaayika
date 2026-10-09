@@ -24,6 +24,7 @@ import { getPublishedBanners } from "../controllers/admin.banner.controller.js";
 import { getActiveFlashSales, getActiveProductSections } from "../controllers/public.controller.js";
 import { getActiveVideoReels } from "../controllers/admin.video-reel.controller.js";
 import { getActiveTestimonials } from "../controllers/admin.testimonial.controller.js";
+import { getPublicAnnouncements } from "../controllers/announcement.controller.js";
 
 const router = express.Router();
 
@@ -65,5 +66,8 @@ router.get("/video-reels", getActiveVideoReels);
 
 // Testimonials
 router.get("/testimonials", getActiveTestimonials);
+
+// Announcement bar
+router.get("/announcement-settings", getPublicAnnouncements);
 
 export default router;

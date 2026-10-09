@@ -26,6 +26,12 @@ import {
   ChevronDown, Sparkles,
 } from "lucide-react";
 
+const DEFAULT_ANNOUNCEMENTS = [
+  "Summer Sale - Extra 25% off on Orders above ₹5000",
+  "Complimentary Free Doorstep Delivery Across India on Orders Above ₹5000",
+  "Summer Sale - Extra 15% off on Orders above ₹1500 + 5% off on Prepaid Orders",
+];
+
 /* ── Constants ─────────────────────────────── */
 const CONTACT = {
   email: "info@inaayika.com",
@@ -100,14 +106,40 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
+  const [announcements, setAnnouncements] = useState(DEFAULT_ANNOUNCEMENTS);
   const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
 
-  const announcements = [
-    "Summer Sale - Extra 25% off on Orders above ₹5000",
-    "Complimentary Free Doorstep Delivery Across India on Orders Above ₹5000",
-    "Summer Sale - Extra 15% off on Orders above ₹1500 + 5% off on Prepaid Orders",
-  ];
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchAnnouncements = async () => {
+      try {
+        const response = await fetchApi("/public/announcement-settings");
+        const messages = response?.data?.messages;
+
+        if (
+          isMounted &&
+          Array.isArray(messages) &&
+          messages.length > 0 &&
+          messages.every((message) => typeof message === "string" && message.trim())
+        ) {
+          setAnnouncements(messages);
+          setCurrentAnnouncementIndex(0);
+        }
+      } catch (error) {
+        console.error(
+          "Could not load announcement bar messages; showing defaults:",
+          error
+        );
+      }
+    };
+
+    fetchAnnouncements();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -118,7 +150,7 @@ export function Navbar() {
       }, 400);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [announcements.length]);
 
   const searchInputRef = useRef(null);
   const navbarRef = useRef(null);
