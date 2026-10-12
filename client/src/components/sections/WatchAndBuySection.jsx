@@ -91,6 +91,7 @@ function ReelCard({ reel, onClick }) {
             muted
             loop
             playsInline
+            preload="metadata"
           />
         ) : (
           <div className="flex items-center justify-center h-full bg-[#03130C]">
@@ -475,15 +476,19 @@ export default function WatchAndBuySection() {
 
     const container = scrollRef.current;
     let animationId;
-    let speed = 0.5;
+    const speed = 0.6;
+    let pos = container.scrollLeft;
 
     const autoScroll = () => {
       if (!isPausedRef.current && container) {
-        container.scrollLeft += speed;
+        // If the user scrolled/dragged/clicked arrows, continue from there
+        if (Math.abs(container.scrollLeft - pos) > 2) pos = container.scrollLeft;
         const maxScroll = container.scrollWidth - container.clientWidth;
-        if (container.scrollLeft >= maxScroll) {
-          container.scrollLeft = 0;
-        }
+        pos += speed;
+        if (pos >= maxScroll - 1) pos = 0;
+        container.scrollLeft = pos;
+      } else if (container) {
+        pos = container.scrollLeft;
       }
       animationId = requestAnimationFrame(autoScroll);
     };
@@ -501,6 +506,39 @@ export default function WatchAndBuySection() {
 
   const handleMouseLeave = () => {
     isPausedRef.current = false;
+  };
+
+  const dragRef = useRef({ active: false, startX: 0, startLeft: 0, moved: false });
+
+  const handleMouseDown = (e) => {
+    if (!scrollRef.current) return;
+    dragRef.current = {
+      active: true,
+      startX: e.pageX,
+      startLeft: scrollRef.current.scrollLeft,
+      moved: false,
+    };
+  };
+
+  const handleMouseMove = (e) => {
+    const d = dragRef.current;
+    if (!d.active || !scrollRef.current) return;
+    const dx = e.pageX - d.startX;
+    if (Math.abs(dx) > 5) d.moved = true;
+    scrollRef.current.scrollLeft = d.startLeft - dx;
+  };
+
+  const endDrag = () => {
+    dragRef.current.active = false;
+  };
+
+  // A drag must not open the reel viewer
+  const handleClickCapture = (e) => {
+    if (dragRef.current.moved) {
+      e.stopPropagation();
+      e.preventDefault();
+      dragRef.current.moved = false;
+    }
   };
 
   const handleTouchStart = () => {
@@ -600,7 +638,7 @@ export default function WatchAndBuySection() {
           >
             <button
               onClick={() => scroll("left")}
-              className="absolute -left-1 top-[38%] -translate-y-1/2 z-30 w-9 h-9 border border-[#B08D57]/50 bg-[#00140D]/85 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-[#E7C983] hover:bg-[#B08D57] hover:text-[#00140D]"
+              className="absolute -left-1 top-[38%] -translate-y-1/2 z-30 w-9 h-9 border border-[#B08D57]/50 bg-[#00140D]/85 backdrop-blur-sm flex items-center justify-center transition-all text-[#E7C983] hover:bg-[#B08D57] hover:text-[#00140D]"
               aria-label="Scroll left"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -610,7 +648,12 @@ export default function WatchAndBuySection() {
               ref={scrollRef}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
-              className="flex gap-4 overflow-x-auto pt-2 pb-12"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={endDrag}
+              onMouseLeave={endDrag}
+              onClickCapture={handleClickCapture}
+              className="flex gap-4 overflow-x-auto pt-2 pb-12 select-none"
               style={{
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
@@ -624,7 +667,7 @@ export default function WatchAndBuySection() {
 
             <button
               onClick={() => scroll("right")}
-              className="absolute -right-1 top-[38%] -translate-y-1/2 z-30 w-9 h-9 border border-[#B08D57]/50 bg-[#00140D]/85 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-[#E7C983] hover:bg-[#B08D57] hover:text-[#00140D]"
+              className="absolute -right-1 top-[38%] -translate-y-1/2 z-30 w-9 h-9 border border-[#B08D57]/50 bg-[#00140D]/85 backdrop-blur-sm flex items-center justify-center transition-all text-[#E7C983] hover:bg-[#B08D57] hover:text-[#00140D]"
               aria-label="Scroll right"
             >
               <ChevronRight className="h-4 w-4" />
