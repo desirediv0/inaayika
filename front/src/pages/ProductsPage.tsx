@@ -832,7 +832,7 @@ export function ProductForm({
       const skuSuffix = combination
         .map((c) => c.value?.value?.substring(0, 3).toUpperCase() || "")
         .join("-");
-      const variantSku = skuSuffix ? `${skuBase}-${skuSuffix}` : skuBase;
+      const variantSku = skuBase && skuSuffix ? `${skuBase}-${skuSuffix}` : skuSuffix || skuBase;
 
       newVariants.push({
         id: uuidv4(),
@@ -920,6 +920,27 @@ export function ProductForm({
       toast.error("Please add at least one variant for this product");
       setIsLoading(false);
       return;
+    }
+
+    // Every variant needs a valid price and stock
+    if (hasVariants) {
+      const invalidIndex = variants.findIndex(
+        (v) =>
+          !(parseFloat(v.price) > 0) ||
+          v.quantity === "" ||
+          v.quantity === undefined ||
+          v.quantity === null ||
+          isNaN(parseInt(v.quantity)) ||
+          parseInt(v.quantity) < 0 ||
+          (v.salePrice && parseFloat(v.salePrice) >= parseFloat(v.price))
+      );
+      if (invalidIndex !== -1) {
+        toast.error(
+          `Variant #${invalidIndex + 1}: enter a valid price, stock, and a sale price lower than the price`
+        );
+        setIsLoading(false);
+        return;
+      }
     }
 
     try {

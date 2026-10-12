@@ -32,12 +32,22 @@ export function CartProvider({ children }) {
     const [couponLoading, setCouponLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [mergeProgress, setMergeProgress] = useState(null); // Track merge progress
+    const [shippingSettings, setShippingSettings] = useState({ shippingCharge: 0, freeShippingThreshold: 0 });
     const [hidePricesForGuests, setHidePricesForGuests] = useState(false); // New state for price visibility
     const mergeCompletedRef = useRef(false);
 
     // Set mounted state to prevent hydration issues
     useEffect(() => {
         setMounted(true);
+    }, []);
+
+    // Fetch shipping settings (guest carts need them to show shipping charges)
+    useEffect(() => {
+        fetchApi("/public/shipping-settings")
+            .then((response) => {
+                if (response.success && response.data) setShippingSettings(response.data);
+            })
+            .catch((error) => console.error("Failed to fetch shipping settings:", error));
     }, []);
 
     // Fetch price visibility settings
@@ -496,11 +506,25 @@ export function CartProvider({ children }) {
         fetchCart().catch(() => { });
     };
 
+    // Guest carts live in localStorage, so shipping is computed here from admin settings
+    const viewCart = (() => {
+        if (isAuthenticated) return cart;
+        const sub = parseFloat(cart.subtotal || 0);
+        const { shippingCharge, freeShippingThreshold } = shippingSettings;
+        const hasItems = (cart.items?.length || 0) > 0;
+        const free = freeShippingThreshold > 0 && sub >= freeShippingThreshold;
+        return {
+            ...cart,
+            shippingTotal: hasItems && shippingCharge > 0 && !free ? shippingCharge : 0,
+            freeShippingThreshold,
+        };
+    })();
+
     // Calculate totals
     const getCartTotals = () => {
-        const subtotal = parseFloat(cart.subtotal || 0);
+        const subtotal = parseFloat(viewCart.subtotal || 0);
         const discount = coupon ? parseFloat(coupon.discountAmount || 0) : 0;
-        const shipping = parseFloat(cart.shippingTotal || 0);
+        const shipping = parseFloat(viewCart.shippingTotal || 0);
         const tax = 0; // No tax
 
         return {
@@ -524,7 +548,7 @@ export function CartProvider({ children }) {
     };
 
     const value = {
-        cart,
+        cart: viewCart,
         loading,
         cartItemsLoading,
         error,

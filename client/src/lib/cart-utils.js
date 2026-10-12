@@ -22,7 +22,7 @@ export const useUniversalAddToCart = () => {
             return { success: true };
         } catch (error) {
             console.error("Error adding to cart:", error);
-            toast.error("Failed to add product to cart");
+            toast.error(error?.message || "Failed to add product to cart");
             return { success: false, error };
         }
     };
@@ -61,7 +61,7 @@ export const useAddProductToCart = () => {
             }
         } catch (error) {
             console.error("Error adding product to cart:", error);
-            toast.error("Failed to add product to cart");
+            toast.error(error?.message || "Failed to add product to cart");
             return { success: false, error };
         }
     };
@@ -89,7 +89,7 @@ export const useAddVariantToCart = () => {
             return { success: true };
         } catch (error) {
             console.error("Error adding variant to cart:", error);
-            toast.error("Failed to add product to cart");
+            toast.error(error?.message || "Failed to add product to cart");
             return { success: false, error };
         }
     };

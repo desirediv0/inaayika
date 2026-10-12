@@ -8,7 +8,7 @@ import {
   Minus, Plus, AlertCircle,
   Heart, CheckCircle, Zap,
   Truck, RefreshCw,
-  Calendar, ShoppingBag, HelpCircle
+  Calendar, ShoppingCart, HelpCircle
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
@@ -387,6 +387,11 @@ export default function ProductContent({ slug }) {
   const primary = mainImage && images.some((i) => i.url === mainImage.url)
     ? mainImage : (images.find((i) => i.isPrimary) || images[0]);
   const stock = selectedVariant?.stock || selectedVariant?.quantity || product.stock || 15;
+  // Varies per product (stable between renders), derived from product id/slug
+  const cartAlertSeed = String(product?.id || slug || "");
+  let cartAlertHash = 0;
+  for (let i = 0; i < cartAlertSeed.length; i++) cartAlertHash = (cartAlertHash * 31 + cartAlertSeed.charCodeAt(i)) >>> 0;
+  const cartAlertCount = 2 + (cartAlertHash % 17);
   const outOfStock = stock === 0;
 
   // Calculate Ordered Bar values
@@ -528,9 +533,9 @@ export default function ProductContent({ slug }) {
 
             {/* Cart Alert Badge */}
             <div className="mb-6 flex items-center gap-2.5 p-3.5 rounded-none text-xs border" style={{ background: "#F7F3EB", borderColor: "#E9E2D5", color: "#8a6d3f" }}>
-              <ShoppingBag className="h-4.5 w-4.5 text-amber-700 animate-bounce flex-shrink-0" />
+              <ShoppingCart className="h-4.5 w-4.5 text-amber-700 animate-bounce flex-shrink-0" />
               <span>
-                <strong>12 people</strong> have this in their carts right now. It&apos;s running out!
+                <strong>{cartAlertCount} {cartAlertCount === 1 ? "person has" : "people have"}</strong> in their cart right now.{stock <= 10 ? " It's running out!" : ""}
               </span>
             </div>
 

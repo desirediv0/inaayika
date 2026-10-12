@@ -21,7 +21,7 @@ import {
   getPriceVisibilitySettings,
 } from "../controllers/public.controller.js";
 import { getPublishedBanners } from "../controllers/admin.banner.controller.js";
-import { getActiveFlashSales, getActiveProductSections } from "../controllers/public.controller.js";
+import { getActiveFlashSales, getActiveProductSections, getPublicShippingSettings } from "../controllers/public.controller.js";
 import { getActiveVideoReels } from "../controllers/admin.video-reel.controller.js";
 import { getActiveTestimonials } from "../controllers/admin.testimonial.controller.js";
 import { getPublicAnnouncements } from "../controllers/announcement.controller.js";
@@ -60,6 +60,7 @@ router.get("/filter-attributes", getFilterAttributes);
 
 // Price Visibility Settings
 router.get("/price-visibility-settings", getPriceVisibilitySettings);
+router.get("/shipping-settings", getPublicShippingSettings);
 
 // Video Reels (Watch and Buy)
 router.get("/video-reels", getActiveVideoReels);

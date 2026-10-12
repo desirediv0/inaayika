@@ -81,7 +81,11 @@ const CartItem = React.memo(
         return (
             <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-neutral-50/40 transition-all duration-300 border-b border-neutral-100 last:border-0">
                 <div className="flex items-center gap-6 flex-1 min-w-0">
-                    <div className="relative h-28 w-24 md:h-32 md:w-28 bg-neutral-50 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-100 shadow-sm group">
+                    <Link
+                        href={`/products/${productSlug}`}
+                        aria-label={productName}
+                        className="relative h-28 w-24 md:h-32 md:w-28 bg-neutral-50 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-100 shadow-sm group block"
+                    >
                         <Image
                             src={productImage}
                             alt={productName}
@@ -89,7 +93,7 @@ const CartItem = React.memo(
                             className="object-cover group-hover:scale-105 transition-transform duration-700"
                             sizes="120px"
                         />
-                    </div>
+                    </Link>
                     <div className="flex-1 min-w-0 space-y-2">
                         <span className="text-[9px]   tracking-[0.2em] text-neutral-400 uppercase">Inaayika Collection</span>
                         <Link
@@ -162,7 +166,7 @@ const CartItem = React.memo(
                             <button
                                 onClick={() => onUpdateQuantity(item.id, item.quantity, 1)}
                                 className="px-2.5 h-full hover:bg-neutral-50 disabled:opacity-40 transition-colors"
-                                disabled={isLoading}
+                                disabled={isLoading || (item.stock != null && item.quantity >= item.stock)}
                             >
                                 <Plus className="h-3 w-3 text-neutral-600" />
                             </button>
@@ -230,6 +234,10 @@ export default function CartPage() {
                 return;
             }
             if (newQuantity < 1) return;
+            if (cartItem?.stock != null && newQuantity > cartItem.stock) {
+                toast.error(`Only ${cartItem.stock} units available`);
+                return;
+            }
 
             try {
                 await updateCartItem(cartItemId, newQuantity);

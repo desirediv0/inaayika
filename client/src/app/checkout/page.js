@@ -14,6 +14,7 @@ import {
     CheckCircle,
     MapPin,
     Plus,
+    Minus,
     ShoppingBag,
     PartyPopper,
     Gift,
@@ -34,7 +35,7 @@ const getImageUrl = (image) => {
 export default function CheckoutPage() {
     const { isAuthenticated, user } = useAuth();
     const router = useRouter();
-    const { cart, coupon, getCartTotals, clearCart } = useCart();
+    const { cart, coupon, getCartTotals, clearCart, updateCartItem, cartItemsLoading } = useCart();
     const [addresses, setAddresses] = useState([]);
     const [selectedAddressId, setSelectedAddressId] = useState("");
     const [loadingAddresses, setLoadingAddresses] = useState(true);
@@ -57,6 +58,24 @@ export default function CheckoutPage() {
     const [confettiCannon, setConfettiCannon] = useState(false);
 
     const totals = getCartTotals();
+
+    const handleQuantityChange = async (item, change) => {
+        const newQuantity = item.quantity + change;
+        const moq = item.moq || 1;
+        if (newQuantity < moq) {
+            toast.error(`Minimum order quantity is ${moq} units`);
+            return;
+        }
+        if (item.stock != null && newQuantity > item.stock) {
+            toast.error(`Only ${item.stock} units available`);
+            return;
+        }
+        try {
+            await updateCartItem(item.id, newQuantity);
+        } catch (err) {
+            toast.error(err.message || "Failed to update quantity");
+        }
+    };
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -702,7 +721,27 @@ export default function CheckoutPage() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="text-[11px]   text-neutral-800 uppercase tracking-wide truncate">{item.productName || item.product?.name}</h4>
-                                                <p className="text-[10px] text-neutral-400 font-medium mt-0.5">Qty: {item.quantity}</p>
+                                                <div className="flex items-center border border-neutral-300 rounded-md overflow-hidden h-6 w-fit mt-1 bg-white">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleQuantityChange(item, -1)}
+                                                        disabled={cartItemsLoading?.[item.id] || processing || item.quantity <= (item.moq || 1)}
+                                                        className="px-1.5 h-full hover:bg-neutral-50 disabled:opacity-40"
+                                                    >
+                                                        <Minus className="h-2.5 w-2.5" />
+                                                    </button>
+                                                    <span className="w-7 text-center text-[10px] text-neutral-900">
+                                                        {cartItemsLoading?.[item.id] ? <Loader2 className="h-3 w-3 animate-spin inline" /> : item.quantity}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleQuantityChange(item, 1)}
+                                                        disabled={cartItemsLoading?.[item.id] || processing || (item.stock != null && item.quantity >= item.stock)}
+                                                        className="px-1.5 h-full hover:bg-neutral-50 disabled:opacity-40"
+                                                    >
+                                                        <Plus className="h-2.5 w-2.5" />
+                                                    </button>
+                                                </div>
                                             </div>
                                             <span className="text-[11px]   text-neutral-900">
                                                 {formatCurrency(item.subtotal)}

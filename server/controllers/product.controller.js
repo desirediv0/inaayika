@@ -902,6 +902,39 @@ export const getProductVariantById = asyncHandler(async (req, res) => {
       : null,
   };
 
+  // Effective MOQ: variant > product > global
+  const moqSetting =
+    (await prisma.mOQSetting.findFirst({
+      where: { scope: "VARIANT", variantId: variant.id, isActive: true },
+    })) ||
+    (await prisma.mOQSetting.findFirst({
+      where: { scope: "PRODUCT", productId: variant.productId, isActive: true },
+    })) ||
+    (await prisma.mOQSetting.findFirst({
+      where: { scope: "GLOBAL", isActive: true },
+    }));
+  formattedVariant.moq = moqSetting ? moqSetting.minQuantity : 1;
+
+  // Pricing slabs: variant slabs override product-level slabs
+  const variantSlabs = await prisma.pricingSlab.findMany({
+    where: { variantId: variant.id },
+    orderBy: { minQty: "asc" },
+  });
+  const slabs =
+    variantSlabs.length > 0
+      ? variantSlabs
+      : await prisma.pricingSlab.findMany({
+        where: { productId: variant.productId, variantId: null },
+        orderBy: { minQty: "asc" },
+      });
+  formattedVariant.pricingSlabs = slabs.map((slab) => ({
+    id: slab.id,
+    minQty: slab.minQty,
+    maxQty: slab.maxQty,
+    price: parseFloat(slab.price),
+  }));
+  formattedVariant.stock = variant.quantity;
+
   res
     .status(200)
     .json(

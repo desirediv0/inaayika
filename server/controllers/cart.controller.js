@@ -205,6 +205,7 @@ export const getUserCart = asyncHandler(async (req, res) => {
         subtotal: itemTotal,
         moq: effectiveMOQ,
         moqSource,
+        stock: variant.quantity,
         pricingSlabs: allSlabs.map((slab) => ({
           id: slab.id,
           minQty: slab.minQty,

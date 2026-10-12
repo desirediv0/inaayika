@@ -32,6 +32,22 @@ export const saveGuestCart = (cart) => {
     }
 };
 
+// Pick the unit price for a quantity (slab > sale price > regular price)
+const getGuestUnitPrice = (item, quantity) => {
+    const slabs = Array.isArray(item.pricingSlabs) ? item.pricingSlabs : [];
+    const slab = slabs.find(
+        (s) => quantity >= s.minQty && (s.maxQty == null || quantity <= s.maxQty)
+    );
+    return slab ? parseFloat(slab.price) : parseFloat(item.basePrice ?? item.price);
+};
+
+// Apply quantity (with slab pricing) to a guest cart item
+const applyGuestQuantity = (item, quantity) => {
+    item.quantity = quantity;
+    item.price = getGuestUnitPrice(item, quantity);
+    item.subtotal = (item.price * quantity).toFixed(2);
+};
+
 // Add item to guest cart
 export const addToGuestCart = async (productVariantId, quantity = 1) => {
     try {
@@ -60,12 +76,22 @@ export const addToGuestCart = async (productVariantId, quantity = 1) => {
 
         if (existingItemIndex !== -1) {
             // Update existing item quantity
-            currentCart.items[existingItemIndex].quantity += quantity;
-            currentCart.items[existingItemIndex].subtotal = (
-                parseFloat(currentCart.items[existingItemIndex].price) *
-                currentCart.items[existingItemIndex].quantity
-            ).toFixed(2);
+            const existingItem = currentCart.items[existingItemIndex];
+            const nextQty = existingItem.quantity + quantity;
+            if (existingItem.stock != null && nextQty > existingItem.stock) {
+                throw new Error(`Only ${existingItem.stock} units available`);
+            }
+            applyGuestQuantity(existingItem, nextQty);
         } else {
+            const moq = variant.moq || 1;
+            const stock = variant.stock ?? variant.quantity;
+            if (quantity < moq) {
+                throw new Error(`Minimum order quantity is ${moq} units`);
+            }
+            if (stock != null && quantity > stock) {
+                throw new Error(`Only ${stock} units available`);
+            }
+
             // Add new item
             const newItem = {
                 id: `guest_${Date.now()}_${Math.random()}`,
@@ -75,15 +101,20 @@ export const addToGuestCart = async (productVariantId, quantity = 1) => {
                 productSlug: variant.product.slug,
                 variantName: `${variant.flavor?.name || ""} ${variant.weight?.display || ""
                     }`.trim(),
+                basePrice: variant.salePrice || variant.price,
                 price: variant.salePrice || variant.price,
                 quantity: quantity,
                 subtotal: ((variant.salePrice || variant.price) * quantity).toFixed(2),
+                moq,
+                stock,
+                pricingSlabs: variant.pricingSlabs || [],
                 image: variant.images?.[0]?.url || variant.product.image,
                 sku: variant.sku,
                 flavor: variant.flavor,
                 weight: variant.weight,
             };
 
+            applyGuestQuantity(newItem, quantity);
             currentCart.items.push(newItem);
         }
 
@@ -118,11 +149,14 @@ export const updateGuestCartItem = (cartItemId, quantity) => {
         // Remove item if quantity is 0 or negative
         currentCart.items.splice(itemIndex, 1);
     } else {
-        // Update quantity
-        currentCart.items[itemIndex].quantity = quantity;
-        currentCart.items[itemIndex].subtotal = (
-            parseFloat(currentCart.items[itemIndex].price) * quantity
-        ).toFixed(2);
+        const item = currentCart.items[itemIndex];
+        if (quantity < (item.moq || 1)) {
+            throw new Error(`Minimum order quantity is ${item.moq} units`);
+        }
+        if (item.stock != null && quantity > item.stock) {
+            throw new Error(`Only ${item.stock} units available`);
+        }
+        applyGuestQuantity(item, quantity);
     }
 
     // Recalculate cart totals
