@@ -86,7 +86,7 @@ function ReelCard({ reel, onClick }) {
         {reel.videoUrl ? (
           <video
             ref={videoRef}
-            src={reel.videoUrl}
+            src={`${reel.videoUrl}#t=0.1`}
             className="w-full h-full object-cover"
             muted
             loop

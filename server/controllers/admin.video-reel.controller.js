@@ -239,13 +239,12 @@ export const updateVideoReel = asyncHandler(async (req, res, next) => {
     updateData.position = newPosition;
   }
 
-  // Handle video reupload - delete old from S3
+  // Handle video reupload - upload the new one first, remove the old one only after it succeeded
+  let oldVideoKey = null;
   if (req.files && req.files.video && req.files.video[0]) {
-    if (existingReel.videoUrl) {
-      await deleteFromS3(existingReel.videoUrl);
-    }
     try {
       updateData.videoUrl = await uploadVideo(req.files.video[0]);
+      oldVideoKey = existingReel.videoUrl;
     } catch (error) {
       throw new ApiError(400, "Failed to upload video: " + error.message);
     }
@@ -288,6 +287,14 @@ export const updateVideoReel = asyncHandler(async (req, res, next) => {
       },
     },
   });
+
+  if (oldVideoKey) {
+    try {
+      await deleteFromS3(oldVideoKey);
+    } catch (err) {
+      console.error("Failed to delete old video from S3:", err);
+    }
+  }
 
   res.status(200).json(
     new ApiResponsive(200, { reel: formatReel(reel) }, "Video reel updated successfully")

@@ -188,9 +188,21 @@ function VideoReelForm({
     maxSize: 100 * 1024 * 1024,
     onDrop: (acceptedFiles) => {
       if (acceptedFiles[0]) {
+        // Free the previous local preview before replacing it
+        setVideoPreview((prev) => {
+          if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
+          return URL.createObjectURL(acceptedFiles[0]);
+        });
         setVideoFile(acceptedFiles[0]);
-        setVideoPreview(URL.createObjectURL(acceptedFiles[0]));
       }
+    },
+    onDropRejected: (rejections) => {
+      const code = rejections[0]?.errors?.[0]?.code;
+      toast.error(
+        code === "file-too-large"
+          ? "Video is too large. Maximum size is 100MB"
+          : "Unsupported file. Please upload an MP4, WebM or MOV video"
+      );
     },
   });
 
@@ -384,9 +396,18 @@ function VideoReelForm({
                 {videoPreview ? (
                   <div className="space-y-4">
                     <video
+                      key={videoPreview}
                       src={videoPreview}
                       className="max-h-60 mx-auto rounded-lg"
                       controls
+                      playsInline
+                      preload="metadata"
+                      onClick={(e) => e.stopPropagation()}
+                      onError={() =>
+                        toast.error(
+                          "This video can't be previewed in the browser. Use an H.264 MP4 for best results."
+                        )
+                      }
                     />
                     <p className="text-xs text-[#9CA3AF]">
                       {videoFile ? "New video selected (click to replace)" : "Existing video (click to replace)"}
@@ -737,9 +758,11 @@ function VideoReelsList() {
               <div className="relative aspect-[9/16] max-h-64 bg-[#1F2937] rounded-t-xl overflow-hidden">
                 {reel.videoUrl ? (
                   <video
-                    src={reel.videoUrl}
+                    src={`${reel.videoUrl}#t=0.1`}
                     className="w-full h-full object-cover"
                     muted
+                    playsInline
+                    preload="metadata"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">
