@@ -41,14 +41,28 @@ export function CartProvider({ children }) {
         setMounted(true);
     }, []);
 
-    // Fetch shipping settings (guest carts need them to show shipping charges)
+    // Fetch shipping settings (guest carts need them to show shipping charges).
+    // Re-fetched whenever the cart changes or the tab regains focus so admin edits show up without a reload.
+    const itemCount = cart.items?.length || 0;
     useEffect(() => {
-        fetchApi("/public/shipping-settings")
-            .then((response) => {
-                if (response.success && response.data) setShippingSettings(response.data);
-            })
-            .catch((error) => console.error("Failed to fetch shipping settings:", error));
-    }, []);
+        const loadShipping = () =>
+            fetchApi('/public/shipping-settings')
+                .then((response) => {
+                    if (response.success && response.data) setShippingSettings(response.data);
+                })
+                .catch((error) => console.error('Failed to fetch shipping settings:', error));
+
+        loadShipping();
+        const onVisible = () => {
+            if (document.visibilityState === 'visible') loadShipping();
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        window.addEventListener('focus', loadShipping);
+        return () => {
+            document.removeEventListener('visibilitychange', onVisible);
+            window.removeEventListener('focus', loadShipping);
+        };
+    }, [itemCount]);
 
     // Fetch price visibility settings
     useEffect(() => {
