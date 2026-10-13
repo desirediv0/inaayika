@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -14,9 +14,11 @@ import {
     ShoppingBag,
     AlertCircle,
     Loader2,
-    Check
+    Check,
+    Ticket,
+    Sparkles
 } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, fetchApi } from "@/lib/utils";
 import { toast } from "sonner";
 
 // Helper function to format image URLs correctly
@@ -201,6 +203,102 @@ const CartItem = React.memo(
 );
 CartItem.displayName = "CartItem";
 
+// Coupons the visitor can use: new customers see welcome offers, everyone sees what their cart unlocks
+const CouponOffers = React.memo(({ subtotal, appliedCode, couponLoading, onApply, isAuthenticated, hasItems }) => {
+    const [offers, setOffers] = useState([]);
+    const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
+    const [loaded, setLoaded] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetchApi("/coupons/available", { credentials: "include" })
+            .then((res) => {
+                if (cancelled) return;
+                setOffers(res?.data?.coupons || []);
+                setIsFirstTimeUser(!!res?.data?.isFirstTimeUser);
+            })
+            .catch(() => { })
+            .finally(() => !cancelled && setLoaded(true));
+        return () => {
+            cancelled = true;
+        };
+    }, [isAuthenticated]);
+
+    if (!loaded || offers.length === 0) return null;
+
+    // Usable ones first, then ones that need more spend, then ineligible
+    const rank = (o) => (!o.eligible ? 2 : subtotal < o.minOrderAmount ? 1 : 0);
+    const sorted = [...offers].sort((a, b) => rank(a) - rank(b));
+
+    return (
+        <div className="p-4 bg-white rounded-xl border border-neutral-100 space-y-3">
+            <h3 className="text-xs uppercase tracking-wider text-neutral-800 flex items-center gap-2">
+                <Ticket className="h-3.5 w-3.5" />
+                Coupons &amp; offers
+            </h3>
+            {isFirstTimeUser && (
+                <p className="text-[11px] text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2 flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
+                    Welcome! New-customer offers are unlocked for your first order.
+                </p>
+            )}
+            <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                {sorted.map((o) => {
+                    const applied = appliedCode && appliedCode.toUpperCase() === o.code.toUpperCase();
+                    const shortBy = Math.max(0, o.minOrderAmount - subtotal);
+                    const usable = o.eligible && shortBy === 0 && hasItems;
+                    const label = o.discountType === "PERCENTAGE"
+                        ? `${o.discountValue}% OFF`
+                        : `${formatCurrency(o.discountValue)} OFF`;
+                    let note = null;
+                    if (!o.eligible) note = o.ineligibleReason;
+                    else if (!hasItems) note = "Add items to use this offer";
+                    else if (shortBy > 0) note = `Add ${formatCurrency(shortBy)} more to unlock`;
+                    else note = o.minOrderAmount > 0 ? `You can apply this — min. order ${formatCurrency(o.minOrderAmount)} met` : "You can apply this offer";
+
+                    return (
+                        <div
+                            key={o.id}
+                            className={`rounded-lg border p-3 flex items-start justify-between gap-3 ${usable ? "border-[#003E29]/30 bg-[#003E29]/[0.03]" : "border-neutral-200 bg-neutral-50 opacity-80"}`}
+                        >
+                            <div className="min-w-0 space-y-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-xs font-semibold tracking-widest text-neutral-900 border border-dashed border-neutral-400 px-2 py-0.5 rounded">
+                                        {o.code}
+                                    </span>
+                                    <span className="text-[10px] font-semibold text-green-700">{label}</span>
+                                    {o.firstOrderOnly && (
+                                        <span className="text-[9px] uppercase tracking-wider bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full">
+                                            New customer
+                                        </span>
+                                    )}
+                                </div>
+                                {o.description && (
+                                    <p className="text-[11px] text-neutral-500 leading-snug">{o.description}</p>
+                                )}
+                                <p className={`text-[11px] ${usable ? "text-green-700" : "text-neutral-500"}`}>
+                                    {o.targeted && usable ? "Applies to eligible products in your cart. " : ""}
+                                    {note}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                disabled={applied || !usable || couponLoading}
+                                onClick={() => onApply(o.code)}
+                                className="flex-shrink-0 text-[10px] font-semibold uppercase tracking-widest px-3 py-2 rounded-lg text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                                style={{ background: "#003E29" }}
+                            >
+                                {applied ? "Applied" : "Apply"}
+                            </button>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+});
+CouponOffers.displayName = "CouponOffers";
+
 export default function CartPage() {
     const {
         cart,
@@ -290,6 +388,19 @@ export default function CartPage() {
             }
         },
         [couponCode, applyCoupon]
+    );
+
+    const handleApplyOffer = useCallback(
+        async (code) => {
+            setCouponError("");
+            try {
+                await applyCoupon(code);
+            } catch (err) {
+                setCouponError(err.message || "Could not apply coupon");
+                toast.error(err.message || "Could not apply coupon");
+            }
+        },
+        [applyCoupon]
     );
 
     const handleRemoveCoupon = useCallback(() => {
@@ -498,6 +609,17 @@ export default function CartPage() {
                                         </>
                                     )}
                                 </div>
+                            )}
+
+                            {(!hidePricesForGuests || isAuthenticated) && (
+                                <CouponOffers
+                                    subtotal={totals.subtotal}
+                                    appliedCode={coupon?.code}
+                                    couponLoading={couponLoading}
+                                    onApply={handleApplyOffer}
+                                    isAuthenticated={isAuthenticated}
+                                    hasItems={(cart.items?.length || 0) > 0}
+                                />
                             )}
 
                             {/* Price Breakdown */}

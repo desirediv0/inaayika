@@ -3,6 +3,37 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+// Coupons meant only for a first order (no dedicated DB flag, so detect by wording/code)
+const FIRST_ORDER_PATTERN =
+  /first[\s-]*(time|order|purchase)|new[\s-]*(user|customer|buyer)/i;
+export const isFirstOrderCoupon = (coupon) =>
+  FIRST_ORDER_PATTERN.test(coupon.description || "") ||
+  /^WELCOME/i.test(coupon.code || "");
+
+// "First time" = no completed (non-cancelled) orders. Guests count as first time.
+const isFirstTimeCustomer = async (userId) => {
+  if (!userId) return true;
+  const orders = await prisma.order.count({
+    where: { userId, status: { notIn: ["CANCELLED", "PENDING"] } },
+  });
+  return orders === 0;
+};
+
+// Date window + usage limit check; returns an error message or null
+const getCouponAvailabilityError = (coupon) => {
+  const now = new Date();
+  if (coupon.startDate && new Date(coupon.startDate) > now) {
+    return "This coupon is not active yet";
+  }
+  if (coupon.endDate && new Date(coupon.endDate) < now) {
+    return "This coupon has expired";
+  }
+  if (coupon.maxUses && (coupon.usedCount || 0) >= coupon.maxUses) {
+    return "Coupon usage limit exceeded";
+  }
+  return null;
+};
+
 // Create coupon (admin)
 export const createCoupon = asyncHandler(async (req, res) => {
   const {
@@ -302,9 +333,12 @@ export const verifyCoupon = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Coupon code is required");
   }
 
-  // Find coupon by code and include targeting info
+  // Find coupon by code (case-insensitive) and include targeting info
   const coupon = await prisma.coupon.findFirst({
-    where: { code, isActive: true },
+    where: {
+      code: { equals: String(code).trim(), mode: "insensitive" },
+      isActive: true,
+    },
     include: { categories: true, products: true, brands: true },
   });
 
@@ -312,13 +346,49 @@ export const verifyCoupon = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Invalid coupon code");
   }
 
+  const availabilityError = getCouponAvailabilityError(coupon);
+  if (availabilityError) {
+    throw new ApiError(400, availabilityError);
+  }
+
+  if (isFirstOrderCoupon(coupon) && !(await isFirstTimeCustomer(req.user?.id))) {
+    throw new ApiError(400, "This coupon is valid only on your first order");
+  }
+
+  // Resolve brand/categories from the DB so guests and tampered payloads behave the same
+  let cartItemsResolved = Array.isArray(cartItems) ? cartItems : [];
+  const productIdsInCart = [
+    ...new Set(cartItemsResolved.map((i) => i.productId).filter(Boolean)),
+  ];
+  if (productIdsInCart.length) {
+    const dbProducts = await prisma.product.findMany({
+      where: { id: { in: productIdsInCart } },
+      select: {
+        id: true,
+        brandId: true,
+        categories: { select: { categoryId: true } },
+      },
+    });
+    const byId = new Map(dbProducts.map((p) => [p.id, p]));
+    cartItemsResolved = cartItemsResolved.map((item) => {
+      const p = byId.get(item.productId);
+      return p
+        ? {
+            ...item,
+            brandId: p.brandId,
+            categoryIds: p.categories.map((c) => c.categoryId),
+          }
+        : item;
+    });
+  }
+
   // Compute applicable subtotal: if cartItems present, compute per-item matches; else fall back to cartTotal
   let applicableSubtotal = parseFloat(cartTotal || 0);
   let matchedItemCount = 0;
-  if (Array.isArray(cartItems) && cartItems.length) {
+  if (cartItemsResolved.length) {
     // cartItems: [{ productId, productVariantId, price, quantity }]
     let subtotal = 0;
-    for (const item of cartItems) {
+    for (const item of cartItemsResolved) {
       subtotal += parseFloat(item.price) * (item.quantity || 1);
     }
     applicableSubtotal = subtotal;
@@ -335,7 +405,7 @@ export const verifyCoupon = asyncHandler(async (req, res) => {
       const brandSet = new Set((coupon.brands || []).map((b) => b.brandId));
 
       let matchedSubtotal = 0;
-      for (const item of cartItems) {
+      for (const item of cartItemsResolved) {
         // item must include productId and brandId and categoryIds if possible
         const pid = item.productId;
         const bid = item.brandId;
@@ -415,7 +485,10 @@ export const applyCoupon = asyncHandler(async (req, res) => {
 
   // Find coupon by code (regardless of date validity initially)
   const coupon = await prisma.coupon.findFirst({
-    where: { code, isActive: true },
+    where: {
+      code: { equals: String(code).trim(), mode: "insensitive" },
+      isActive: true,
+    },
     include: { categories: true, products: true, brands: true },
   });
 
@@ -540,6 +613,60 @@ export const applyCoupon = asyncHandler(async (req, res) => {
         finalAmount: (cartTotal - discountAmount).toFixed(2),
       },
       "Coupon applied successfully"
+    )
+  );
+});
+
+// List coupons the current visitor can use (public; guests allowed)
+export const getAvailableCoupons = asyncHandler(async (req, res) => {
+  const now = new Date();
+  const userId = req.user?.id;
+
+  const coupons = await prisma.coupon.findMany({
+    where: {
+      isActive: true,
+      startDate: { lte: now },
+      OR: [{ endDate: null }, { endDate: { gte: now } }],
+      // Partner/referral codes are private to the partner's audience
+      couponPartners: { none: {} },
+    },
+    include: {
+      categories: { select: { id: true } },
+      products: { select: { id: true } },
+      brands: { select: { id: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const firstTime = await isFirstTimeCustomer(userId);
+
+  const list = coupons
+    .filter((c) => !(c.maxUses && (c.usedCount || 0) >= c.maxUses))
+    .map((c) => {
+      const firstOrderOnly = isFirstOrderCoupon(c);
+      return {
+        id: c.id,
+        code: c.code,
+        description: c.description,
+        discountType: c.discountType,
+        discountValue: parseFloat(c.discountValue),
+        minOrderAmount: c.minOrderAmount ? parseFloat(c.minOrderAmount) : 0,
+        endDate: c.endDate,
+        firstOrderOnly,
+        // Returning customers can't use first-order offers
+        eligible: !firstOrderOnly || firstTime,
+        ineligibleReason:
+          firstOrderOnly && !firstTime ? "Valid only on your first order" : null,
+        targeted:
+          c.categories.length > 0 || c.products.length > 0 || c.brands.length > 0,
+      };
+    });
+
+  return res.status(200).json(
+    new ApiResponsive(
+      200,
+      { coupons: list, isFirstTimeUser: firstTime, isAuthenticated: !!userId },
+      "Available coupons fetched successfully"
     )
   );
 });

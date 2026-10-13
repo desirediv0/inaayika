@@ -144,12 +144,25 @@ export function CartProvider({ children }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated, mounted]);
 
+    // Cart lines in the shape /coupons/verify expects (guest items carry productId directly)
+    const buildCouponItems = (items = []) =>
+        items.map((item) => ({
+            productId: item?.product?.id || item?.productId,
+            productVariantId: item?.variant?.id || item?.productVariantId,
+            brandId: item?.product?.brandId || item?.product?.brand?.id || null,
+            categoryIds: Array.isArray(item?.product?.categories)
+                ? item.product.categories.map((category) => category?.id).filter(Boolean)
+                : [],
+            price: item?.price,
+            quantity: item?.quantity,
+        }));
+
     // Re-verify coupon when cart changes
     useEffect(() => {
         const reVerifyCoupon = async () => {
-            if (!coupon || !isAuthenticated || !cart.items || cart.items.length === 0) {
+            if (!coupon || !cart.items || cart.items.length === 0) {
                 // If no coupon applied or cart is empty, clear coupon
-                if (coupon && cart.items.length === 0) {
+                if (coupon && (!cart.items || cart.items.length === 0)) {
                     setCoupon(null);
                 }
                 return;
@@ -157,18 +170,7 @@ export function CartProvider({ children }) {
 
             try {
                 const cartTotal = parseFloat(cart.subtotal || 0).toFixed(2);
-                const cartItemsPayload = (cart.items || []).map((item) => ({
-                    productId: item?.product?.id,
-                    productVariantId: item?.variant?.id,
-                    brandId: item?.product?.brandId || item?.product?.brand?.id || null,
-                    categoryIds: Array.isArray(item?.product?.categories)
-                        ? item.product.categories
-                            .map((category) => category?.id)
-                            .filter(Boolean)
-                        : [],
-                    price: item?.price,
-                    quantity: item?.quantity,
-                }));
+                const cartItemsPayload = buildCouponItems(cart.items);
 
                 const verifyResponse = await fetchApi("/coupons/verify", {
                     method: "POST",
@@ -404,30 +406,14 @@ export function CartProvider({ children }) {
         }
     };
 
-    // Apply coupon (only for authenticated users)
+    // Apply coupon (guests and logged-in users)
     const applyCoupon = async (code) => {
-        if (!isAuthenticated) {
-            toast.error("Please log in to apply coupons");
-            return;
-        }
-
         setCouponLoading(true);
         setError(null);
         try {
             // First verify if the coupon is valid with our cart total
             const cartTotal = parseFloat(cart.subtotal || 0).toFixed(2);
-            const cartItemsPayload = (cart.items || []).map((item) => ({
-                productId: item?.product?.id,
-                productVariantId: item?.variant?.id,
-                brandId: item?.product?.brandId || item?.product?.brand?.id || null,
-                categoryIds: Array.isArray(item?.product?.categories)
-                    ? item.product.categories
-                        .map((category) => category?.id)
-                        .filter(Boolean)
-                    : [],
-                price: item?.price,
-                quantity: item?.quantity,
-            }));
+            const cartItemsPayload = buildCouponItems(cart.items);
 
             try {
 
@@ -469,17 +455,18 @@ export function CartProvider({ children }) {
                     isDiscountCapped,
                 });
 
-                // Apply the coupon to the server in the background, but don't wait for it
-                // This prevents full page reload while waiting for the server
-                fetchApi("/coupons/apply", {
-                    method: "POST",
-                    credentials: "include",
-                    body: JSON.stringify({ code }),
-                }).catch((error) => {
-                    console.warn("Background coupon application error:", error);
-                    // If background apply fails, we don't need to show an error
-                    // since the coupon verification already succeeded
-                });
+                // Logged-in users: also register the coupon on the server in the background.
+                // Guests only need the verified discount; they sign in at checkout.
+                if (isAuthenticated) {
+                    fetchApi("/coupons/apply", {
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify({ code }),
+                    }).catch((error) => {
+                        console.warn("Background coupon application error:", error);
+                    });
+                }
+                toast.success(`Coupon ${verifyResponse.data.coupon.code} applied`);
 
                 return verifyResponse.data;
             } catch (apiError) {

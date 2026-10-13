@@ -183,3 +183,25 @@ export const verifyPartnerToken = asyncHandler(async (req, res, next) => {
     throw new ApiError(401, error?.message || "Invalid partner token");
   }
 });
+
+// Attaches req.user when a valid token is present, but never rejects the request (guests allowed)
+export const optionalAuth = asyncHandler(async (req, res, next) => {
+  try {
+    const token =
+      req.cookies?.accessToken ||
+      req.headers?.authorization?.replace("Bearer ", "") ||
+      req.query?.accessToken;
+
+    if (token) {
+      const decoded = jwt.verify(token, process.env.ACCESS_JWT_SECRET);
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { id: true, name: true, email: true, role: true },
+      });
+      if (user) req.user = user;
+    }
+  } catch {
+    // Invalid/expired token: treat as guest
+  }
+  next();
+});
