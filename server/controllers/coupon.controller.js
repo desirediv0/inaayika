@@ -2,37 +2,12 @@ import { prisma } from "../config/db.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
-// Coupons meant only for a first order (no dedicated DB flag, so detect by wording/code)
-const FIRST_ORDER_PATTERN =
-  /first[\s-]*(time|order|purchase)|new[\s-]*(user|customer|buyer)/i;
-export const isFirstOrderCoupon = (coupon) =>
-  FIRST_ORDER_PATTERN.test(coupon.description || "") ||
-  /^WELCOME/i.test(coupon.code || "");
-
-// "First time" = no completed (non-cancelled) orders. Guests count as first time.
-const isFirstTimeCustomer = async (userId) => {
-  if (!userId) return true;
-  const orders = await prisma.order.count({
-    where: { userId, status: { notIn: ["CANCELLED", "PENDING"] } },
-  });
-  return orders === 0;
-};
-
-// Date window + usage limit check; returns an error message or null
-const getCouponAvailabilityError = (coupon) => {
-  const now = new Date();
-  if (coupon.startDate && new Date(coupon.startDate) > now) {
-    return "This coupon is not active yet";
-  }
-  if (coupon.endDate && new Date(coupon.endDate) < now) {
-    return "This coupon has expired";
-  }
-  if (coupon.maxUses && (coupon.usedCount || 0) >= coupon.maxUses) {
-    return "Coupon usage limit exceeded";
-  }
-  return null;
-};
+import {
+  isFirstOrderCoupon,
+  isFirstTimeCustomer,
+  getFirstOrderIneligibleMessage,
+  getCouponAvailabilityError,
+} from "../utils/couponRules.js";
 
 // Create coupon (admin)
 export const createCoupon = asyncHandler(async (req, res) => {
@@ -327,7 +302,7 @@ export const deleteCoupon = asyncHandler(async (req, res) => {
 
 // Verify coupon (public)
 export const verifyCoupon = asyncHandler(async (req, res) => {
-  const { code, cartTotal, cartItems } = req.body;
+  const { code, cartTotal, cartItems, shippingAddressId } = req.body;
 
   if (!code) {
     throw new ApiError(400, "Coupon code is required");
@@ -351,8 +326,21 @@ export const verifyCoupon = asyncHandler(async (req, res) => {
     throw new ApiError(400, availabilityError);
   }
 
-  if (isFirstOrderCoupon(coupon) && !(await isFirstTimeCustomer(req.user?.id))) {
-    throw new ApiError(400, "This coupon is valid only on your first order");
+  if (isFirstOrderCoupon(coupon)) {
+    // At checkout the chosen address is known, so the mobile/address match can be enforced too
+    let shippingAddress = null;
+    if (shippingAddressId && req.user?.id) {
+      shippingAddress = await prisma.address.findFirst({
+        where: { id: shippingAddressId, userId: req.user.id },
+      });
+    }
+    const firstTime = await isFirstTimeCustomer({
+      userId: req.user?.id,
+      shippingAddress,
+    });
+    if (!firstTime) {
+      throw new ApiError(400, getFirstOrderIneligibleMessage());
+    }
   }
 
   // Resolve brand/categories from the DB so guests and tampered payloads behave the same
@@ -518,6 +506,10 @@ export const applyCoupon = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Coupon usage limit exceeded");
   }
 
+  if (isFirstOrderCoupon(coupon) && !(await isFirstTimeCustomer({ userId }))) {
+    throw new ApiError(400, getFirstOrderIneligibleMessage());
+  }
+
   // Get user's cart
   const cartItems = await prisma.cartItem.findMany({
     where: { userId },
@@ -638,7 +630,7 @@ export const getAvailableCoupons = asyncHandler(async (req, res) => {
     orderBy: { createdAt: "desc" },
   });
 
-  const firstTime = await isFirstTimeCustomer(userId);
+  const firstTime = await isFirstTimeCustomer({ userId });
 
   const list = coupons
     .filter((c) => !(c.maxUses && (c.usedCount || 0) >= c.maxUses))

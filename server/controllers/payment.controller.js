@@ -10,6 +10,19 @@ import { getFileUrl } from "../utils/deleteFromS3.js";
 import { processReferralReward } from "./referral.controller.js";
 import { decrypt } from "../utils/encryption.js";
 import { processOrderForShipping } from "../utils/shiprocket.js";
+import { validateCouponForOrder } from "../utils/couponRules.js";
+
+// Unit price for a quantity: variant slab > product slab > sale/regular price
+const calcSlabPrice = (variant, quantity) => {
+  const qty = parseInt(quantity);
+  const inSlab = (slab) =>
+    qty >= slab.minQty && (slab.maxQty === null || qty <= slab.maxQty);
+  const variantSlab = (variant.pricingSlabs || []).find(inSlab);
+  if (variantSlab) return parseFloat(variantSlab.price);
+  const productSlab = (variant.product?.pricingSlabs || []).find(inSlab);
+  if (productSlab) return parseFloat(productSlab.price);
+  return parseFloat(variant.salePrice || variant.price);
+};
 
 
 async function getPaymentGatewayConfig(userId = null, gateway = "RAZORPAY") {
@@ -184,12 +197,45 @@ export const checkout = asyncHandler(async (req, res) => {
     couponCode,
     couponId,
     discountAmount,
+    shippingAddressId,
     paymentGateway = "RAZORPAY", // Default to RAZORPAY
   } = req.body;
   const userId = req.user.id;
 
   if (!amount || amount < 1) {
     throw new ApiError(400, "Valid amount is required");
+  }
+
+  // A coupon must be valid for this customer/address/cart before any money is taken
+  let verifiedDiscount = null;
+  if (couponCode || couponId) {
+    const cartForCoupon = await prisma.cartItem.findMany({
+      where: { userId },
+      include: {
+        productVariant: {
+          include: {
+            product: { include: { pricingSlabs: { orderBy: { minQty: "desc" } } } },
+            pricingSlabs: { orderBy: { minQty: "desc" } },
+          },
+        },
+      },
+    });
+    const addressForCoupon = shippingAddressId
+      ? await prisma.address.findFirst({ where: { id: shippingAddressId, userId } })
+      : null;
+
+    const result = await validateCouponForOrder({
+      code: couponCode,
+      couponId,
+      userId,
+      shippingAddress: addressForCoupon,
+      items: cartForCoupon.map((ci) => ({
+        productId: ci.productVariant.product.id,
+        price: calcSlabPrice(ci.productVariant, ci.quantity),
+        quantity: ci.quantity,
+      })),
+    });
+    verifiedDiscount = result.discount;
   }
 
   try {
@@ -233,8 +279,9 @@ export const checkout = asyncHandler(async (req, res) => {
     if (couponId) {
       notes.couponId = couponId;
     }
-    if (discountAmount && discountAmount > 0) {
-      notes.discountAmount = discountAmount;
+    if (verifiedDiscount !== null) {
+      // Server-calculated discount, never the client-supplied number
+      notes.discountAmount = verifiedDiscount;
     }
     // Store payment gateway info in notes
     notes.paymentGateway = paymentConfig.paymentSettings.gateway;
@@ -243,7 +290,11 @@ export const checkout = asyncHandler(async (req, res) => {
 
     // Ensure amount has 2 decimal places for precise calculation
     // Then convert to paise (multiply by 100) and ensure it's an integer
-    const decimalAmount = parseFloat(parseFloat(amount).toFixed(2));
+    // The client-claimed discount is replaced by the server-verified one, so the charged amount can't be tampered with
+    const claimedDiscount = parseFloat(discountAmount) || 0;
+    const serverDiscount = verifiedDiscount ?? 0;
+    const chargeAmount = Math.max(parseFloat(amount) + claimedDiscount - serverDiscount, 1);
+    const decimalAmount = parseFloat(chargeAmount.toFixed(2));
     const amountInPaise = Math.round(decimalAmount * 100);
 
     const options = {
@@ -590,6 +641,29 @@ export const paymentVerification = asyncHandler(async (req, res) => {
       }
     }
 
+    // Re-validate the coupon on the server (account / mobile / address one-time rule, dates, min order)
+    // and use the server-calculated discount instead of whatever the client sent
+    let appliedCoupon = null;
+    if (couponCode || couponId) {
+      const result = await validateCouponForOrder({
+        code: couponCode,
+        couponId,
+        userId,
+        shippingAddress,
+        items: cartItems.map((ci) => ({
+          productId: ci.productVariant.product.id,
+          price: calculateSlabPrice(ci.productVariant, ci.quantity),
+          quantity: ci.quantity,
+        })),
+      });
+      appliedCoupon = result.coupon;
+      couponCode = result.coupon.code;
+      couponId = result.coupon.id;
+      discount = result.discount;
+    } else {
+      discount = 0;
+    }
+
     // Tax is 0% now
     tax = 0;
 
@@ -653,6 +727,14 @@ export const paymentVerification = asyncHandler(async (req, res) => {
               increment: 1,
             },
           },
+        });
+      }
+
+      // Count the coupon use (the userCoupon branch above already does this)
+      if (appliedCoupon && !userCoupon) {
+        await tx.coupon.update({
+          where: { id: appliedCoupon.id },
+          data: { usedCount: { increment: 1 } },
         });
       }
 
@@ -1703,10 +1785,28 @@ export const createCashOrder = asyncHandler(async (req, res) => {
           subTotal
         );
       }
-    } else if (requestCouponCode || requestCouponId || requestDiscount) {
-      if (requestCouponCode) couponCode = requestCouponCode;
-      if (requestCouponId) couponId = requestCouponId;
-      if (requestDiscount) discount = parseFloat(requestDiscount);
+    }
+
+    // Validate the coupon on the server and use the server-calculated discount
+    let appliedCoupon = null;
+    if (requestCouponCode || requestCouponId) {
+      const result = await validateCouponForOrder({
+        code: requestCouponCode,
+        couponId: requestCouponId,
+        userId,
+        shippingAddress,
+        items: processedItems.map((p) => ({
+          productId: p.item.productVariant.product.id,
+          price: p.price,
+          quantity: p.item.quantity,
+        })),
+      });
+      appliedCoupon = result.coupon;
+      couponCode = result.coupon.code;
+      couponId = result.coupon.id;
+      discount = result.discount;
+    } else if (!(userCoupon && userCoupon.coupon)) {
+      discount = 0;
     }
 
     tax = 0;
@@ -1763,6 +1863,13 @@ export const createCashOrder = asyncHandler(async (req, res) => {
               increment: 1,
             },
           },
+        });
+      }
+
+      if (appliedCoupon && !userCoupon) {
+        await tx.coupon.update({
+          where: { id: appliedCoupon.id },
+          data: { usedCount: { increment: 1 } },
         });
       }
 

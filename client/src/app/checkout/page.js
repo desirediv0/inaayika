@@ -35,7 +35,7 @@ const getImageUrl = (image) => {
 export default function CheckoutPage() {
     const { isAuthenticated, user } = useAuth();
     const router = useRouter();
-    const { cart, coupon, getCartTotals, clearCart, updateCartItem, cartItemsLoading } = useCart();
+    const { cart, coupon, getCartTotals, clearCart, updateCartItem, cartItemsLoading, removeCoupon } = useCart();
     const [addresses, setAddresses] = useState([]);
     const [selectedAddressId, setSelectedAddressId] = useState("");
     const [loadingAddresses, setLoadingAddresses] = useState(true);
@@ -58,6 +58,36 @@ export default function CheckoutPage() {
     const [confettiCannon, setConfettiCannon] = useState(false);
 
     const totals = getCartTotals();
+
+    // Re-check the coupon for the selected delivery address. A first-order coupon is refused when the
+    // same account, mobile number or address has already ordered.
+    useEffect(() => {
+        if (!coupon?.code || !selectedAddressId || !cart.items?.length) return;
+        let cancelled = false;
+        fetchApi("/coupons/verify", {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({
+                code: coupon.code,
+                cartTotal: parseFloat(cart.subtotal || 0).toFixed(2),
+                shippingAddressId: selectedAddressId,
+                cartItems: cart.items.map((item) => ({
+                    productId: item?.product?.id || item?.productId,
+                    productVariantId: item?.variant?.id || item?.productVariantId,
+                    price: item?.price,
+                    quantity: item?.quantity,
+                })),
+            }),
+        }).catch((err) => {
+            if (cancelled) return;
+            removeCoupon();
+            toast.error(err?.message || "This coupon can't be used for this order");
+        });
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedAddressId, coupon?.code]);
 
     const handleQuantityChange = async (item, change) => {
         const newQuantity = item.quantity + change;
@@ -317,6 +347,7 @@ export default function CheckoutPage() {
                         amount,
                         currency: "INR",
                         paymentGateway: "RAZORPAY",
+                        shippingAddressId: selectedAddressId,
                         couponCode: coupon?.code || null,
                         couponId: coupon?.id || null,
                         discountAmount: totals.discount || 0,
