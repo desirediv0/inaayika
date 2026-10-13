@@ -46,21 +46,21 @@ export function CartProvider({ children }) {
     const itemCount = cart.items?.length || 0;
     useEffect(() => {
         const loadShipping = () =>
-            fetchApi('/public/shipping-settings')
+            fetchApi("/public/shipping-settings")
                 .then((response) => {
                     if (response.success && response.data) setShippingSettings(response.data);
                 })
-                .catch((error) => console.error('Failed to fetch shipping settings:', error));
+                .catch((error) => console.error("Failed to fetch shipping settings:", error));
 
         loadShipping();
         const onVisible = () => {
-            if (document.visibilityState === 'visible') loadShipping();
+            if (document.visibilityState === "visible") loadShipping();
         };
-        document.addEventListener('visibilitychange', onVisible);
-        window.addEventListener('focus', loadShipping);
+        document.addEventListener("visibilitychange", onVisible);
+        window.addEventListener("focus", loadShipping);
         return () => {
-            document.removeEventListener('visibilitychange', onVisible);
-            window.removeEventListener('focus', loadShipping);
+            document.removeEventListener("visibilitychange", onVisible);
+            window.removeEventListener("focus", loadShipping);
         };
     }, [itemCount]);
 
