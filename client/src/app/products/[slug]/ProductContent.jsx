@@ -453,7 +453,7 @@ export default function ProductContent({ slug }) {
                       className={`relative flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 bg-neutral-50 ${active ? "border-[#003E29] shadow-sm" : "border-neutral-200 hover:border-neutral-400"
                         }`}
                     >
-                      <Image src={getImageUrl(img.url)} alt="" fill className="object-cover" sizes="64px" />
+                      <Image src={getImageUrl(img.url)} alt="" fill className="object-contain" sizes="64px" />
                     </button>
                   );
                 })}
@@ -467,12 +467,12 @@ export default function ProductContent({ slug }) {
                   src={getImageUrl(primary?.url)}
                   alt={product.name}
                   fill
-                  className="object-cover transition-transform duration-[2000ms] group-hover:scale-105"
+                  className="object-contain transition-transform duration-[2000ms] group-hover:scale-105"
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               ) : (
-                <Image src="/placeholder.jpg" alt={product.name} fill className="object-cover" />
+                <Image src="/placeholder.jpg" alt={product.name} fill className="object-contain" />
               )}
 
               {/* Badges on image */}
@@ -709,7 +709,7 @@ export default function ProductContent({ slug }) {
                     />
 
                     <div className="relative w-12 h-14 bg-neutral-100 rounded overflow-hidden flex-shrink-0">
-                      <Image src={getImageUrl(item.image)} alt="" fill className="object-cover" sizes="48px" />
+                      <Image src={getImageUrl(item.image)} alt="" fill className="object-contain" sizes="48px" />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -887,7 +887,7 @@ export default function ProductContent({ slug }) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <div className="relative w-10 h-12 rounded-lg overflow-hidden bg-neutral-50 border flex-shrink-0">
-                <Image src={getImageUrl(primary?.url)} alt="" fill className="object-cover" sizes="48px" />
+                <Image src={getImageUrl(primary?.url)} alt="" fill className="object-contain" sizes="48px" />
               </div>
               <div className="min-w-0">
                 <h4 className="text-xs   text-neutral-900 uppercase tracking-wide truncate">{product.name}</h4>

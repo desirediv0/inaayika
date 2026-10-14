@@ -748,7 +748,7 @@ export default function CheckoutPage() {
                                     return (
                                         <div key={item.id} className="flex items-center gap-3 py-1 border-b border-neutral-50 last:border-0 pb-2">
                                             <div className="relative w-10 h-12 bg-neutral-50 border rounded-lg overflow-hidden flex-shrink-0">
-                                                <Image src={getImageUrl(img)} alt="" fill className="object-cover" />
+                                                <Image src={getImageUrl(img)} alt="" fill className="object-contain" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="text-[11px]   text-neutral-800 uppercase tracking-wide truncate">{item.productName || item.product?.name}</h4>

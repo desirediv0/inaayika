@@ -92,7 +92,7 @@ const CartItem = React.memo(
                             src={productImage}
                             alt={productName}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-700"
+                            className="object-contain group-hover:scale-105 transition-transform duration-700"
                             sizes="120px"
                         />
                     </Link>
