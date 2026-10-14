@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Navbar } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { CartProvider } from "@/lib/cart-context";
 import { AuthProvider } from "@/lib/auth-context";
 import { FloatingWhatsApp } from "@/components/ui/FloatingWhatsApp";
@@ -26,6 +27,7 @@ export default function RootLayout({ children }) {
       <body className="antialiased overflow-x-hidden max-w-full w-full">
         <AuthProvider>
           <CartProvider>
+            <ScrollToTop />
             <Navbar />
             <main className="min-h-screen max-w-full overflow-x-hidden">
               {children}

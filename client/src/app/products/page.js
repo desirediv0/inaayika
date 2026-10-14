@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { fetchApi } from "@/lib/utils";
@@ -48,7 +48,7 @@ function FilterSection({ title, isOpen, onToggle, children }) {
           <span className="text-zinc-400   text-sm leading-none">+</span>
         )}
       </button>
-      <div className={`overflow-hidden transition-all duration-200 ${isOpen ? "max-h-[300px] mt-4" : "max-h-0"}`}>
+      <div className={`overflow-hidden transition-all duration-200 ${isOpen ? "max-h-[900px] mt-4" : "max-h-0"}`}>
         <div>{children}</div>
       </div>
     </div>
@@ -83,6 +83,28 @@ function ProductsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const resultsRef = useRef(null);
+
+  // Smoothly bring the top of the results into view. Runs once now and again when the new products
+  // have loaded, because the grid swaps to skeletons/new content and changes the page height meanwhile.
+  const pendingScrollRef = useRef(false);
+  const doScroll = () => {
+    const el = resultsRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 90;
+    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+  };
+  const scrollToResults = () => {
+    pendingScrollRef.current = true;
+    requestAnimationFrame(doScroll);
+  };
+  useEffect(() => {
+    if (!loading && pendingScrollRef.current) {
+      pendingScrollRef.current = false;
+      requestAnimationFrame(doScroll);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
   const [viewCols, setViewCols] = useState(4); // 2, 3, 4, 5
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
 
@@ -209,6 +231,8 @@ function ProductsContent() {
     setFilters(nf);
     updateURL(nf);
     if (pagination.page !== 1) setPagination((p) => ({ ...p, page: 1 }));
+    setMobileFilterOpen(false);
+    scrollToResults();
   };
 
   const handleFilterChange = (name, value) => {
@@ -230,6 +254,8 @@ function ProductsContent() {
     setPriceRange({ min: 10, max: 10000 });
     setSelectedPredefinedRange("all");
     updateURL(cf); setPagination((p) => ({ ...p, page: 1 }));
+    setMobileFilterOpen(false);
+    scrollToResults();
   };
 
   const handleSortChange = (e) => {
@@ -258,6 +284,7 @@ function ProductsContent() {
     const params = new URLSearchParams(searchParams.toString());
     p > 1 ? params.set("page", p) : params.delete("page");
     router.push(`${window.location.pathname}?${params.toString()}`, { scroll: false });
+    scrollToResults();
   };
 
   const activeCount = [
@@ -553,7 +580,7 @@ function ProductsContent() {
           </button>
           {mobileFilterOpen && (
             <div className="mt-3 p-4 bg-white border border-[#E9E2D5] rounded-xl shadow-md space-y-4">
-              <SidebarContent />
+              {SidebarContent()}
             </div>
           )}
         </div>
@@ -562,28 +589,20 @@ function ProductsContent() {
 
           {/* ── Left Sidebar (3 cols) ── */}
           <aside className="lg:col-span-3 hidden lg:block border-r pr-8" style={{ borderColor: "#E9E2D5" }}>
-            <SidebarContent />
+            {SidebarContent()}
           </aside>
 
           {/* ── Right Product Area (9 cols) ── */}
-          <div className="lg:col-span-9 space-y-6 sm:space-y-8">
+          <div ref={resultsRef} className="lg:col-span-9 space-y-6 sm:space-y-8">
 
             {/* Top Promo Banner inside Shop area */}
             <div className="relative overflow-hidden border flex flex-col md:flex-row items-stretch" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
               <div className="p-6 md:p-12 flex flex-col justify-center flex-1">
                 <span className="luxe-eyebrow mb-3">Complimentary Shipping</span>
                 <h3 className="font-display text-xl sm:text-2xl font-medium text-neutral-900 mb-2">Free Shipping on Orders Over ₹1,999</h3>
-                <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide mb-6">
+                <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide">
                   For the terms of the campaign, check our details page. Handcrafted adornments delivered to your doorstep.
                 </p>
-                <div>
-                  <Link
-                    href="/products?productType=featured"
-                    className="btn-luxe !px-6 !py-3"
-                  >
-                    See More Products
-                  </Link>
-                </div>
               </div>
               <div className="relative w-full md:w-[35%] min-h-[160px] md:min-h-full">
                 <Image
