@@ -30,18 +30,35 @@ export const processAndUploadImage = async (file, subfolder = "images") => {
     const sanitizedName = originalname
       .toLowerCase()
       .replace(/[^a-z0-9.]/g, "-");
-    const fileExtension = originalname.split(".").pop().toLowerCase();
+    let fileExtension = originalname.split(".").pop().toLowerCase();
+    let outputName = sanitizedName;
+
+    // Resize + compress (phone photos / PNG exports are often 3-7MB, which makes cards and the Next.js
+    // image optimizer slow or time out). GIFs are left untouched to keep animation.
+    let processedBuffer = buffer;
+    if (fileExtension !== "gif") {
+      try {
+        processedBuffer = await sharp(buffer)
+          .rotate() // respect EXIF orientation
+          .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toBuffer();
+        fileExtension = "webp";
+        outputName = sanitizedName.replace(/\.[a-z0-9]+$/, "") + ".webp";
+      } catch (compressError) {
+        // Unsupported/corrupt format: keep the original so the upload still succeeds
+        console.warn(`⚠️ Image compression skipped: ${compressError.message}`);
+        processedBuffer = buffer;
+      }
+    }
 
     // Use UPLOAD_FOLDER from environment variables for consistency
     const uploadFolder = process.env.UPLOAD_FOLDER || "Inaayika";
-    const filename = `${uploadFolder}/${subfolder}/${timestamp}-${sanitizedName}`;
+    const filename = `${uploadFolder}/${subfolder}/${timestamp}-${outputName}`;
 
     console.log(`🔧 Target filename: ${filename}`);
-
-    // No compression requested: Use the original buffer
-    const processedBuffer = buffer;
     console.log(
-      `🔧 Using original image buffer. Size: ${processedBuffer.length} bytes`
+      `🔧 Image size: ${buffer.length} -> ${processedBuffer.length} bytes`
     );
 
     // Upload to S3 with proper content type
@@ -51,7 +68,9 @@ export const processAndUploadImage = async (file, subfolder = "images") => {
       Key: filename,
       Body: processedBuffer,
       ACL: "public-read",
-      ContentType: `image/${fileExtension === "png"
+      ContentType: `image/${fileExtension === "webp"
+        ? "webp"
+        : fileExtension === "png"
         ? "png"
         : fileExtension === "gif"
           ? "gif"

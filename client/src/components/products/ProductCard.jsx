@@ -29,6 +29,35 @@ const parsePrice = (value) => {
   return isNaN(parsed) ? null : parsed;
 };
 
+/* ── Image that never shows a broken icon ──
+   Tries the optimised Next image first, then the raw URL, then the next candidate image, then the placeholder. */
+function CardImage({ candidates, index, alt, className, sizes, style }) {
+  const [failures, setFailures] = useState({}); // url -> 0 (optimised failed) | 1 (raw failed)
+
+  const list = candidates.length ? candidates : ["/placeholder.jpg"];
+  const wanted = list[index % list.length];
+  const usable = [wanted, ...list].find((u) => (failures[u] ?? 0) < 2) || "/placeholder.jpg";
+  const stage = failures[usable] ?? 0;
+
+  const onError = () =>
+    setFailures((prev) => ({ ...prev, [usable]: (prev[usable] ?? 0) + 1 }));
+
+  if (stage === 1) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={usable} alt={alt} className={className} style={style} onError={onError} />;
+  }
+  return (
+    <Image
+      src={usable}
+      alt={alt}
+      fill
+      className={className}
+      sizes={sizes}
+      onError={onError}
+    />
+  );
+}
+
 /* ════════════════════════════════════════════
    PRODUCT CARD
  ════════════════════════════════════════════ */
@@ -131,7 +160,14 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
       : 0;
 
   const showPrice = !priceSettings?.hidePricesForGuests || isAuthenticated;
-  const isOutOfStock = product.stock === 0 || product.inStock === false;
+  const variantStocks = (product.variants || [])
+    .filter((v) => v.isActive !== false)
+    .map((v) => v.stock ?? v.quantity)
+    .filter((q) => q !== undefined && q !== null);
+  const isOutOfStock =
+    product.stock === 0 ||
+    product.inStock === false ||
+    (variantStocks.length > 0 && variantStocks.every((q) => Number(q) <= 0));
   const inWishlist = wishlistItems[product.id];
 
   /* ── Handlers ── */
@@ -245,35 +281,40 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
       >
         <Link href={`/products/${product.slug}`} className="block w-full h-full">
           {/* Product image */}
-          <Image
-            src={getAllProductImages[currentImageIndex] || "/placeholder.jpg"}
+          <CardImage
+            candidates={getAllProductImages}
+            index={currentImageIndex}
             alt={product.name}
-            fill
-            className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.06]"
+            className={cn(
+              "object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.06]",
+              isOutOfStock && "opacity-60 grayscale-[30%]"
+            )}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         </Link>
 
         {/* BESTSELLER / SALE Badges — top left */}
         <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5 pointer-events-none">
-          {product.isNew && (
-            <span className="text-[8px] tracking-[0.25em] text-white px-2.5 py-1 uppercase" style={{ background: "#B08D57" }}>
-              Bestseller
+          {isOutOfStock ? (
+            <span className="text-[8px] tracking-[0.25em] text-white px-2.5 py-1 uppercase bg-red-700">
+              Out of Stock
             </span>
-          )}
-          {discountPercent > 0 && (
-            <span className="text-[8px] tracking-[0.25em] text-white px-2.5 py-1 bg-[#003E29] uppercase">
-              Sale
-            </span>
+          ) : (
+            <>
+              {product.isNew && (
+                <span className="text-[8px] tracking-[0.25em] text-white px-2.5 py-1 uppercase" style={{ background: "#B08D57" }}>
+                  Bestseller
+                </span>
+              )}
+              {discountPercent > 0 && (
+                <span className="text-[8px] tracking-[0.25em] text-white px-2.5 py-1 bg-[#003E29] uppercase">
+                  Sale
+                </span>
+              )}
+            </>
           )}
         </div>
-
-        {/* Out of stock tag — bottom left */}
-        {isOutOfStock && (
-          <span className="absolute bottom-3 left-3 z-20 text-[10px] text-red-700 uppercase tracking-[0.2em] bg-white/95 px-2.5 py-1 shadow-sm">
-            Out of stock
-          </span>
-        )}
 
         {/* Action icons stack — top right (shows on hover) */}
         <div className={cn(
