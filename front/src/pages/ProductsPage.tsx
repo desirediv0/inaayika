@@ -1140,103 +1140,53 @@ export function ProductForm({
             `📸 Processing variant images for ${productVariants.length} variants`
           );
 
-          const uploadPromises = [];
+          let uploadedImageCount = 0;
 
-          // Match variants by their temporary IDs or color/size combination
+          // Match persisted variants by ID, then upload and reorder their images serially.
           for (let i = 0; i < variants.length; i++) {
             const localVariant = variants[i];
+            const localAttributeIds = [...(localVariant.attributeValueIds || [])].sort();
+            const serverVariant = productVariants.find(
+              (sv: any) => sv.id === localVariant.id
+            ) || productVariants.find((sv: any) => {
+              const serverAttributeIds = (sv.attributes || [])
+                .map((attribute: any) => attribute.attributeValueId)
+                .filter(Boolean)
+                .sort();
+              return localAttributeIds.length === serverAttributeIds.length &&
+                localAttributeIds.every((id: string, index: number) => id === serverAttributeIds[index]);
+            }) || productVariants[i];
+            if (!localVariant?.images || !serverVariant) continue;
 
-            // In create mode: match by index
-            // In edit mode: match by ID or create new mapping for newly generated variants
-            let serverVariant;
-
-            if (mode === "create") {
-              serverVariant = productVariants[i]; // Match by index since they're created in same order
-            } else {
-              // Edit mode: find matching variant by ID or create new one
-              const isNewVariant =
-                localVariant.id && localVariant.id.includes("-"); // UUID format
-
-              if (isNewVariant) {
-                // This is a newly generated variant, find it in the updated product variants
-                // Match by color/size combination
-                serverVariant = productVariants.find(
-                  (sv: any) =>
-                    sv.colorId === localVariant.colorId &&
-                    sv.sizeId === localVariant.sizeId
-                );
-              } else {
-                // This is an existing variant, find by ID
-                serverVariant = productVariants.find(
-                  (sv: any) => sv.id === localVariant.id
-                );
+            const uploadedIds = new Map<any, string>();
+            for (const imageData of localVariant.images) {
+              if (!imageData.isNew || !imageData.file) continue;
+              const uploadResponse = await products.uploadVariantImage(
+                serverVariant.id,
+                imageData.file,
+                imageData.isPrimary ? true : undefined
+              );
+              const uploadedId = uploadResponse.data.data?.image?.id;
+              if (uploadedId) {
+                uploadedIds.set(imageData, uploadedId);
+                uploadedImageCount++;
               }
             }
 
-            if (localVariant && localVariant.images && serverVariant) {
-              // Filter only new images that need to be uploaded
-              const newImages = localVariant.images.filter(
-                (img: any) => img.isNew && img.file
-              );
-
-              if (newImages.length > 0) {
-                console.log(
-                  `📸 Found ${newImages.length} new images for variant ${serverVariant.id} (${localVariant.color?.name || "N/A"} - ${localVariant.size?.name || "N/A"}) [Mode: ${mode}]`
-                );
-
-                // Upload each new image for this variant
-                for (let j = 0; j < newImages.length; j++) {
-                  const imageData = newImages[j];
-
-                  // FIXED: Send undefined for non-explicitly-marked images to let backend decide
-                  // Only send true/false when explicitly set, otherwise let backend handle it
-                  const isPrimary =
-                    imageData.isPrimary === true ? true : undefined;
-
-                  console.log(`📸 Upload decision for image ${j + 1}:`, {
-                    imageDataIsPrimary: imageData.isPrimary,
-                    finalIsPrimary: isPrimary,
-                    note: "undefined = let backend decide, true = force primary",
-                  });
-
-                  const uploadPromise = products
-                    .uploadVariantImage(
-                      serverVariant.id,
-                      imageData.file,
-                      isPrimary
-                    )
-                    .then(() => {
-                      console.log(
-                        `📸 Uploaded image ${j + 1}/${newImages.length} for variant ${serverVariant.id} (isPrimary: ${isPrimary})`
-                      );
-                    })
-                    .catch((error) => {
-                      console.error(
-                        `❌ Failed to upload image ${j + 1} for variant ${serverVariant.id}:`,
-                        error
-                      );
-                      throw error;
-                    });
-
-                  uploadPromises.push(uploadPromise);
-                }
-              }
+            const imageOrders = localVariant.images
+              .map((image: any, order: number) => ({
+                imageId: image.id || uploadedIds.get(image),
+                order,
+              }))
+              .filter((image: any) => image.imageId);
+            if (imageOrders.length > 0) {
+              await products.reorderVariantImages(serverVariant.id, imageOrders);
             }
           }
 
-          // Wait for all uploads to complete
-          if (uploadPromises.length > 0) {
-            try {
-              await Promise.all(uploadPromises);
-              toast.success(
-                `Successfully uploaded ${uploadPromises.length} variant image(s)`
-              );
-            } catch (error) {
-              console.error("Some variant image uploads failed:", error);
-              toast.error("Failed to upload some variant images");
-            }
+          if (uploadedImageCount > 0) {
+            toast.success(`Successfully uploaded ${uploadedImageCount} variant image(s)`);
           }
-
           // Save Variant MOQ settings
           if (response.data.data?.product?.variants) {
             const productVariants = response.data.data.product.variants;

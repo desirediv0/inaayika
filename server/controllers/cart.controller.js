@@ -17,7 +17,7 @@ export const getUserCart = asyncHandler(async (req, res) => {
         include: {
           product: {
             include: {
-              images: true,
+              images: { orderBy: { order: "asc" } },
               brand: true,
               categories: {
                 include: {
@@ -35,7 +35,7 @@ export const getUserCart = asyncHandler(async (req, res) => {
               },
             },
           },
-          images: true,
+          images: { orderBy: { order: "asc" } },
         },
       },
     },
@@ -452,7 +452,7 @@ export const addToCart = asyncHandler(async (req, res) => {
           include: {
             product: {
               include: {
-                images: true,
+                images: { orderBy: { order: "asc" } },
               },
             },
             attributes: {
@@ -464,7 +464,7 @@ export const addToCart = asyncHandler(async (req, res) => {
                 },
               },
             },
-            images: true,
+            images: { orderBy: { order: "asc" } },
           },
         },
       },
@@ -482,7 +482,7 @@ export const addToCart = asyncHandler(async (req, res) => {
           include: {
             product: {
               include: {
-                images: true,
+                images: { orderBy: { order: "asc" } },
               },
             },
             attributes: {
@@ -494,7 +494,7 @@ export const addToCart = asyncHandler(async (req, res) => {
                 },
               },
             },
-            images: true,
+            images: { orderBy: { order: "asc" } },
           },
         },
       },

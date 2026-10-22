@@ -408,7 +408,7 @@ export const getProductBySlug = asyncHandler(async (req, res) => {
       },
       brand: true,
       images: {
-        orderBy: { isPrimary: "desc" },
+        orderBy: [{ order: "asc" }, { isPrimary: "desc" }],
       },
       variants: {
         where: { isActive: true },
@@ -820,7 +820,7 @@ export const getProductVariant = asyncHandler(async (req, res) => {
           },
         },
       },
-      images: true,
+      images: { orderBy: { order: "asc" } },
     },
   });
 
@@ -871,7 +871,7 @@ export const getProductVariantById = asyncHandler(async (req, res) => {
           },
         },
       },
-      images: true,
+      images: { orderBy: { order: "asc" } },
       product: {
         include: {
           images: {
