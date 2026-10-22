@@ -109,6 +109,12 @@ export default function OrderDetailPage() {
         return colors[status] || "text-gray-600";
     };
 
+    const formatStatusLabel = (status) =>
+        String(status || "N/A").toLowerCase().replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+    const getShippingZone = (postalCode) =>
+        /^110\d{3}$/.test(String(postalCode || "").trim()) ? "Delhi" : "Other locations";
+
     if (loading || authLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-16">
@@ -159,8 +165,11 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="mt-4 md:mt-0 flex items-center gap-3">
                     <span className={`px-4 py-2 text-sm font-semibold rounded-full border ${getStatusColor(order.status)}`}>
-                        {order.status}
+                        {formatStatusLabel(order.status)}
                     </span>
+                    <Button variant="outline" onClick={() => window.print()} className="no-print">
+                        <DynamicIcon name="Printer" className="mr-2 h-4 w-4" /> Print / Save Invoice
+                    </Button>
                     {order.status !== "CANCELLED" && order.status !== "DELIVERED" && order.status !== "SHIPPED" && (
                         <Button variant="destructive" size="sm" onClick={handleCancelOrder} disabled={cancelling}>
                             {cancelling ? (
@@ -218,14 +227,14 @@ export default function OrderDetailPage() {
                                                 </div>
                                             )}
                                             <div className="flex items-center justify-between mt-2">
-                                                <span className="text-sm text-gray-500">Qty: {item.quantity}</span>
+                                                <span className="text-sm text-gray-500">Qty {item.quantity} × {formatCurrency(item.price)} each</span>
                                                 <div className="text-right">
                                                     {item.flashSale?.originalPrice && (
                                                         <span className="text-xs text-gray-400 line-through mr-2">
                                                             {formatCurrency(item.flashSale.originalPrice * item.quantity)}
                                                         </span>
                                                     )}
-                                                    <span className="font-semibold text-gray-900">{formatCurrency(item.subtotal)}</span>
+                                                    <span className="font-semibold text-gray-900">Line total: {formatCurrency(item.subtotal)}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -285,17 +294,17 @@ export default function OrderDetailPage() {
                         </div>
                         <div className="p-6 space-y-3">
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Subtotal</span>
+                                <span className="text-gray-600">Product subtotal</span>
                                 <span>{formatCurrency(order.subTotal)}</span>
                             </div>
                             {order.discount > 0 && (
                                 <div className="flex justify-between text-sm text-green-600">
-                                    <span>Discount</span>
+                                    <span>Order discount</span>
                                     <span>-{formatCurrency(order.discount)}</span>
                                 </div>
                             )}
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Shipping</span>
+                                <span className="text-gray-600">Delivery charge ({getShippingZone(order.shippingAddress?.postalCode)})</span>
                                 <span>{order.shippingCost > 0 ? formatCurrency(order.shippingCost) : "Free"}</span>
                             </div>
                             <div className="flex justify-between text-sm">
@@ -304,12 +313,12 @@ export default function OrderDetailPage() {
                             </div>
                             {order.codCharge > 0 && (
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">COD Surcharge</span>
+                                    <span className="text-gray-600">Cash on delivery fee</span>
                                     <span>{formatCurrency(order.codCharge)}</span>
                                 </div>
                             )}
                             <div className="border-t border-gray-100 pt-3 mt-3 flex justify-between font-semibold text-lg">
-                                 <span>Total</span>
+                                 <span>Order total</span>
                                  <span className="text-[#003E29]">{formatCurrency(order.total)}</span>
                              </div>
                         </div>
@@ -323,12 +332,12 @@ export default function OrderDetailPage() {
                         <div className="p-6 space-y-3">
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Method</span>
-                                <span className="font-medium">{order.paymentMethod || "N/A"}</span>
+                                <span className="font-medium">{formatStatusLabel(order.paymentMethod)}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Status</span>
                                 <span className={`font-medium ${getPaymentStatusColor(order.paymentStatus)}`}>
-                                    {order.paymentStatus || "N/A"}
+                                    {formatStatusLabel(order.paymentStatus)}
                                 </span>
                             </div>
                             {order.razorpayPayment?.razorpayPaymentId && (
@@ -344,7 +353,7 @@ export default function OrderDetailPage() {
                     {order.shippingAddress && (
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                                <h2 className="font-semibold text-lg">Shipping Address</h2>
+                                <h2 className="font-semibold text-lg">Deliver to</h2>
                             </div>
                             <div className="p-6">
                                 <p className="font-medium">{order.shippingAddress.name}</p>
@@ -378,6 +387,97 @@ export default function OrderDetailPage() {
                     </div>
                 </div>
             </div>
+
+            <section id="print-invoice" aria-label="Order invoice">
+                <header className="invoice-header">
+                    <div>
+                        <h1>Inaayika</h1>
+                        <p>Order Invoice</p>
+                    </div>
+                    <div className="invoice-meta">
+                        <strong>Invoice: INV-{order.orderNumber}</strong>
+                        <span>Order: #{order.orderNumber}</span>
+                        <span>Date: {formatDate(order.createdAt)}</span>
+                        <span>Status: {formatStatusLabel(order.status)}</span>
+                    </div>
+                </header>
+
+                <div className="invoice-parties">
+                    <div>
+                        <h2>Customer</h2>
+                        <p>{order.shippingAddress?.name || "Customer"}</p>
+                        {order.shippingAddress?.phone && <p>Phone: {order.shippingAddress.phone}</p>}
+                        {order.user?.email && <p>Email: {order.user.email}</p>}
+                    </div>
+                    <div>
+                        <h2>Delivery address</h2>
+                        <p>{order.shippingAddress?.name}</p>
+                        <p>{order.shippingAddress?.street}</p>
+                        <p>{[order.shippingAddress?.city, order.shippingAddress?.state, order.shippingAddress?.postalCode].filter(Boolean).join(", ")}</p>
+                        <p>{order.shippingAddress?.country}</p>
+                    </div>
+                    <div>
+                        <h2>Payment</h2>
+                        <p>Method: {formatStatusLabel(order.paymentMethod)}</p>
+                        <p>Status: {formatStatusLabel(order.paymentStatus)}</p>
+                        {order.razorpayPayment?.razorpayPaymentId && <p>Transaction ID: {order.razorpayPayment.razorpayPaymentId}</p>}
+                    </div>
+                </div>
+
+                <table className="invoice-items">
+                    <thead><tr><th>Item / Variant</th><th>SKU</th><th>Qty</th><th>Unit price</th><th>Line total</th></tr></thead>
+                    <tbody>
+                        {order.items?.map((item) => (
+                            <tr key={item.id}>
+                                <td>
+                                    <strong>{item.productName || item.product?.name || "Product"}</strong>
+                                    {item.variant?.options?.length > 0 && <small>{item.variant.options.map((option) => `${option.name}: ${option.value}`).join(" · ")}</small>}
+                                </td>
+                                <td>{item.variant?.sku || item.sku || "—"}</td>
+                                <td>{item.quantity}</td>
+                                <td>{formatCurrency(item.price)}</td>
+                                <td>{formatCurrency(item.subtotal)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                <div className="invoice-totals">
+                    <p><span>Product subtotal</span><strong>{formatCurrency(order.subTotal)}</strong></p>
+                    {order.discount > 0 && <p><span>Order discount</span><strong>-{formatCurrency(order.discount)}</strong></p>}
+                    <p><span>Delivery charge ({getShippingZone(order.shippingAddress?.postalCode)})</span><strong>{order.shippingCost > 0 ? formatCurrency(order.shippingCost) : "Free"}</strong></p>
+                    <p><span>Tax</span><strong>{formatCurrency(order.tax)}</strong></p>
+                    {order.codCharge > 0 && <p><span>Cash on delivery fee</span><strong>{formatCurrency(order.codCharge)}</strong></p>}
+                    <p className="invoice-grand-total"><span>Order total</span><strong>{formatCurrency(order.total)}</strong></p>
+                </div>
+                <footer className="invoice-footer">Thank you for shopping with Inaayika.</footer>
+            </section>
+
+            <style jsx global>{`
+                #print-invoice { display: none; }
+                @media print {
+                    @page { size: A4; margin: 16mm; }
+                    body { background: #fff !important; color: #111 !important; }
+                    body * { visibility: hidden !important; }
+                    #print-invoice, #print-invoice * { visibility: visible !important; }
+                    #print-invoice { display: block !important; position: absolute; inset: 0; width: 100%; font: 12px/1.45 Arial, sans-serif; color: #111; }
+                    .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #003e29; padding-bottom: 14px; }
+                    .invoice-header h1 { margin: 0; color: #003e29; font-size: 28px; }
+                    .invoice-header p { margin: 3px 0; font-size: 16px; }
+                    .invoice-meta { display: grid; gap: 3px; text-align: right; }
+                    .invoice-parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0; }
+                    .invoice-parties h2 { margin: 0 0 6px; font-size: 13px; color: #003e29; }
+                    .invoice-parties p { margin: 2px 0; overflow-wrap: anywhere; }
+                    .invoice-items { width: 100%; border-collapse: collapse; margin-top: 12px; }
+                    .invoice-items th, .invoice-items td { border: 1px solid #d1d5db; padding: 8px; text-align: left; vertical-align: top; }
+                    .invoice-items th { background: #f3f4f6; }
+                    .invoice-items small { display: block; margin-top: 3px; color: #555; }
+                    .invoice-totals { width: 48%; margin: 16px 0 0 auto; }
+                    .invoice-totals p { display: flex; justify-content: space-between; margin: 6px 0; }
+                    .invoice-grand-total { border-top: 1px solid #777; padding-top: 9px; font-size: 15px; }
+                    .invoice-footer { margin-top: 32px; border-top: 1px solid #ddd; padding-top: 10px; text-align: center; color: #555; }
+                }
+            `}</style>
         </>
     );
 }

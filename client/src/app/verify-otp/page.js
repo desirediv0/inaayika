@@ -64,8 +64,13 @@ function VerifyOtpContent() {
     const handleResend = async () => {
         if (!email) return toast.error("Enter your email to resend OTP");
         try {
-            await resendVerification(email);
-            toast.success("OTP sent to your email");
+            const response = await resendVerification(email);
+            if (response.data?.alreadyVerified) {
+                toast.success(response.message);
+                router.push("/auth");
+                return;
+            }
+            toast.success(response.message || "If this account needs verification, a new OTP will be sent.");
             setResendCooldown(30);
         } catch (err) {
             toast.error(err.message || "Failed to resend OTP");

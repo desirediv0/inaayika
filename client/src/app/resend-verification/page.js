@@ -35,21 +35,22 @@ export default function ResendVerificationPage() {
 
         setStatus("submitting");
         try {
-            await resendVerification(email);
-            setStatus("success");
-            toast.success(
-                "OTP sent successfully! Redirecting to verification...",
-                {
-                    duration: 3000,
-                }
-            );
+            const response = await resendVerification(email);
+            if (response.data?.alreadyVerified) {
+                setStatus("success");
+                toast.success(response.message);
+                router.push("/auth");
+                return;
+            }
+            setStatus(response.data?.sent ? "sent" : "success");
+            toast.success(response.message || "If this account needs verification, a new OTP will be sent.", { duration: 3000 });
 
             // Clear stored email
             if (typeof window !== "undefined") {
                 localStorage.removeItem("registeredEmail");
             }
 
-            // Redirect to verify-otp page
+            // Continue to verification; unknown accounts receive a generic response.
             setTimeout(() => {
                 router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
             }, 1500);
@@ -125,22 +126,24 @@ export default function ResendVerificationPage() {
                         </div>
                     )}
 
-                    {status === "success" && (
+                    {(status === "success" || status === "sent") && (
                         <div className="flex flex-col items-center justify-center py-8">
                             <div className="rounded-full bg-green-100 p-3">
                                 <Mail className="h-12 w-12 text-green-500" />
                             </div>
                             <p className="mt-4 text-green-600 font-medium">
-                                OTP Sent Successfully!
+                                {status === "sent" ? "OTP sent successfully" : "Request received"}
                             </p>
                             <p className="mt-2 text-gray-600">
-                                Taking you to enter the OTP...
+                                {status === "sent"
+                                    ? "Taking you to enter the OTP..."
+                                    : "If this email is registered and still needs verification, an OTP will be sent."}
                             </p>
                             <Link
                                 href={`/verify-otp?email=${encodeURIComponent(email)}`}
                                 className="mt-6 inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
                             >
-                                Enter OTP Now <ArrowRight className="ml-2 h-4 w-4" />
+                                Continue <ArrowRight className="ml-2 h-4 w-4" />
                             </Link>
                         </div>
                     )}

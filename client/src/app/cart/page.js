@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { MINIMUM_ORDER_VALUE } from "@/lib/shipping";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { Button } from "@/components/ui/button";
@@ -417,9 +418,8 @@ export default function CartPage() {
             router.push("/auth?redirect=checkout");
             return;
         }
-        const calculatedAmount = totals.subtotal - totals.discount;
-        if (calculatedAmount < 1) {
-            toast.info("Minimum order amount is ₹1");
+        if (totals.subtotal < MINIMUM_ORDER_VALUE) {
+            toast.error(`Product subtotal must be at least ₹${MINIMUM_ORDER_VALUE}; shipping is added separately.`);
             return;
         }
         if (!isAuthenticated) {
@@ -632,6 +632,12 @@ export default function CartPage() {
                                         ) : (formatCurrency(totals.subtotal))}
                                     </span>
                                 </div>
+
+                                {totals.subtotal < MINIMUM_ORDER_VALUE && (
+                                    <p className="text-[11px] text-red-700 bg-red-50 p-3 rounded-lg">
+                                        Add {formatCurrency(MINIMUM_ORDER_VALUE - totals.subtotal)} more in products to meet the ₹350 minimum. Shipping is charged separately.
+                                    </p>
+                                )}
 
                                 {coupon && (
                                     <div className="flex justify-between items-center bg-green-50/50 p-2.5 rounded">

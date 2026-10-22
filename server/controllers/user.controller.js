@@ -1205,6 +1205,7 @@ export const getUserOrders = asyncHandler(async (req, res, next) => {
           },
           variant: {
             include: {
+              images: { orderBy: { order: "asc" } },
               attributes: {
                 include: {
                   attributeValue: {
@@ -1333,6 +1334,7 @@ export const getOrderDetails = asyncHandler(async (req, res, next) => {
           },
           variant: {
             include: {
+              images: { orderBy: [{ isPrimary: "desc" }, { order: "asc" }, { createdAt: "asc" }] },
               attributes: {
                 include: {
                   attributeValue: {
@@ -1378,6 +1380,10 @@ export const getOrderDetails = asyncHandler(async (req, res, next) => {
       subtotal: parseFloat(item.subtotal),
       variant: item.variant ? {
         ...item.variant,
+        images: item.variant.images?.map((image) => ({
+          ...image,
+          url: getFileUrl(image.url),
+        })) || [],
         // Map attributes for consistent UI
         options: item.variant.attributes?.map(attr => ({
           name: attr.attributeValue.attribute.name,
@@ -1718,8 +1724,8 @@ export const resendVerificationEmail = asyncHandler(async (req, res, next) => {
       .json(
         new ApiResponsive(
           200,
-          {},
-          "If your email is registered, you will receive a verification email"
+          { alreadyVerified: true },
+          "This email is already verified. Please sign in; no new OTP is needed."
         )
       );
   }
@@ -1729,26 +1735,30 @@ export const resendVerificationEmail = asyncHandler(async (req, res, next) => {
   const otpExpiry = new Date();
   otpExpiry.setMinutes(otpExpiry.getMinutes() + 10);
 
-  // Update user with new OTP
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      otp: otpCode,
-      otpVerified: false,
-      otpVerifiedExpiry: otpExpiry,
-    },
-  });
-
-  // Send OTP email
+  // Deliver the new code before replacing the stored one. If delivery fails,
+  // the user's current OTP remains valid.
   try {
-    await sendEmail({
-      email,
+    const delivery = await sendEmail({
+      email: user.email,
       subject: "Your OTP for Email Verification - INAAYIKA",
       html: getEmailOtpTemplate(otpCode, 10),
     });
 
+    if (!delivery?.accepted?.length) {
+      throw new Error("Email provider did not accept the recipient");
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otp: otpCode,
+        otpVerified: false,
+        otpVerifiedExpiry: otpExpiry,
+      },
+    });
+
     // Log only recipient email — do NOT log the OTP code
-    console.log("Verification OTP resent to:", email);
+    console.log("Verification OTP resent to:", user.email);
   } catch (error) {
     console.error("Error sending verification email:", error);
     throw new ApiError(500, "Failed to send OTP email. Please try again later.");
@@ -1759,7 +1769,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res, next) => {
     .json(
       new ApiResponsive(
         200,
-        {},
+        { sent: true },
         "OTP has been sent to your email address"
       )
     );

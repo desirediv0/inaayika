@@ -469,8 +469,13 @@ function VerifyOtpForm({ defaultEmail = "" }) {
   const handleResend = async () => {
     if (!email) { toast.error("Enter your email address to resend OTP"); return; }
     try {
-      await resendVerification(email);
-      toast.success("New OTP code sent to your email!");
+      const response = await resendVerification(email);
+      if (response.data?.alreadyVerified) {
+        toast.success(response.message);
+        onSwitchTab("login");
+        return;
+      }
+      toast.success(response.message || "If this account needs verification, a new OTP will be sent.");
       setResendCooldown(30);
     } catch (err) {
       toast.error(err.message || "Failed to resend OTP");

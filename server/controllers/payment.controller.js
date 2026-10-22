@@ -11,6 +11,7 @@ import { processReferralReward } from "./referral.controller.js";
 import { decrypt } from "../utils/encryption.js";
 import { processOrderForShipping } from "../utils/shiprocket.js";
 import { validateCouponForOrder } from "../utils/couponRules.js";
+import { getShippingTotal, MINIMUM_ORDER_VALUE } from "../utils/shipping.js";
 
 // Unit price for a quantity: variant slab > product slab > sale/regular price
 const calcSlabPrice = (variant, quantity) => {
@@ -206,30 +207,59 @@ export const checkout = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Valid amount is required");
   }
 
+  if (!shippingAddressId) {
+    throw new ApiError(400, "Shipping address is required");
+  }
+
+  const checkoutCartItems = await prisma.cartItem.findMany({
+    where: { userId },
+    include: {
+      productVariant: {
+        include: {
+          product: { include: { pricingSlabs: { orderBy: { minQty: "desc" } } } },
+          pricingSlabs: { orderBy: { minQty: "desc" } },
+        },
+      },
+    },
+  });
+  if (checkoutCartItems.length === 0) {
+    throw new ApiError(400, "No items in cart");
+  }
+
+  const shippingAddress = await prisma.address.findFirst({
+    where: { id: shippingAddressId, userId },
+  });
+  if (!shippingAddress) {
+    throw new ApiError(404, "Shipping address not found");
+  }
+
+  const merchandiseSubtotal = checkoutCartItems.reduce(
+    (sum, item) => sum + calcSlabPrice(item.productVariant, item.quantity) * item.quantity,
+    0
+  );
+  if (merchandiseSubtotal < MINIMUM_ORDER_VALUE) {
+    throw new ApiError(
+      400,
+      `Minimum product subtotal is ₹${MINIMUM_ORDER_VALUE}; shipping is added separately.`
+    );
+  }
+
+  const shippingSettings = await prisma.shiprocketSettings.findFirst();
+  const shippingCost = getShippingTotal(
+    shippingAddress.postalCode,
+    merchandiseSubtotal,
+    Number(shippingSettings?.freeShippingThreshold) || 0
+  );
+
   // A coupon must be valid for this customer/address/cart before any money is taken
   let verifiedDiscount = null;
   if (couponCode || couponId) {
-    const cartForCoupon = await prisma.cartItem.findMany({
-      where: { userId },
-      include: {
-        productVariant: {
-          include: {
-            product: { include: { pricingSlabs: { orderBy: { minQty: "desc" } } } },
-            pricingSlabs: { orderBy: { minQty: "desc" } },
-          },
-        },
-      },
-    });
-    const addressForCoupon = shippingAddressId
-      ? await prisma.address.findFirst({ where: { id: shippingAddressId, userId } })
-      : null;
-
     const result = await validateCouponForOrder({
       code: couponCode,
       couponId,
       userId,
-      shippingAddress: addressForCoupon,
-      items: cartForCoupon.map((ci) => ({
+      shippingAddress,
+      items: checkoutCartItems.map((ci) => ({
         productId: ci.productVariant.product.id,
         price: calcSlabPrice(ci.productVariant, ci.quantity),
         quantity: ci.quantity,
@@ -290,10 +320,8 @@ export const checkout = asyncHandler(async (req, res) => {
 
     // Ensure amount has 2 decimal places for precise calculation
     // Then convert to paise (multiply by 100) and ensure it's an integer
-    // The client-claimed discount is replaced by the server-verified one, so the charged amount can't be tampered with
-    const claimedDiscount = parseFloat(discountAmount) || 0;
     const serverDiscount = verifiedDiscount ?? 0;
-    const chargeAmount = Math.max(parseFloat(amount) + claimedDiscount - serverDiscount, 1);
+    const chargeAmount = Math.max(merchandiseSubtotal + shippingCost - serverDiscount, 1);
     const decimalAmount = parseFloat(chargeAmount.toFixed(2));
     const amountInPaise = Math.round(decimalAmount * 100);
 
@@ -537,18 +565,18 @@ export const paymentVerification = asyncHandler(async (req, res) => {
       }
     }
 
-    // Calculate shipping cost based on Shiprocket settings
-    const shiprocketSettings = await prisma.shiprocketSettings.findFirst();
-    if (shiprocketSettings) {
-      const threshold = parseFloat(shiprocketSettings.freeShippingThreshold || 0);
-      const charge = parseFloat(shiprocketSettings.shippingCharge || 0);
-
-      if (threshold > 0 && subTotal >= threshold) {
-        shippingCost = 0;
-      } else {
-        shippingCost = charge;
-      }
+    if (subTotal < MINIMUM_ORDER_VALUE) {
+      throw new ApiError(
+        400,
+        `Minimum product subtotal is ₹${MINIMUM_ORDER_VALUE}; shipping is added separately.`
+      );
     }
+    const shiprocketSettings = await prisma.shiprocketSettings.findFirst();
+    shippingCost = getShippingTotal(
+      shippingAddress.postalCode,
+      subTotal,
+      Number(shiprocketSettings?.freeShippingThreshold) || 0
+    );
 
     // Apply coupon discount if available
     if (userCoupon && userCoupon.coupon) {
@@ -1755,18 +1783,18 @@ export const createCashOrder = asyncHandler(async (req, res) => {
       });
     }
 
-    // Calculate shipping cost based on Shiprocket settings
-    const shiprocketSettings = await prisma.shiprocketSettings.findFirst();
-    if (shiprocketSettings) {
-      const threshold = parseFloat(shiprocketSettings.freeShippingThreshold || 0);
-      const charge = parseFloat(shiprocketSettings.shippingCharge || 0);
-
-      if (threshold > 0 && subTotal >= threshold) {
-        shippingCost = 0;
-      } else {
-        shippingCost = charge;
-      }
+    if (subTotal < MINIMUM_ORDER_VALUE) {
+      throw new ApiError(
+        400,
+        `Minimum product subtotal is ₹${MINIMUM_ORDER_VALUE}; shipping is added separately.`
+      );
     }
+    const shiprocketSettings = await prisma.shiprocketSettings.findFirst();
+    shippingCost = getShippingTotal(
+      shippingAddress.postalCode,
+      subTotal,
+      Number(shiprocketSettings?.freeShippingThreshold) || 0
+    );
 
     // Apply coupon discount if available
     if (userCoupon && userCoupon.coupon) {

@@ -566,9 +566,9 @@ export const getPriceVisibilitySettings = asyncHandler(async (req, res) => {
 // Public shipping charge settings (used for guest cart totals)
 export const getPublicShippingSettings = asyncHandler(async (req, res) => {
   const settings = await prisma.shiprocketSettings.findFirst();
-  const shippingCharge = parseFloat(settings?.shippingCharge) || 0;
-  const freeShippingThreshold =
-    shippingCharge > 0 ? parseFloat(settings?.freeShippingThreshold) || 0 : 0;
+  // A guest cart has no destination yet; show the non-Delhi estimate.
+  const shippingCharge = 95;
+  const freeShippingThreshold = Number(settings?.freeShippingThreshold) || 0;
 
   res.status(200).json(
     new ApiResponsive(200, { shippingCharge, freeShippingThreshold }, "Shipping settings fetched successfully")

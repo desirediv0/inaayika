@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import AddressForm from "@/components/AddressForm";
 import Image from "next/image";
+import { getShippingTotal, MINIMUM_ORDER_VALUE } from "@/lib/shipping";
 
 // Helper function to format image URLs correctly
 const getImageUrl = (image) => {
@@ -57,7 +58,22 @@ export default function CheckoutPage() {
     const [redirectCountdown, setRedirectCountdown] = useState(2);
     const [confettiCannon, setConfettiCannon] = useState(false);
 
-    const totals = getCartTotals();
+    const cartTotals = getCartTotals();
+    const selectedAddress = addresses.find((address) => address.id === selectedAddressId);
+    const totals = selectedAddress
+        ? (() => {
+            const shipping = getShippingTotal(
+                selectedAddress.postalCode,
+                cartTotals.subtotal,
+                cart.freeShippingThreshold || 0
+            );
+            return {
+                ...cartTotals,
+                shipping,
+                total: cartTotals.subtotal - cartTotals.discount + shipping + cartTotals.tax,
+            };
+        })()
+        : cartTotals;
 
     // Re-check the coupon for the selected delivery address. A first-order coupon is refused when the
     // same account, mobile number or address has already ordered.
@@ -269,6 +285,10 @@ export default function CheckoutPage() {
 
     // Process checkout
     const handleCheckout = async () => {
+        if (totals.subtotal < MINIMUM_ORDER_VALUE) {
+            toast.error(`Product subtotal must be at least ₹${MINIMUM_ORDER_VALUE}; shipping is added separately.`);
+            return;
+        }
         if (!selectedAddressId) {
             toast.error("Please select a shipping address");
             return;
@@ -803,7 +823,9 @@ export default function CheckoutPage() {
                                     </div>
                                 )}
                                 <div className="flex justify-between">
-                                    <span className="uppercase tracking-wider">Shipping</span>
+                                    <span className="uppercase tracking-wider">
+                                        Shipping {selectedAddress ? `(${/^110\d{3}$/.test(selectedAddress.postalCode) ? "Delhi" : "Other locations"})` : ""}
+                                    </span>
                                     {totals.shipping > 0 ? (
                                         <span className="text-neutral-900  ">{formatCurrency(totals.shipping)}</span>
                                     ) : (
@@ -811,6 +833,12 @@ export default function CheckoutPage() {
                                     )}
                                 </div>
                             </div>
+
+                            {totals.subtotal < MINIMUM_ORDER_VALUE && (
+                                <p className="text-xs text-red-700 bg-red-50 rounded-lg p-3">
+                                    Add {formatCurrency(MINIMUM_ORDER_VALUE - totals.subtotal)} more in products to meet the ₹350 minimum. Shipping is added separately.
+                                </p>
+                            )}
 
                             {/* Total Due */}
                             <div className="flex justify-between items-center   text-base border-t border-neutral-100 pt-4">
@@ -823,7 +851,7 @@ export default function CheckoutPage() {
                             {/* Checkout action */}
                             <button
                                 onClick={handleCheckout}
-                                disabled={processing || !selectedAddressId}
+                                disabled={processing || !selectedAddressId || totals.subtotal < MINIMUM_ORDER_VALUE}
                                 className="w-full text-white text-xs font-semibold uppercase tracking-widest py-4.5 rounded-xl transition-all shadow-md border border-[#D4AF37]/30 hover:bg-[#002216] disabled:opacity-40 h-12"
                                 style={{ background: "#003E29" }}
                             >

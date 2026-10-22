@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { prisma } from "../config/db.js";
 import { getFileUrl } from "../utils/deleteFromS3.js";
 import { formatVariantWithAttributes } from "../utils/variant-attributes.js";
+import { getShippingTotal } from "../utils/shipping.js";
 
 // Get user's cart
 export const getUserCart = asyncHandler(async (req, res) => {
@@ -246,37 +247,22 @@ export const getUserCart = asyncHandler(async (req, res) => {
     })
   );
 
-  // Calculate shipping
-  let shippingTotal = 0;
-  let freeShippingThreshold = 0;
-  let shippingMessage = "";
-
+  // Use the customer's default destination on the cart page; checkout recalculates
+  // for whichever saved address they select.
   const shiprocketSettings = await prisma.shiprocketSettings.findFirst();
-
-  if (shiprocketSettings) {
-    const charge = parseFloat(shiprocketSettings.shippingCharge) || 0;
-    // Only set threshold if there is a charge, otherwise it's always free (threshold irrelevant)
-    freeShippingThreshold = charge > 0 ? (parseFloat(shiprocketSettings.freeShippingThreshold) || 0) : 0;
-
-    if (charge > 0) {
-      if (freeShippingThreshold > 0) {
-        if (subtotal >= freeShippingThreshold) {
-          shippingTotal = 0;
-          shippingMessage = "Eligible for Free Shipping";
-        } else {
-          shippingTotal = charge;
-          // Format message in frontend usually, but providing data here helps
-          shippingMessage = "Add more for free shipping";
-        }
-      } else {
-        shippingTotal = charge;
-      }
-    } else {
-      shippingTotal = 0;
-      shippingMessage = "Free Shipping";
-    }
-  }
-
+  const freeShippingThreshold = Number(shiprocketSettings?.freeShippingThreshold) || 0;
+  const defaultAddress = await prisma.address.findFirst({
+    where: { userId, isDefault: true },
+    select: { postalCode: true },
+  });
+  const shippingTotal = cartItems.length
+    ? getShippingTotal(defaultAddress?.postalCode, subtotal, freeShippingThreshold)
+    : 0;
+  const shippingMessage = shippingTotal === 0
+    ? "Eligible for Free Shipping"
+    : defaultAddress?.postalCode
+      ? `Shipping for ${defaultAddress.postalCode}`
+      : "Shipping calculated at checkout";
   res.status(200).json(
     new ApiResponsive(
       200,
