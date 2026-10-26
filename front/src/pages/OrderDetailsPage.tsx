@@ -342,7 +342,7 @@ export default function OrderDetailsPage() {
 
   // Handle order status update
   const handleStatusUpdate = async (newStatus: string, extraData: Record<string, string> = {}) => {
-    if (!id) return;
+    if (!id) return false;
 
     try {
       const response = await orders.updateOrderStatus(id, {
@@ -368,12 +368,15 @@ export default function OrderDetailsPage() {
             },
           }),
         }));
+        return true;
       } else {
         toast.error(response.data?.message || t('orders.actions.status_update_error'));
+        return false;
       }
     } catch (error: unknown) {
       console.error("Error updating order status:", error);
       toast.error(t('orders.actions.status_update_error'));
+      return false;
     }
   };
 
@@ -387,12 +390,13 @@ export default function OrderDetailsPage() {
       return;
     }
 
-    setShippingFormOpen(false);
-    setShippingCarrier("");
-    setShippingTrackingNumber("");
-    setShippingTrackingUrl("");
-
-    await handleStatusUpdate("SHIPPED", { carrier, trackingNumber, ...(trackingUrl && { trackingUrl }) });
+    const updated = await handleStatusUpdate("SHIPPED", { carrier, trackingNumber, ...(trackingUrl && { trackingUrl }) });
+    if (updated) {
+      setShippingFormOpen(false);
+      setShippingCarrier("");
+      setShippingTrackingNumber("");
+      setShippingTrackingUrl("");
+    }
   };
 
   const openShippingWhatsApp = () => {
@@ -604,12 +608,13 @@ export default function OrderDetailsPage() {
                         </Button>
                         {shippingFormOpen && (
                           <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-3 shadow-sm">
+                            <p className="mb-2 text-xs text-[#6B7280]">For DTDC or another courier, enter its name and tracking number. Customers will see these details in their order.</p>
                             <div className="space-y-2">
                               <input
                                 type="text"
                                 value={shippingCarrier}
                                 onChange={(e) => setShippingCarrier(e.target.value)}
-                                placeholder="Courier name (e.g. Blue Dart)"
+                                placeholder="Courier name (e.g. DTDC, Blue Dart)"
                                 className="w-full rounded-md border border-[#D1D5DB] bg-white px-3 py-2 text-sm outline-none focus:border-[#4CAF50]"
                               />
                               <input

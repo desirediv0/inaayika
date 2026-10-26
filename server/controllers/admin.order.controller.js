@@ -555,7 +555,8 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
           orderNumber: order.orderNumber,
           carrier: trackingDetails.carrier || "Manual Courier",
           trackingNumber: trackingDetails.trackingNumber || "Not available",
-          trackingUrl: `${process.env.FRONTEND_URL || "https://inaayika.com"}/account/orders/${order.id}`,
+          trackingUrl: trackingDetails.trackingUrl || `${process.env.FRONTEND_URL || "https://inaayika.com"}/account/orders/${order.id}`,
+          orderDetailsUrl: `${process.env.FRONTEND_URL || "https://inaayika.com"}/account/orders/${order.id}`,
         });
 
         await sendEmail({

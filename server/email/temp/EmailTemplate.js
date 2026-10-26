@@ -533,6 +533,7 @@ export const getShippingNotificationTemplate = (data) => {
     const carrier = data.carrier || "Courier";
     const trackingNumber = data.trackingNumber || "Not available";
     const trackingUrl = data.trackingUrl || `${process.env.FRONTEND_URL}/account/orders`;
+    const orderDetailsUrl = data.orderDetailsUrl || trackingUrl;
 
     return `
 <!DOCTYPE html>
@@ -557,11 +558,12 @@ export const getShippingNotificationTemplate = (data) => {
                 ${data.estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> ${new Date(data.estimatedDelivery).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}</p>` : ""}
             </div>
 
-            <p>You can track your order anytime using your order dashboard or the courier tracking link.</p>
+            <p>Use the courier link below to check the latest shipment status. You can also open your order details to view the tracking number and shipment updates.</p>
             <div class="button-container">
-                <a href="${trackingUrl}" class="button">Track My Order</a>
+                <a href="${trackingUrl}" class="button">Track with ${carrier}</a>
             </div>
-            <p style="font-size: 13px; color: #9ca3af;">If you can't click the button, visit: ${trackingUrl}</p>
+            <p style="font-size: 13px; color: #9ca3af;">Courier tracking link: ${trackingUrl}</p>
+            <p style="font-size: 13px; color: #9ca3af;"><a href="${orderDetailsUrl}">View order details</a></p>
         </div>
         ${FOOTER_HTML(store)}
     </div>

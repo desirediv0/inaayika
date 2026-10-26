@@ -256,6 +256,11 @@ export default function OrderDetailPage() {
                                     <div>
                                         <p className="font-medium">{order.tracking.carrier || "Carrier"}</p>
                                         <p className="text-sm text-gray-500">Tracking #: {order.tracking.trackingNumber}</p>
+                                        {order.tracking.trackingUrl && (
+                                            <a href={order.tracking.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-sm font-medium text-primary underline underline-offset-2">
+                                                Track with {order.tracking.carrier || "courier"}
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                                 {order.tracking.estimatedDelivery && (
