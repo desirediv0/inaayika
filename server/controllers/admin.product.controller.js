@@ -578,6 +578,8 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         }
       }
 
+      const productIsActive = isActive === undefined ? true : isActive === "true" || isActive === true;
+
       const newProduct = await prisma.product.create({
         data: {
           name: cleanName,
@@ -593,7 +595,8 @@ export const createProduct = asyncHandler(async (req, res, next) => {
           hasVariants: hasVariants === "true" || hasVariants === true,
           featured: featured === "true" || featured === true,
           productType: parsedProductType,
-          isActive: isActive === "true" || isActive === true || true,
+          isActive: productIsActive,
+          primaryCategoryId: primaryCategory || null,
           metaTitle: seo.metaTitle,
           metaDescription: seo.metaDescription,
           keywords,
@@ -1317,6 +1320,15 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
   try {
     const result = await prisma.$transaction(async (prisma) => {
       const hasVariantsValue = hasVariants === "true" || hasVariants === true;
+      const productIsActive =
+        isActive === undefined ? undefined : isActive === "true" || isActive === true;
+      const resolvedPrimaryCategoryId =
+        primaryCategoryId && primaryCategoryId !== "" && primaryCategoryId !== "null"
+          ? primaryCategoryId
+          : parsedCategoryIds.length > 0
+            ? parsedCategoryIds[0]
+            : undefined;
+
       // Update product basic info
       const updatedProduct = await prisma.product.update({
         where: { id: productId },
@@ -1334,8 +1346,11 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
                 ? JSON.parse(productType)
                 : productType,
           }),
-          ...(isActive !== undefined && {
-            isActive: isActive === "true" || isActive === true,
+          ...(productIsActive !== undefined && {
+            isActive: productIsActive,
+          }),
+          ...(resolvedPrimaryCategoryId !== undefined && {
+            primaryCategoryId: resolvedPrimaryCategoryId,
           }),
           ...(metaTitle !== undefined && { metaTitle }),
           ...(metaDescription !== undefined && { metaDescription }),
