@@ -517,7 +517,7 @@ export const orders = {
   getOrderById: (orderId: string) => {
     return api.get(`/api/admin/orders/${orderId}`);
   },
-  updateOrderStatus: (orderId: string, data: { status: string; notes?: string; carrier?: string; trackingNumber?: string; location?: string }) => {
+  updateOrderStatus: (orderId: string, data: { status: string; notes?: string; carrier?: string; trackingNumber?: string; trackingUrl?: string; location?: string }) => {
     return api.patch(`/api/admin/orders/${orderId}/status`, data);
   },
   getOrderStats: async () => {

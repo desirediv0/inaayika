@@ -76,6 +76,7 @@ export default function OrderDetailsPage() {
     tracking?: {
       carrier?: string;
       trackingNumber?: string;
+      trackingUrl?: string;
       status?: string;
       estimatedDelivery?: string;
       updates?: OrderUpdate[];
@@ -97,6 +98,7 @@ export default function OrderDetailsPage() {
   const [shippingFormOpen, setShippingFormOpen] = useState(false);
   const [shippingCarrier, setShippingCarrier] = useState("");
   const [shippingTrackingNumber, setShippingTrackingNumber] = useState("");
+  const [shippingTrackingUrl, setShippingTrackingUrl] = useState("");
 
   interface OrderItem {
     id: string;
@@ -360,6 +362,7 @@ export default function OrderDetailsPage() {
               ...prev?.tracking,
               carrier: extraData.carrier || prev?.tracking?.carrier || "Manual Courier",
               trackingNumber: extraData.trackingNumber || prev?.tracking?.trackingNumber || "",
+              trackingUrl: extraData.trackingUrl || prev?.tracking?.trackingUrl,
               status: "SHIPPED",
               updates: prev?.tracking?.updates || [],
             },
@@ -377,6 +380,7 @@ export default function OrderDetailsPage() {
   const handleShippingSubmit = async () => {
     const carrier = shippingCarrier.trim();
     const trackingNumber = shippingTrackingNumber.trim();
+    const trackingUrl = shippingTrackingUrl.trim();
 
     if (!carrier || !trackingNumber) {
       toast.error("Please enter both courier name and tracking number before marking the order as shipped.");
@@ -386,8 +390,9 @@ export default function OrderDetailsPage() {
     setShippingFormOpen(false);
     setShippingCarrier("");
     setShippingTrackingNumber("");
+    setShippingTrackingUrl("");
 
-    await handleStatusUpdate("SHIPPED", { carrier, trackingNumber });
+    await handleStatusUpdate("SHIPPED", { carrier, trackingNumber, ...(trackingUrl && { trackingUrl }) });
   };
 
   const openShippingWhatsApp = () => {
@@ -401,7 +406,8 @@ export default function OrderDetailsPage() {
     const tracking = orderDetails.tracking;
     const storefrontUrl = import.meta.env.VITE_STOREFRONT_URL || "https://inaayika.com";
     const orderUrl = `${storefrontUrl.replace(/\/$/, "")}/account/orders/${orderDetails.id}`;
-    const message = `Hi ${orderDetails.user.name || orderDetails.shippingAddress.name || "there"}, your INAAYIKA order ${orderDetails.orderNumber} has been shipped via ${tracking?.carrier || "our courier partner"}. Tracking number: ${tracking?.trackingNumber || ""}. Track your order here: ${orderUrl}`;
+    const carrierTracking = tracking?.trackingUrl ? ` Courier tracking: ${tracking.trackingUrl}.` : "";
+    const message = `Hi ${orderDetails.user.name || orderDetails.shippingAddress.name || "there"}, your INAAYIKA order ${orderDetails.orderNumber} has been shipped via ${tracking?.carrier || "our courier partner"}. Tracking number: ${tracking?.trackingNumber || ""}.${carrierTracking} Order details: ${orderUrl}`;
     window.open(`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
@@ -613,6 +619,13 @@ export default function OrderDetailsPage() {
                                 placeholder="Tracking number"
                                 className="w-full rounded-md border border-[#D1D5DB] bg-white px-3 py-2 text-sm outline-none focus:border-[#4CAF50]"
                               />
+                              <input
+                                type="url"
+                                value={shippingTrackingUrl}
+                                onChange={(e) => setShippingTrackingUrl(e.target.value)}
+                                placeholder="Courier tracking link (optional)"
+                                className="w-full rounded-md border border-[#D1D5DB] bg-white px-3 py-2 text-sm outline-none focus:border-[#4CAF50]"
+                              />
                             </div>
                             <div className="mt-3 flex flex-wrap gap-2">
                               <Button size="sm" onClick={handleShippingSubmit}>Save & ship</Button>
@@ -623,6 +636,7 @@ export default function OrderDetailsPage() {
                                   setShippingFormOpen(false);
                                   setShippingCarrier("");
                                   setShippingTrackingNumber("");
+                                  setShippingTrackingUrl("");
                                 }}
                               >
                                 Cancel
@@ -1080,6 +1094,11 @@ export default function OrderDetailsPage() {
                         {orderDetails.tracking.trackingNumber || t('orders.details.not_available')}
                       </p>
                     </div>
+                    {orderDetails.tracking.trackingUrl && (
+                      <a href={orderDetails.tracking.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex text-sm font-medium text-[#0B4A4D] underline underline-offset-2">
+                        Track on {orderDetails.tracking.carrier || "courier website"}
+                      </a>
+                    )}
                     <div>
                       <p className="text-xs text-[#9CA3AF] mb-1">{t('partners_tab.common.status')}</p>
                       <Badge

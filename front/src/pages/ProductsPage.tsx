@@ -2205,14 +2205,14 @@ export function ProductForm({
                 <div className="flex items-start gap-3">
                   <Info className="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0" />
                   <div className="space-y-2 text-sm text-amber-900">
-                    <p className="font-semibold">एक design के polish options को variant बनाने का आसान तरीका</p>
+                    <p className="font-semibold">An easy way to create variants for polish options</p>
                     <ul className="list-disc pl-5 space-y-1">
-                      <li>Attributes में एक option बनाएँ, जैसे <span className="font-medium">Polish</span>, और उसके नीचे पाँचों polish values जोड़ें।</li>
-                      <li>यहाँ उन्हीं पाँच values के checkbox चुनें और <span className="font-medium">Generate Variants</span> दबाएँ—हर polish का अलग variant बनेगा।</li>
-                      <li>नीचे बने हर variant में उसकी price, stock और ज़रूरत हो तो image भरकर product save करें।</li>
+                      <li>Create one attribute, such as <span className="font-medium">Polish</span>, and add all five polish values to it.</li>
+                      <li>Select the checkboxes for those values here, then click <span className="font-medium">Generate Variants</span>. This creates one variant for each polish.</li>
+                      <li>Enter the price and stock for each variant, add an image if needed, then save the product.</li>
                     </ul>
                     <p className="text-xs text-amber-800">
-                      दो attributes चुनेंगे तो सभी combinations बनेंगे: जैसे 5 polish × 2 color = 10 variants। <span className="font-semibold">Multi-Select</span> setting अपने-आप variants नहीं बनाती; variants यहाँ के checkboxes से बनते हैं।
+                      Selecting two attributes creates every combination: for example, 5 polish options × 2 colors = 10 variants. The <span className="font-semibold">Multi-Select</span> setting does not create variants; use these checkboxes.
                     </p>
                   </div>
                 </div>

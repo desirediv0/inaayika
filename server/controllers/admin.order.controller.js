@@ -423,6 +423,11 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
       });
       const nextTrackingNumber = req.body.trackingNumber || existingTracking?.trackingNumber || `TRK${Date.now()}`;
       const nextCarrier = req.body.carrier || existingTracking?.carrier || "Manual Courier";
+      const suppliedTrackingUrl = req.body.trackingUrl?.trim();
+      if (suppliedTrackingUrl && !/^https?:\/\//i.test(suppliedTrackingUrl)) {
+        throw new ApiError(400, "Tracking URL must start with http:// or https://");
+      }
+      const nextTrackingUrl = suppliedTrackingUrl || existingTracking?.trackingUrl || null;
 
       if (existingTracking) {
         // Update existing tracking
@@ -431,6 +436,7 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
           data: {
             trackingNumber: nextTrackingNumber,
             carrier: nextCarrier,
+            trackingUrl: nextTrackingUrl,
             status: "SHIPPED",
             shippedAt: new Date(),
             updates: {
@@ -449,6 +455,7 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
             orderId,
             trackingNumber: nextTrackingNumber,
             carrier: nextCarrier,
+            trackingUrl: nextTrackingUrl,
             status: "SHIPPED",
             shippedAt: new Date(),
             updates: {

@@ -474,6 +474,7 @@ model Tracking {
   orderId           String           @unique
   trackingNumber    String
   carrier           String
+  trackingUrl       String?
   status            ShipmentStatus   @default(PROCESSING)
   estimatedDelivery DateTime?
   shippedAt         DateTime?
