@@ -3292,6 +3292,12 @@ function ProductsList() {
                   (sum: number, variant: any) => sum + getVariantStock(variant),
                   0
                 );
+                const outOfStockVariantCount = activeVariants.filter(
+                  (variant: any) => getVariantStock(variant) === 0
+                ).length;
+                const lowStockVariantCount = activeVariants.filter(
+                  (variant: any) => getVariantStock(variant) > 0 && getVariantStock(variant) <= 5
+                ).length;
 
                 return (
                   <div
@@ -3356,6 +3362,16 @@ function ProductsList() {
                             <span className={`text-xs font-medium ${totalStock === 0 ? "text-[#EF4444]" : "text-[#4B5563]"}`}>
                               {totalStock} in stock
                             </span>
+                            {outOfStockVariantCount > 0 && (
+                              <Badge className="bg-[#FEF2F2] text-[#EF4444] border-[#FEE2E2] text-[10px]">
+                                {outOfStockVariantCount} variant{outOfStockVariantCount === 1 ? "" : "s"} out of stock
+                              </Badge>
+                            )}
+                            {lowStockVariantCount > 0 && (
+                              <Badge className="bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7] text-[10px]">
+                                {lowStockVariantCount} low-stock variant{lowStockVariantCount === 1 ? "" : "s"}
+                              </Badge>
+                            )}
                           </div>
                           {activeVariants.length > 1 && (
                             <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
