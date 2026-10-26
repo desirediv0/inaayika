@@ -56,11 +56,6 @@ export const Footer = () => {
             <ul className="space-y-3.5">
               <li>
                 <Link href="/about" className={FOOTER_LINK_CLS}>
-                  Inaayika Inside
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className={FOOTER_LINK_CLS}>
                   About Us
                 </Link>
               </li>

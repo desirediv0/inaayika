@@ -70,18 +70,18 @@ export default function TestimonialsCarousel() {
                       borderColor: "#E9E2D5",
                     }}
                   >
-                    {/* Customer Image */}
-                    <div className="flex justify-center mb-4">
+                    {/* Review Image */}
+                    <div className="mb-4">
                       {t.image ? (
                         <img
                           src={t.image}
                           alt={t.name}
-                          className="w-16 h-16 rounded-full object-cover border-3 shadow-md"
-                          style={{ borderColor: "#B08D57" }}
+                          className="w-full h-44 md:h-48 rounded-xl object-cover border shadow-md"
+                          style={{ borderColor: "#E9E2D5" }}
                         />
                       ) : (
                         <div
-                          className="w-16 h-16 rounded-full flex items-center justify-center text-white font-display text-xl font-medium shadow-md"
+                          className="w-full h-44 md:h-48 rounded-xl flex items-center justify-center text-white font-display text-2xl font-medium shadow-md"
                           style={{ background: "linear-gradient(135deg, #003E29, #B08D57)" }}
                         >
                           {t.name?.charAt(0)}

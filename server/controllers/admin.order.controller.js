@@ -4,6 +4,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { prisma } from "../config/db.js";
 import { razorpay } from "../app.js";
 import { cancelShiprocketOrder, getShiprocketSettings } from "../utils/shiprocket.js";
+import sendEmail from "../utils/sendEmail.js";
+import { getShippingNotificationTemplate } from "../email/temp/EmailTemplate.js";
 
 // Get all orders with pagination, filtering, and sorting
 export const getOrders = asyncHandler(async (req, res, next) => {
@@ -356,6 +358,13 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
     where: { id: orderId },
     include: {
       razorpayPayment: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
     },
   });
 
@@ -412,14 +421,16 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
       const existingTracking = await tx.tracking.findUnique({
         where: { orderId },
       });
+      const nextTrackingNumber = req.body.trackingNumber || existingTracking?.trackingNumber || `TRK${Date.now()}`;
+      const nextCarrier = req.body.carrier || existingTracking?.carrier || "Manual Courier";
 
       if (existingTracking) {
         // Update existing tracking
         await tx.tracking.update({
           where: { orderId },
           data: {
-            trackingNumber: req.body.trackingNumber || existingTracking.trackingNumber,
-            carrier: req.body.carrier || existingTracking.carrier,
+            trackingNumber: nextTrackingNumber,
+            carrier: nextCarrier,
             status: "SHIPPED",
             shippedAt: new Date(),
             updates: {
@@ -436,8 +447,8 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
         await tx.tracking.create({
           data: {
             orderId,
-            trackingNumber: req.body.trackingNumber || `SHP${Date.now()}`,
-            carrier: req.body.carrier || "Default Carrier",
+            trackingNumber: nextTrackingNumber,
+            carrier: nextCarrier,
             status: "SHIPPED",
             shippedAt: new Date(),
             updates: {
@@ -528,6 +539,27 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
         razorpayPayment: true,
       },
     });
+
+    if (status === "SHIPPED" && order.user && order.user.email) {
+      try {
+        const trackingDetails = updatedOrder.tracking || { trackingNumber: req.body.trackingNumber || "TRK" + Date.now(), carrier: req.body.carrier || "Manual Courier" };
+        const html = getShippingNotificationTemplate({
+          userName: order.user.name || "Customer",
+          orderNumber: order.orderNumber,
+          carrier: trackingDetails.carrier || "Manual Courier",
+          trackingNumber: trackingDetails.trackingNumber || "Not available",
+          trackingUrl: `${process.env.FRONTEND_URL || "https://inaayika.com"}/account/orders/${order.id}`,
+        });
+
+        await sendEmail({
+          email: order.user.email,
+          subject: `Your order ${order.orderNumber} has been shipped`,
+          html,
+        });
+      } catch (emailError) {
+        console.error("Failed to send shipping email:", emailError?.message || emailError);
+      }
+    }
 
     // Create partner commissions when order is delivered (safety check)
     if (status === "DELIVERED" && order.couponId) {

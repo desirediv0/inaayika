@@ -8,7 +8,8 @@ import {
   Minus, Plus, AlertCircle,
   Heart, CheckCircle, Zap,
   Truck, RefreshCw,
-  Calendar, ShoppingCart, HelpCircle
+  Calendar, ShoppingCart, HelpCircle,
+  Facebook, Twitter, MessageCircle
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
@@ -160,22 +161,41 @@ export default function ProductContent({ slug }) {
   }, [product, relatedProducts]);
 
   /* ── Attribute select ── */
+  const findMatchingVariant = (selection) => {
+    const selectedIds = Object.values(selection).filter(Boolean).sort();
+    if (!selectedIds.length) return null;
+
+    const exactMatch = availableCombinations.find((c) => {
+      const cIds = [...c.attributeValueIds].sort();
+      return cIds.length === selectedIds.length && cIds.every((id, i) => id === selectedIds[i]);
+    });
+
+    if (exactMatch) return exactMatch.variant;
+
+    return availableCombinations.find((c) => {
+      const variantValues = c.variant.attributes || [];
+      return Object.entries(selection).every(([attrId, valueId]) => {
+        if (!valueId) return true;
+        return variantValues.some((a) => a.attributeId === attrId && a.attributeValueId === valueId);
+      });
+    })?.variant || null;
+  };
+
   const handleAttributeChange = (attrId, valueId) => {
     const next = { ...selectedAttributes, [attrId]: valueId };
     setSelectedAttributes(next);
-    const selIds = Object.values(next).sort();
-    const match = availableCombinations.find((c) => {
-      const cIds = c.attributeValueIds.sort();
-      return cIds.length === selIds.length && cIds.every((id, i) => id === selIds[i]);
-    });
+    const match = findMatchingVariant(next);
     if (match) {
-      setSelectedVariant(match.variant);
-      const moq = match.variant.moq || 1;
+      setSelectedVariant(match);
+      const moq = match.moq || 1;
       const qty = quantity < moq ? moq : quantity;
       if (quantity < moq) setQuantity(qty);
-      setEffectivePriceInfo(getEffectivePrice(match.variant, qty));
+      setEffectivePriceInfo(getEffectivePrice(match, qty));
     } else {
-      setSelectedVariant(null); setEffectivePriceInfo(null);
+      const fallbackVariant = product?.variants?.[0] || null;
+      setSelectedVariant(fallbackVariant);
+      if (fallbackVariant) setEffectivePriceInfo(getEffectivePrice(fallbackVariant, quantity));
+      else setEffectivePriceInfo(null);
     }
   };
 
@@ -185,11 +205,18 @@ export default function ProductContent({ slug }) {
     if (!attr?.values) return [];
     const others = { ...selectedAttributes }; delete others[attrId];
     const available = new Set();
+
     availableCombinations.forEach((c) => {
       const othIds = Object.values(others);
-      if (othIds.length === 0 || othIds.every((id) => c.attributeValueIds.includes(id)))
-        c.variant.attributes?.forEach((a) => { if (a.attributeId === attrId) available.add(a.attributeValueId); });
+      const matchesOthers = othIds.length === 0 || othIds.every((id) => c.attributeValueIds.includes(id));
+      if (matchesOthers) {
+        c.variant.attributes?.forEach((a) => {
+          if (a.attributeId === attrId) available.add(a.attributeValueId);
+        });
+      }
     });
+
+    if (!available.size) return attr.values;
     return attr.values.filter((v) => available.has(v.id));
   };
 
@@ -658,20 +685,34 @@ export default function ProductContent({ slug }) {
                 <span className="text-xs uppercase tracking-wider font-semibold text-neutral-500">Share:</span>
                 <div className="flex gap-1.5">
                   {[
-                    { label: "FB", bg: "bg-[#3b5998]", url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}` },
-                    { label: "TW", bg: "bg-[#1da1f2]", url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}` },
-                    { label: "PT", bg: "bg-[#bd081c]", url: "#" },
-                    { label: "LN", bg: "bg-[#0077b5]", url: "#" },
-                    { label: "WA", bg: "bg-[#25d366]", url: `https://api.whatsapp.com/send?text=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}` }
+                    {
+                      label: "Facebook",
+                      bg: "bg-[#1877f2]",
+                      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`,
+                      icon: <Facebook className="h-3.5 w-3.5" />
+                    },
+                    {
+                      label: "Twitter",
+                      bg: "bg-[#1da1f2]",
+                      url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`,
+                      icon: <Twitter className="h-3.5 w-3.5" />
+                    },
+                    {
+                      label: "WhatsApp",
+                      bg: "bg-[#25d366]",
+                      url: `https://api.whatsapp.com/send?text=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`,
+                      icon: <MessageCircle className="h-3.5 w-3.5" />
+                    }
                   ].map((s) => (
                     <a
                       key={s.label}
                       href={s.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white   transition-transform hover:-translate-y-0.5 ${s.bg}`}
+                      aria-label={s.label}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-white transition-transform hover:-translate-y-0.5 ${s.bg}`}
                     >
-                      {s.label}
+                      {s.icon}
                     </a>
                   ))}
                 </div>

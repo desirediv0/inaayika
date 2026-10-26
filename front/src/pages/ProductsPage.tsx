@@ -6,7 +6,7 @@ import {
   useRef,
   useMemo,
 } from "react";
-import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
+import { Link, useParams, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   products,
   categories,
@@ -766,6 +766,46 @@ export function ProductForm({
       return { ...prev, [attributeId]: newValues };
     });
   };
+
+  const variantCombinationPreview = useMemo(() => {
+    const activeAttributeIds = Object.keys(selectedAttributes).filter(
+      (attrId) => selectedAttributes[attrId]?.length > 0
+    );
+
+    if (activeAttributeIds.length < 2) return [];
+
+    const groups = activeAttributeIds
+      .map((attrId) => {
+        const attribute = attributesList.find((item) => item.id === attrId);
+        const values = (attributeValuesMap[attrId] || []).filter((value) =>
+          selectedAttributes[attrId]?.includes(value.id)
+        );
+
+        return {
+          name: attribute?.name || "Attribute",
+          values: values.map((value) => value.value),
+        };
+      })
+      .filter((group) => group.values.length > 0);
+
+    if (groups.length < 2) return [];
+
+    const preview = groups.reduce((acc, currentGroup) => {
+      if (acc.length === 0) {
+        return currentGroup.values.map((value) => [value]);
+      }
+
+      const next: string[][] = [];
+      acc.forEach((existing) => {
+        currentGroup.values.forEach((value) => {
+          next.push([...existing, value]);
+        });
+      });
+      return next;
+    }, [] as string[][]);
+
+    return preview.slice(0, 8).map((combination) => combination.join(" + "));
+  }, [selectedAttributes, attributesList, attributeValuesMap]);
 
   // Generate variants based on selected attribute values
   const generateVariants = () => {
@@ -2161,6 +2201,23 @@ export function ProductForm({
                 </p>
               </div>
 
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+                <div className="flex items-start gap-3">
+                  <Info className="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-2 text-sm text-amber-900">
+                    <p className="font-semibold">Easy variant flow for the same design</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>One product = one design</li>
+                      <li>Create separate attributes for polish/base finish and shade/color</li>
+                      <li>Select values and click <span className="font-medium">Generate Variants</span> to create all valid combinations</li>
+                    </ul>
+                    <p className="text-xs text-amber-800">
+                      Example: Silver + Green, Silver + Red, Mehendi + Blue, etc.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <div className="space-y-4">
                   {attributesList.length === 0 ? (
@@ -2231,6 +2288,21 @@ export function ProductForm({
                     ))
                   )}
                 </div>
+
+                {variantCombinationPreview.length > 0 && (
+                  <div className="rounded-md border border-slate-200 bg-white p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-2">
+                      Variant preview
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {variantCombinationPreview.map((combo) => (
+                        <Badge key={combo} variant="secondary" className="text-xs">
+                          {combo}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <Button
                   type="button"
@@ -2681,6 +2753,7 @@ export default function ProductsPage() {
 // Product List Component
 function ProductsList() {
   const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [productsList, setProductsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -2689,6 +2762,9 @@ function ProductsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [stockStatusFilter, setStockStatusFilter] = useState(
+    searchParams.get("stockStatus") || ""
+  );
   const [categoriesList, setCategoriesList] = useState<any[]>([]);
 
   // States for delete dialog
@@ -2699,6 +2775,10 @@ function ProductsList() {
 
   // Fetch products
   useEffect(() => {
+    setStockStatusFilter(searchParams.get("stockStatus") || "");
+  }, [searchParams]);
+
+  useEffect(() => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
@@ -2707,6 +2787,7 @@ function ProductsList() {
           limit: 10,
           ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
           ...(selectedCategory && { category: selectedCategory }),
+          ...(stockStatusFilter && { stockStatus: stockStatusFilter }),
         };
 
         const response = await products.getProducts(params);
@@ -2728,7 +2809,7 @@ function ProductsList() {
     };
 
     fetchProducts();
-  }, [currentPage, debouncedSearchQuery, selectedCategory]);
+  }, [currentPage, debouncedSearchQuery, selectedCategory, stockStatusFilter]);
 
   // Fetch categories for filter
   useEffect(() => {
@@ -3101,14 +3182,25 @@ function ProductsList() {
         </select>
         <select
           className="rounded-full border border-[#E5E7EB] bg-[#FFFFFF] px-4 py-2 text-sm text-[#4B5563] focus:outline-none focus:border-primary"
-          value=""
-          onChange={() => { }}
+          value={stockStatusFilter}
+          onChange={(e) => {
+            const nextValue = e.target.value;
+            setStockStatusFilter(nextValue);
+            setCurrentPage(1);
+            const next = new URLSearchParams(searchParams);
+            if (nextValue) {
+              next.set("stockStatus", nextValue);
+            } else {
+              next.delete("stockStatus");
+            }
+            setSearchParams(next);
+          }}
         >
           <option value="">{t("products.list.all_status")}</option>
-          <option value="active">{t("products.list.status.active")}</option>
-          <option value="draft">{t("products.list.status.inactive")}</option>
+          <option value="low_stock">Low stock</option>
+          <option value="out_of_stock">Out of stock</option>
         </select>
-        {(selectedCategory || searchQuery) && (
+        {(selectedCategory || searchQuery || stockStatusFilter) && (
           <Button
             variant="ghost"
             size="sm"
@@ -3116,6 +3208,10 @@ function ProductsList() {
             onClick={() => {
               setSelectedCategory("");
               setSearchQuery("");
+              setStockStatusFilter("");
+              const next = new URLSearchParams(searchParams);
+              next.delete("stockStatus");
+              setSearchParams(next);
             }}
           >
             <X className="h-3 w-3 mr-1" />

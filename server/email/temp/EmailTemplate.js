@@ -526,3 +526,45 @@ export const getCertificateGeneratedTemplate = (data) => {
 </body>
 </html>`;
 };
+
+/* ─── Shipping notification ───────────────────────────────────────────── */
+export const getShippingNotificationTemplate = (data) => {
+    const store = getStoreConfig();
+    const carrier = data.carrier || "Courier";
+    const trackingNumber = data.trackingNumber || "Not available";
+    const trackingUrl = data.trackingUrl || `${process.env.FRONTEND_URL}/account/orders`;
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Shipped - ${store.storeName}</title>
+    <style>${BASE_STYLES}</style>
+</head>
+<body>
+    <div class="container">
+        ${HEADER_HTML("Your Order Has Been Shipped", "Shipping Update", store)}
+        <div class="content">
+            <h2>Hi ${data.userName || "there"},</h2>
+            <p>Great news! Your order <strong>${data.orderNumber}</strong> has been shipped with <strong>${carrier}</strong>.</p>
+
+            <div class="info-box">
+                <h3>Tracking Details</h3>
+                <p><strong>Courier:</strong> ${carrier}</p>
+                <p><strong>Tracking Number:</strong> ${trackingNumber}</p>
+                ${data.estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> ${new Date(data.estimatedDelivery).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}</p>` : ""}
+            </div>
+
+            <p>You can track your order anytime using your order dashboard or the courier tracking link.</p>
+            <div class="button-container">
+                <a href="${trackingUrl}" class="button">Track My Order</a>
+            </div>
+            <p style="font-size: 13px; color: #9ca3af;">If you can't click the button, visit: ${trackingUrl}</p>
+        </div>
+        ${FOOTER_HTML(store)}
+    </div>
+</body>
+</html>`;
+};

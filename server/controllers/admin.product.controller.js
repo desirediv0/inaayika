@@ -172,15 +172,42 @@ export const getProducts = asyncHandler(async (req, res, next) => {
     limit = 10,
     search = "",
     category = "",
+    stockStatus = "",
     sort = "createdAt",
     order = "desc",
     featured,
     isActive,
   } = req.query;
 
+  const stockThreshold = Number(req.query.stockThreshold || 5);
+
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
   // Build filter conditions
+  const stockFilter = (() => {
+    if (!stockStatus) return {};
+
+    if (stockStatus === "out_of_stock") {
+      return { variants: { some: { isActive: true, quantity: 0 } } };
+    }
+
+    if (stockStatus === "low_stock") {
+      return {
+        variants: {
+          some: {
+            isActive: true,
+            quantity: {
+              gt: 0,
+              lte: Number.isFinite(stockThreshold) ? stockThreshold : 5,
+            },
+          },
+        },
+      };
+    }
+
+    return {};
+  })();
+
   const filterConditions = {
     ...(search && {
       OR: [
@@ -199,6 +226,7 @@ export const getProducts = asyncHandler(async (req, res, next) => {
     }),
     ...(featured !== undefined && { featured: featured === "true" }),
     ...(isActive !== undefined && { isActive: isActive === "true" }),
+    ...stockFilter,
   };
 
   // Get total count for pagination

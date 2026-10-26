@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import sendEmail from "../utils/sendEmail.js";
+import { getShippingNotificationTemplate } from "../email/temp/EmailTemplate.js";
 
 // Get tracking info by order ID (admin & user)
 export const getTrackingByOrderId = asyncHandler(async (req, res) => {
@@ -131,10 +132,19 @@ export const createTracking = asyncHandler(async (req, res) => {
   // Send shipping notification email to customer
   try {
     if (order.user && order.user.email) {
-      // Send email logic would go here
-      console.log(
-        `Shipping notification email would be sent to ${order.user.email}`
-      );
+      const html = getShippingNotificationTemplate({
+        userName: order.user.name || "Customer",
+        orderNumber: order.orderNumber,
+        carrier,
+        trackingNumber,
+        trackingUrl: `${process.env.FRONTEND_URL || "https://inaayika.com"}/account/orders/${order.id}`,
+      });
+
+      await sendEmail({
+        email: order.user.email,
+        subject: `Your order ${order.orderNumber} has been shipped`,
+        html,
+      });
     }
   } catch (error) {
     console.error("Failed to send shipping notification email:", error);
@@ -225,10 +235,19 @@ export const updateTrackingStatus = asyncHandler(async (req, res) => {
   // Send status update notification email to customer
   try {
     if (tracking.order.user && tracking.order.user.email) {
-      // Send email logic would go here
-      console.log(
-        `Tracking update email would be sent to ${tracking.order.user.email}`
-      );
+      const html = getShippingNotificationTemplate({
+        userName: tracking.order.user.name || "Customer",
+        orderNumber: tracking.order.orderNumber,
+        carrier: tracking.carrier || "Courier",
+        trackingNumber: tracking.trackingNumber,
+        trackingUrl: `${process.env.FRONTEND_URL || "https://inaayika.com"}/account/orders/${tracking.orderId}`,
+      });
+
+      await sendEmail({
+        email: tracking.order.user.email,
+        subject: `Order update for ${tracking.order.orderNumber}`,
+        html,
+      });
     }
   } catch (error) {
     console.error("Failed to send tracking update email:", error);

@@ -15,6 +15,7 @@ import {
   Quote,
   ToggleLeft,
   ToggleRight,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
@@ -51,6 +52,11 @@ function TestimonialForm({
       setImage(file);
       setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview(null);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -92,7 +98,12 @@ function TestimonialForm({
               displayOrder: t.displayOrder || 0,
               isActive: t.isActive,
             });
-            if (t.image) setImagePreview(t.image);
+            if (t.image) {
+              setImagePreview(t.image);
+              setImage(null);
+            } else {
+              setImagePreview(null);
+            }
           }
         } catch {
           toast.error("Failed to load testimonial");
@@ -152,23 +163,37 @@ function TestimonialForm({
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Image Upload */}
             <div>
-              <Label>Customer Photo</Label>
+              <div className="flex items-center justify-between gap-3">
+                <Label>Review photo / screenshot (optional)</Label>
+                {imagePreview ? (
+                  <Button type="button" variant="ghost" size="sm" onClick={handleRemoveImage} className="h-8 px-2 text-xs">
+                    <X className="h-3.5 w-3.5 mr-1" /> Remove
+                  </Button>
+                ) : null}
+              </div>
               <div
                 {...getRootProps()}
-                className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                className={`mt-2 border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors ${
                   isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25"
                 }`}
               >
                 <input {...getInputProps()} />
                 {imagePreview ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <img src={imagePreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border-2 border-primary/20" />
-                    <p className="text-xs text-muted-foreground">Click or drag to replace</p>
+                  <div className="flex flex-col items-center gap-3">
+                    <img src={imagePreview} alt="Preview" className="w-full max-h-72 rounded-xl object-cover border border-primary/20" />
+                    <p className="text-xs text-muted-foreground">Click or drag to replace with another photo or screenshot</p>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Drop customer photo here or click to upload</p>
+                  <div className="flex flex-col items-center gap-3 py-6">
+                    <div className="rounded-full bg-primary/5 p-3">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Upload a review image</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Optional: customer photo, WhatsApp/Instagram chat screenshot, or product review image
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

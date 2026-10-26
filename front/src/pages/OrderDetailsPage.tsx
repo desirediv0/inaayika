@@ -93,6 +93,9 @@ export default function OrderDetailsPage() {
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [shippingFormOpen, setShippingFormOpen] = useState(false);
+  const [shippingCarrier, setShippingCarrier] = useState("");
+  const [shippingTrackingNumber, setShippingTrackingNumber] = useState("");
 
   interface OrderItem {
     id: string;
@@ -335,12 +338,13 @@ export default function OrderDetailsPage() {
   };
 
   // Handle order status update
-  const handleStatusUpdate = async (newStatus: string) => {
+  const handleStatusUpdate = async (newStatus: string, extraData: Record<string, string> = {}) => {
     if (!id) return;
 
     try {
       const response = await orders.updateOrderStatus(id, {
         status: newStatus,
+        ...extraData,
       });
 
       if (response && response.data && response.data.success) {
@@ -358,6 +362,22 @@ export default function OrderDetailsPage() {
       console.error("Error updating order status:", error);
       toast.error(t('orders.actions.status_update_error'));
     }
+  };
+
+  const handleShippingSubmit = async () => {
+    const carrier = shippingCarrier.trim();
+    const trackingNumber = shippingTrackingNumber.trim();
+
+    if (!carrier || !trackingNumber) {
+      toast.error("Please enter both courier name and tracking number before marking the order as shipped.");
+      return;
+    }
+
+    setShippingFormOpen(false);
+    setShippingCarrier("");
+    setShippingTrackingNumber("");
+
+    await handleStatusUpdate("SHIPPED", { carrier, trackingNumber });
   };
 
   // Get image URL helper
@@ -542,14 +562,50 @@ export default function OrderDetailsPage() {
 
                   {(orderDetails.status === "PROCESSING" ||
                     orderDetails.status === "PAID") && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-[#E5E7EB] hover:bg-[#F3F7F6]"
-                        onClick={() => handleStatusUpdate("SHIPPED")}
-                      >
-                        {t('orders.actions.mark_shipped')}
-                      </Button>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-[#E5E7EB] hover:bg-[#F3F7F6]"
+                          onClick={() => setShippingFormOpen((prev) => !prev)}
+                        >
+                          {t('orders.actions.mark_shipped')}
+                        </Button>
+                        {shippingFormOpen && (
+                          <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-3 shadow-sm">
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                value={shippingCarrier}
+                                onChange={(e) => setShippingCarrier(e.target.value)}
+                                placeholder="Courier name (e.g. Blue Dart)"
+                                className="w-full rounded-md border border-[#D1D5DB] bg-white px-3 py-2 text-sm outline-none focus:border-[#4CAF50]"
+                              />
+                              <input
+                                type="text"
+                                value={shippingTrackingNumber}
+                                onChange={(e) => setShippingTrackingNumber(e.target.value)}
+                                placeholder="Tracking number"
+                                className="w-full rounded-md border border-[#D1D5DB] bg-white px-3 py-2 text-sm outline-none focus:border-[#4CAF50]"
+                              />
+                            </div>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Button size="sm" onClick={handleShippingSubmit}>Save & ship</Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setShippingFormOpen(false);
+                                  setShippingCarrier("");
+                                  setShippingTrackingNumber("");
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )}
 
                   {orderDetails.status === "SHIPPED" && (

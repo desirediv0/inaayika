@@ -441,7 +441,13 @@ export default function DashboardPage() {
                 asChild
                 className="border-[#E5E7EB] hover:bg-[#F3F7F6] text-sm"
               >
-                <Link to="/products">
+                <Link
+                  to={
+                    inventoryAlerts.outOfStockCount > 0
+                      ? "/products?stockStatus=out_of_stock"
+                      : "/products?stockStatus=low_stock"
+                  }
+                >
                   {t("dashboard.inventory_alert.view_inventory")}
                   <ExternalLink className="ml-1 h-3 w-3" />
                 </Link>
@@ -744,7 +750,13 @@ export default function DashboardPage() {
                       className="text-sm text-[#4B5563] hover:text-[#1F2937]"
                       asChild
                     >
-                      <Link to="/products">
+                      <Link
+                        to={
+                          inventoryAlerts.outOfStockCount > 0
+                            ? "/products?stockStatus=out_of_stock"
+                            : "/products?stockStatus=low_stock"
+                        }
+                      >
                         {t("dashboard.low_stock.view_all", { count: inventoryAlerts.count })}
                       </Link>
                     </Button>

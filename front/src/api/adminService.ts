@@ -21,6 +21,7 @@ interface ProductQueryParams {
   limit?: number;
   search?: string;
   category?: string;
+  stockStatus?: string;
   sortBy?: string;
   order?: "asc" | "desc";
 }
@@ -516,7 +517,7 @@ export const orders = {
   getOrderById: (orderId: string) => {
     return api.get(`/api/admin/orders/${orderId}`);
   },
-  updateOrderStatus: (orderId: string, data: { status: string }) => {
+  updateOrderStatus: (orderId: string, data: { status: string; notes?: string; carrier?: string; trackingNumber?: string; location?: string }) => {
     return api.patch(`/api/admin/orders/${orderId}/status`, data);
   },
   getOrderStats: async () => {
