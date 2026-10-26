@@ -1613,7 +1613,7 @@
       "name_desc": "The name of the attribute (e.g., Size, Color, RAM, Storage)",
       "input_type_label": "Input Type *",
       "input_type_placeholder": "Select input type",
-      "input_type_desc": "How users will select this attribute value",
+      "input_type_desc": "This setting does not create product variants. To make sellable options, select attribute values in Product > Variants and click Generate Variants.",
       "preset_label": "Quick Setup (Industry Presets)",
       "preset_placeholder": "Select industry for quick setup (optional)",
       "preset_desc": "Select an industry to auto-fill common attributes. You can still customize below.",

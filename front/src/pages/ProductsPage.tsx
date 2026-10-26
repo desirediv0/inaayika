@@ -772,7 +772,7 @@ export function ProductForm({
       (attrId) => selectedAttributes[attrId]?.length > 0
     );
 
-    if (activeAttributeIds.length < 2) return [];
+    if (activeAttributeIds.length === 0) return [];
 
     const groups = activeAttributeIds
       .map((attrId) => {
@@ -788,7 +788,7 @@ export function ProductForm({
       })
       .filter((group) => group.values.length > 0);
 
-    if (groups.length < 2) return [];
+    if (groups.length === 0) return [];
 
     const preview = groups.reduce((acc, currentGroup) => {
       if (acc.length === 0) {
@@ -2205,14 +2205,14 @@ export function ProductForm({
                 <div className="flex items-start gap-3">
                   <Info className="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0" />
                   <div className="space-y-2 text-sm text-amber-900">
-                    <p className="font-semibold">Easy variant flow for the same design</p>
+                    <p className="font-semibold">एक design के polish options को variant बनाने का आसान तरीका</p>
                     <ul className="list-disc pl-5 space-y-1">
-                      <li>One product = one design</li>
-                      <li>Create separate attributes for polish/base finish and shade/color</li>
-                      <li>Select values and click <span className="font-medium">Generate Variants</span> to create all valid combinations</li>
+                      <li>Attributes में एक option बनाएँ, जैसे <span className="font-medium">Polish</span>, और उसके नीचे पाँचों polish values जोड़ें।</li>
+                      <li>यहाँ उन्हीं पाँच values के checkbox चुनें और <span className="font-medium">Generate Variants</span> दबाएँ—हर polish का अलग variant बनेगा।</li>
+                      <li>नीचे बने हर variant में उसकी price, stock और ज़रूरत हो तो image भरकर product save करें।</li>
                     </ul>
                     <p className="text-xs text-amber-800">
-                      Example: Silver + Green, Silver + Red, Mehendi + Blue, etc.
+                      दो attributes चुनेंगे तो सभी combinations बनेंगे: जैसे 5 polish × 2 color = 10 variants। <span className="font-semibold">Multi-Select</span> setting अपने-आप variants नहीं बनाती; variants यहाँ के checkboxes से बनते हैं।
                     </p>
                   </div>
                 </div>
@@ -3280,10 +3280,18 @@ function ProductsList() {
                 }
 
                 // Get stock count - check both stock and quantity fields
-                const totalStock = product.variants?.reduce(
-                  (sum: number, variant: any) => sum + (variant.stock || variant.quantity || 0),
+                const activeVariants = (product.variants || []).filter(
+                  (variant: any) => variant.isActive !== false
+                );
+                const getVariantStock = (variant: any) => {
+                  const stock = variant.stock ?? variant.quantity ?? 0;
+                  const parsed = Number(stock);
+                  return Number.isFinite(parsed) ? parsed : 0;
+                };
+                const totalStock = activeVariants.reduce(
+                  (sum: number, variant: any) => sum + getVariantStock(variant),
                   0
-                ) || 0;
+                );
 
                 return (
                   <div
@@ -3345,7 +3353,25 @@ function ProductsList() {
                                 {product.variants.length} variants
                               </span>
                             )}
+                            <span className={`text-xs font-medium ${totalStock === 0 ? "text-[#EF4444]" : "text-[#4B5563]"}`}>
+                              {totalStock} in stock
+                            </span>
                           </div>
+                          {activeVariants.length > 1 && (
+                            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                              {activeVariants.map((variant: any, index: number) => {
+                                const variantName = (variant.attributes || [])
+                                  .map((attribute: any) => attribute.attributeValue?.value || attribute.value)
+                                  .filter(Boolean)
+                                  .join(" / ") || `Variant ${index + 1}`;
+                                return (
+                                  <span key={variant.id || index} className="text-xs text-[#6B7280]">
+                                    {variantName}: {getVariantStock(variant)}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
 
                         {/* Price */}

@@ -15,6 +15,7 @@ import {
   User,
   Truck,
   CheckCircle,
+  MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency, debugData, cn } from "@/lib/utils";
@@ -354,6 +355,15 @@ export default function OrderDetailsPage() {
         setOrderDetails((prev: OrderDetails | null) => ({
           ...prev!,
           status: newStatus,
+          ...(newStatus === "SHIPPED" && {
+            tracking: {
+              ...prev?.tracking,
+              carrier: extraData.carrier || prev?.tracking?.carrier || "Manual Courier",
+              trackingNumber: extraData.trackingNumber || prev?.tracking?.trackingNumber || "",
+              status: "SHIPPED",
+              updates: prev?.tracking?.updates || [],
+            },
+          }),
         }));
       } else {
         toast.error(response.data?.message || t('orders.actions.status_update_error'));
@@ -378,6 +388,21 @@ export default function OrderDetailsPage() {
     setShippingTrackingNumber("");
 
     await handleStatusUpdate("SHIPPED", { carrier, trackingNumber });
+  };
+
+  const openShippingWhatsApp = () => {
+    if (!orderDetails) return;
+    const phone = (orderDetails.shippingAddress.phone || orderDetails.user.phone || "").replace(/\D/g, "");
+    if (!phone) {
+      toast.error("No customer phone number is available for this order.");
+      return;
+    }
+    const whatsappPhone = phone.length === 10 ? `91${phone}` : phone;
+    const tracking = orderDetails.tracking;
+    const storefrontUrl = import.meta.env.VITE_STOREFRONT_URL || "https://inaayika.com";
+    const orderUrl = `${storefrontUrl.replace(/\/$/, "")}/account/orders/${orderDetails.id}`;
+    const message = `Hi ${orderDetails.user.name || orderDetails.shippingAddress.name || "there"}, your INAAYIKA order ${orderDetails.orderNumber} has been shipped via ${tracking?.carrier || "our courier partner"}. Tracking number: ${tracking?.trackingNumber || ""}. Track your order here: ${orderUrl}`;
+    window.open(`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
   // Get image URL helper
@@ -1039,6 +1064,10 @@ export default function OrderDetailsPage() {
               <CardContent className="px-6 pb-6">
                 {orderDetails.tracking ? (
                   <div className="space-y-4">
+                    <Button size="sm" variant="outline" onClick={openShippingWhatsApp}>
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Send tracking on WhatsApp
+                    </Button>
                     <div>
                       <p className="text-xs text-[#9CA3AF] mb-1">Carrier</p>
                       <p className="font-medium text-[#1F2937]">

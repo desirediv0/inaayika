@@ -11,6 +11,7 @@ import {
   Calendar, ShoppingCart, HelpCircle,
   Facebook, Twitter, MessageCircle
 } from "lucide-react";
+import { FaPinterestP, FaLinkedinIn } from "react-icons/fa";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import ReviewSection from "./ReviewSection";
@@ -441,6 +442,20 @@ export default function ProductContent({ slug }) {
     return sum + (bundleSelected[item.id] ? (item.price * qty) : 0);
   }, 0);
 
+  const shareProduct = (platform) => {
+    const productUrl = window.location.href;
+    const encodedUrl = encodeURIComponent(productUrl);
+    const encodedTitle = encodeURIComponent(product.name || "INAAYIKA product");
+    const shareUrls = {
+      Facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+      Twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
+      Pinterest: `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedTitle}`,
+      LinkedIn: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+      WhatsApp: `https://api.whatsapp.com/send?text=${encodeURIComponent(`${product.name || "INAAYIKA product"} ${productUrl}`)}`,
+    };
+    window.open(shareUrls[platform], "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden max-w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
@@ -569,6 +584,7 @@ export default function ProductContent({ slug }) {
             {/* Attributes Selection */}
             {product.attributeOptions?.map((attr) => {
               const values = getAvailableValues(attr.id);
+              if (!values.length) return null;
               const selId = selectedAttributes[attr.id];
               const selVal = values.find((v) => v.id === selId);
               return (
@@ -685,35 +701,22 @@ export default function ProductContent({ slug }) {
                 <span className="text-xs uppercase tracking-wider font-semibold text-neutral-500">Share:</span>
                 <div className="flex gap-1.5">
                   {[
-                    {
-                      label: "Facebook",
-                      bg: "bg-[#1877f2]",
-                      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`,
-                      icon: <Facebook className="h-3.5 w-3.5" />
-                    },
-                    {
-                      label: "Twitter",
-                      bg: "bg-[#1da1f2]",
-                      url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`,
-                      icon: <Twitter className="h-3.5 w-3.5" />
-                    },
-                    {
-                      label: "WhatsApp",
-                      bg: "bg-[#25d366]",
-                      url: `https://api.whatsapp.com/send?text=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`,
-                      icon: <MessageCircle className="h-3.5 w-3.5" />
-                    }
+                    { label: "Facebook", bg: "bg-[#1877f2]", icon: <Facebook className="h-3.5 w-3.5" /> },
+                    { label: "Twitter", bg: "bg-[#1da1f2]", icon: <Twitter className="h-3.5 w-3.5" /> },
+                    { label: "Pinterest", bg: "bg-[#bd081c]", icon: <FaPinterestP className="h-3.5 w-3.5" /> },
+                    { label: "LinkedIn", bg: "bg-[#0a66c2]", icon: <FaLinkedinIn className="h-3.5 w-3.5" /> },
+                    { label: "WhatsApp", bg: "bg-[#25d366]", icon: <MessageCircle className="h-3.5 w-3.5" /> }
                   ].map((s) => (
-                    <a
+                    <button
                       key={s.label}
-                      href={s.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={s.label}
+                      type="button"
+                      onClick={() => shareProduct(s.label)}
+                      aria-label={`Share on ${s.label}`}
+                      title={`Share on ${s.label}`}
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-white transition-transform hover:-translate-y-0.5 ${s.bg}`}
                     >
                       {s.icon}
-                    </a>
+                    </button>
                   ))}
                 </div>
               </div>

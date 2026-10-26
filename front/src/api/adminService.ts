@@ -1343,6 +1343,8 @@ export const testimonials = {
     role?: string;
     rating?: number;
     text: string;
+    imageType?: string;
+    productName?: string;
     displayOrder?: number;
     isActive?: boolean;
     image?: File;
@@ -1352,6 +1354,8 @@ export const testimonials = {
     if (data.role) formData.append("role", data.role);
     if (data.rating !== undefined) formData.append("rating", data.rating.toString());
     formData.append("text", data.text);
+    if (data.imageType) formData.append("imageType", data.imageType);
+    if (data.productName !== undefined) formData.append("productName", data.productName);
     if (data.displayOrder !== undefined) formData.append("displayOrder", data.displayOrder.toString());
     if (data.isActive !== undefined) formData.append("isActive", data.isActive.toString());
     if (data.image) formData.append("image", data.image);
@@ -1367,9 +1371,12 @@ export const testimonials = {
       role?: string;
       rating?: number;
       text?: string;
+      imageType?: string;
+      productName?: string;
       displayOrder?: number;
       isActive?: boolean;
       image?: File | null;
+      removeImage?: boolean;
     }
   ) => {
     const formData = new FormData();
@@ -1377,6 +1384,9 @@ export const testimonials = {
     if (data.role !== undefined) formData.append("role", data.role || "");
     if (data.rating !== undefined) formData.append("rating", data.rating.toString());
     if (data.text !== undefined) formData.append("text", data.text);
+    if (data.imageType !== undefined) formData.append("imageType", data.imageType);
+    if (data.productName !== undefined) formData.append("productName", data.productName);
+    if (data.removeImage) formData.append("removeImage", "true");
     if (data.displayOrder !== undefined) formData.append("displayOrder", data.displayOrder.toString());
     if (data.isActive !== undefined) formData.append("isActive", data.isActive.toString());
     if (data.image) formData.append("image", data.image);

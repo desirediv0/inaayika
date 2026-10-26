@@ -1207,7 +1207,9 @@ model Testimonial {
   role        String?  // e.g. "Bride, Mumbai"
   rating      Float    @default(5)
   text        String
-  image       String?  // Customer photo URL
+  image       String?  // Optional review evidence image URL
+  imageType   String?  @default("CHAT_SCREENSHOT")
+  productName String?
   isActive    Boolean  @default(true)
   displayOrder Int     @default(0)
   createdAt   DateTime @default(now())

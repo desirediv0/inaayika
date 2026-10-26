@@ -435,23 +435,24 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="border-[#E5E7EB] hover:bg-[#F3F7F6] text-sm"
-              >
-                <Link
-                  to={
-                    inventoryAlerts.outOfStockCount > 0
-                      ? "/products?stockStatus=out_of_stock"
-                      : "/products?stockStatus=low_stock"
-                  }
-                >
-                  {t("dashboard.inventory_alert.view_inventory")}
-                  <ExternalLink className="ml-1 h-3 w-3" />
-                </Link>
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                {inventoryAlerts.outOfStockCount > 0 && (
+                  <Button variant="outline" size="sm" asChild className="border-[#E5E7EB] hover:bg-[#F3F7F6] text-sm">
+                    <Link to="/products?stockStatus=out_of_stock">
+                      {t("dashboard.low_stock.out_of_stock")} ({inventoryAlerts.outOfStockCount})
+                      <ExternalLink className="ml-1 h-3 w-3" />
+                    </Link>
+                  </Button>
+                )}
+                {inventoryAlerts.lowStockCount > 0 && (
+                  <Button variant="outline" size="sm" asChild className="border-[#E5E7EB] hover:bg-[#F3F7F6] text-sm">
+                    <Link to="/products?stockStatus=low_stock">
+                      {t("dashboard.low_stock.title")} ({inventoryAlerts.lowStockCount})
+                      <ExternalLink className="ml-1 h-3 w-3" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -744,22 +745,22 @@ export default function DashboardPage() {
                 </div>
                 {inventoryAlerts.count > 5 && (
                   <div className="mt-4 text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-sm text-[#4B5563] hover:text-[#1F2937]"
-                      asChild
-                    >
-                      <Link
-                        to={
-                          inventoryAlerts.outOfStockCount > 0
-                            ? "/products?stockStatus=out_of_stock"
-                            : "/products?stockStatus=low_stock"
-                        }
-                      >
-                        {t("dashboard.low_stock.view_all", { count: inventoryAlerts.count })}
-                      </Link>
-                    </Button>
+                    <div className="flex justify-center gap-2">
+                      {inventoryAlerts.outOfStockCount > 0 && (
+                        <Button variant="ghost" size="sm" className="text-sm text-[#4B5563] hover:text-[#1F2937]" asChild>
+                          <Link to="/products?stockStatus=out_of_stock">
+                            {t("dashboard.low_stock.out_of_stock")} ({inventoryAlerts.outOfStockCount})
+                          </Link>
+                        </Button>
+                      )}
+                      {inventoryAlerts.lowStockCount > 0 && (
+                        <Button variant="ghost" size="sm" className="text-sm text-[#4B5563] hover:text-[#1F2937]" asChild>
+                          <Link to="/products?stockStatus=low_stock">
+                            {t("dashboard.low_stock.view_all", { count: inventoryAlerts.lowStockCount })}
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
               </CardContent>

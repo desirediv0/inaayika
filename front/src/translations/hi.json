@@ -1396,7 +1396,7 @@
       "name_desc": "गुण का नाम (जैसे, साइज़, रंग, RAM, स्टोरेज)",
       "input_type_label": "इनपुट प्रकार *",
       "input_type_placeholder": "इनपुट प्रकार चुनें",
-      "input_type_desc": "उपयोगकर्ता इस गुण मान का चयन कैसे करेंगे",
+      "input_type_desc": "यह setting अपने-आप product variants नहीं बनाती। बेचने योग्य options बनाने के लिए Product > Variants में values चुनें और Generate Variants दबाएँ।",
       "preset_label": "त्वरित सेटअप (उद्योग प्रीसेट)",
       "preset_placeholder": "त्वरित सेटअप के लिए उद्योग चुनें (वैकल्पिक)",
       "preset_desc": "सामान्य गुणों को स्वचालित रूप से भरने के लिए एक उद्योग चुनें। आप नीचे अनुकूलित कर सकते हैं।",

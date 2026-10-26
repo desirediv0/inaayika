@@ -51,7 +51,7 @@ export const getTestimonialById = asyncHandler(async (req, res) => {
 
 // Create testimonial (admin)
 export const createTestimonial = asyncHandler(async (req, res) => {
-  const { name, role, rating, text, displayOrder, isActive } = req.body;
+  const { name, role, rating, text, displayOrder, isActive, imageType, productName } = req.body;
 
   if (!name || !text) throw new ApiError(400, "Name and text are required");
 
@@ -82,6 +82,8 @@ export const createTestimonial = asyncHandler(async (req, res) => {
       rating: parseFloat(rating) || 5,
       text,
       image: imageUrl,
+      imageType: imageType || "CHAT_SCREENSHOT",
+      productName: productName?.trim() || null,
       displayOrder: order,
       isActive: isActive !== "false" && isActive !== false,
     },
@@ -97,7 +99,7 @@ export const createTestimonial = asyncHandler(async (req, res) => {
 // Update testimonial (admin)
 export const updateTestimonial = asyncHandler(async (req, res) => {
   const { testimonialId } = req.params;
-  const { name, role, rating, text, displayOrder, isActive } = req.body;
+  const { name, role, rating, text, displayOrder, isActive, imageType, productName, removeImage } = req.body;
 
   const existing = await prisma.testimonial.findUnique({ where: { id: testimonialId } });
   if (!existing) throw new ApiError(404, "Testimonial not found");
@@ -107,13 +109,20 @@ export const updateTestimonial = asyncHandler(async (req, res) => {
   if (role !== undefined) updateData.role = role || null;
   if (rating !== undefined) updateData.rating = parseFloat(rating) || 5;
   if (text !== undefined) updateData.text = text;
+  if (imageType !== undefined) updateData.imageType = imageType || "CHAT_SCREENSHOT";
+  if (productName !== undefined) updateData.productName = productName.trim() || null;
   if (displayOrder !== undefined) updateData.displayOrder = parseInt(displayOrder) || 0;
   if (isActive !== undefined) updateData.isActive = isActive === "true" || isActive === true;
 
-  if (req.files && req.files.image && req.files.image[0]) {
+  if (removeImage === "true" || removeImage === true) {
     if (existing.image) await deleteFromS3(existing.image);
+    updateData.image = null;
+  }
+
+  if (req.files && req.files.image && req.files.image[0]) {
     try {
       updateData.image = await processAndUploadImage(req.files.image[0]);
+      if (existing.image) await deleteFromS3(existing.image);
     } catch (error) {
       throw new ApiError(400, "Failed to upload image: " + error.message);
     }
@@ -174,6 +183,8 @@ export const getActiveTestimonials = asyncHandler(async (req, res) => {
       rating: true,
       text: true,
       image: true,
+      imageType: true,
+      productName: true,
       displayOrder: true,
     },
   });

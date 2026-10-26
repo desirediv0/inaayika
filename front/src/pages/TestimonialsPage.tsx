@@ -40,23 +40,28 @@ function TestimonialForm({
     role: "",
     rating: 5,
     text: "",
+    productName: "",
+    imageType: "CHAT_SCREENSHOT",
     displayOrder: 0,
     isActive: true,
   });
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
 
   const onDrop = (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
       setImage(file);
       setImagePreview(URL.createObjectURL(file));
+      setRemoveImage(false);
     }
   };
 
   const handleRemoveImage = () => {
     setImage(null);
     setImagePreview(null);
+    setRemoveImage(true);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -95,6 +100,8 @@ function TestimonialForm({
               role: t.role || "",
               rating: t.rating || 5,
               text: t.text || "",
+              productName: t.productName || "",
+              imageType: t.imageType || "CHAT_SCREENSHOT",
               displayOrder: t.displayOrder || 0,
               isActive: t.isActive,
             });
@@ -128,7 +135,7 @@ function TestimonialForm({
         await testimonials.createTestimonial({ ...formData, image: image || undefined });
         toast.success("Testimonial created successfully");
       } else if (testimonialId) {
-        await testimonials.updateTestimonial(testimonialId, { ...formData, image: image || undefined });
+        await testimonials.updateTestimonial(testimonialId, { ...formData, image: image || undefined, removeImage });
         toast.success("Testimonial updated successfully");
       }
       navigate("/testimonials");
@@ -180,8 +187,8 @@ function TestimonialForm({
                 <input {...getInputProps()} />
                 {imagePreview ? (
                   <div className="flex flex-col items-center gap-3">
-                    <img src={imagePreview} alt="Preview" className="w-full max-h-72 rounded-xl object-cover border border-primary/20" />
-                    <p className="text-xs text-muted-foreground">Click or drag to replace with another photo or screenshot</p>
+                    <img src={imagePreview} alt="Review evidence preview" className="w-full max-h-[32rem] rounded-xl object-contain bg-muted border border-primary/20" />
+                    <p className="text-xs text-muted-foreground">Click or drag to replace the product photo or chat screenshot</p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3 py-6">
@@ -189,14 +196,28 @@ function TestimonialForm({
                       <ImageIcon className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">Upload a review image</p>
+                        <p className="text-sm font-medium text-foreground">Upload review evidence (optional)</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Optional: customer photo, WhatsApp/Instagram chat screenshot, or product review image
+                        Add a product photo or WhatsApp/Instagram chat screenshot. A customer photo is not required.
                       </p>
                     </div>
                   </div>
                 )}
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="imageType">Evidence type</Label>
+              <select id="imageType" value={formData.imageType} onChange={(e) => setFormData({ ...formData, imageType: e.target.value })} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <option value="CHAT_SCREENSHOT">Chat screenshot</option>
+                <option value="PRODUCT_PHOTO">Product photo</option>
+                <option value="CUSTOMER_PHOTO">Customer photo</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="productName">Product reviewed (optional)</Label>
+              <Input id="productName" value={formData.productName} onChange={(e) => setFormData({ ...formData, productName: e.target.value })} placeholder="e.g. Multi Flower Hairband" className="mt-1" />
             </div>
 
             {/* Name */}
@@ -340,7 +361,7 @@ function TestimonialsList() {
                 <div className="flex flex-col sm:flex-row items-start gap-4">
                   <div className="flex items-center gap-3 sm:contents">
                     {item.image ? (
-                      <img src={item.image} alt={item.name} className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-primary/20 flex-shrink-0" />
+                      <img src={item.image} alt={`${item.imageType || "Review"} for ${item.name}`} className="w-24 h-20 sm:w-32 sm:h-24 rounded-lg object-contain bg-muted border border-primary/20 flex-shrink-0" />
                     ) : (
                       <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
                         {item.name?.charAt(0)}
@@ -369,6 +390,7 @@ function TestimonialsList() {
                       <span className="text-xs text-muted-foreground ml-1">{item.rating}</span>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">{item.text}</p>
+                    {item.productName && <p className="text-xs text-muted-foreground mt-1">Product: {item.productName}</p>}
                   </div>
                   <div className="flex sm:block gap-2 self-end sm:self-start">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/testimonials/edit/${item.id}`)}>

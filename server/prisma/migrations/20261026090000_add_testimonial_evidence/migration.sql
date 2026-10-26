@@ -1,0 +1,3 @@
+ALTER TABLE "Testimonial"
+ADD COLUMN "imageType" TEXT DEFAULT 'CHAT_SCREENSHOT',
+ADD COLUMN "productName" TEXT;

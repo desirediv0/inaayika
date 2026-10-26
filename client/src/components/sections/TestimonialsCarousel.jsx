@@ -70,15 +70,17 @@ export default function TestimonialsCarousel() {
                       borderColor: "#E9E2D5",
                     }}
                   >
-                    {/* Review Image */}
+                    {/* Optional review evidence */}
                     <div className="mb-4">
                       {t.image ? (
-                        <img
-                          src={t.image}
-                          alt={t.name}
-                          className="w-full h-44 md:h-48 rounded-xl object-cover border shadow-md"
-                          style={{ borderColor: "#E9E2D5" }}
-                        />
+                        <a href={t.image} target="_blank" rel="noopener noreferrer" aria-label={`View ${t.imageType === "CHAT_SCREENSHOT" ? "review chat screenshot" : "review photo"} for ${t.name}`}>
+                          <img
+                            src={t.image}
+                            alt={`${t.imageType === "CHAT_SCREENSHOT" ? "Chat screenshot" : "Review photo"} from ${t.name}`}
+                            className="w-full h-56 md:h-64 rounded-xl object-contain bg-white border shadow-md"
+                            style={{ borderColor: "#E9E2D5" }}
+                          />
+                        </a>
                       ) : (
                         <div
                           className="w-full h-44 md:h-48 rounded-xl flex items-center justify-center text-white font-display text-2xl font-medium shadow-md"
@@ -88,6 +90,17 @@ export default function TestimonialsCarousel() {
                         </div>
                       )}
                     </div>
+
+                    {t.productName && (
+                      <p className="text-center text-xs font-medium mb-2" style={{ color: "#8A7045" }}>
+                        Product: {t.productName}
+                      </p>
+                    )}
+                    {t.image && (
+                      <p className="text-center text-[10px] uppercase tracking-wider mb-3" style={{ color: "#9CA3AF" }}>
+                        {t.imageType === "CHAT_SCREENSHOT" ? "Customer chat" : t.imageType === "PRODUCT_PHOTO" ? "Product photo" : "Customer photo"}
+                      </p>
+                    )}
 
                     {/* Name */}
                     <h3
