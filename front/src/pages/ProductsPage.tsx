@@ -650,6 +650,7 @@ export function ProductForm({
                 const formattedVariants = productData.variants.map(
                   (variant: any) => ({
                     id: variant.id,
+                    isPersisted: true,
                     attributeValueIds: variant.attributes
                       ? variant.attributes.map((a: any) => a.attributeValueId)
                       : [],
@@ -2205,12 +2206,20 @@ export function ProductForm({
                 <div className="flex items-start gap-3">
                   <Info className="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0" />
                   <div className="space-y-2 text-sm text-amber-900">
-                    <p className="font-semibold">An easy way to create variants for polish options</p>
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>Create one attribute, such as <span className="font-medium">Polish</span>, and add all five polish values to it.</li>
-                      <li>Select the checkboxes for those values here, then click <span className="font-medium">Generate Variants</span>. This creates one variant for each polish.</li>
-                      <li>Enter the price and stock for each variant, add an image if needed, then save the product.</li>
-                    </ul>
+                    <div className="rounded-md border border-amber-200 bg-white/70 p-3">
+                      <p className="font-semibold">How to create or edit a variant</p>
+                      <ol className="mt-2 list-decimal pl-5 space-y-1.5">
+                        <li><span className="font-medium">Prepare attributes:</span> create attributes such as “Base Finish” and “Color” first, then add their values (for example, Silver, Mehandi, Mint Pink, and Dark Green).</li>
+                        <li><span className="font-medium">Select values:</span> tick the options you sell under each attribute. One attribute with 3 values creates 3 variants; 2 values in one attribute and 3 in another create 6 combinations.</li>
+                        <li><span className="font-medium">Generate and review:</span> click Generate Variants and check the preview and variant count. Existing combinations are skipped if you generate again.</li>
+                        <li><span className="font-medium">Complete each card:</span> set stock and price; Sale Price is optional and SKU is automatic. Expand a card with the arrow to edit it, or use the trash icon to remove it.</li>
+                        <li><span className="font-medium">Add photos:</span> upload up to 5 JPG, PNG, WebP, or GIF images (10 MB maximum each) to the matching variant. Photos for a newly generated variant are uploaded when you save the product.</li>
+                        <li><span className="font-medium">Save:</span> click the main Save Product button to store the variants, prices, stock, and images.</li>
+                      </ol>
+                      <p className="mt-2 border-t border-amber-200 pt-2 text-xs">
+                        <span className="font-semibold">When editing:</span> existing variants are already listed. Expand one to change its details or photos. To add an option, select its values, generate the new combinations, complete their cards, and save. “Multi-Select” is an attribute input type; it does not create variants.
+                      </p>
+                    </div>
                     <p className="text-xs text-amber-800">
                       Selecting two attributes creates every combination: for example, 5 polish options × 2 colors = 10 variants. The <span className="font-semibold">Multi-Select</span> setting does not create variants; use these checkboxes.
                     </p>

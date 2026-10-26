@@ -34,6 +34,7 @@ interface ImageData {
 
 interface VariantData {
   id?: string;
+  isPersisted?: boolean;
   name: string;
   sku: string;
   price: string;
@@ -158,7 +159,7 @@ export default function VariantCard({
   };
 
   // Check if variant has a real ID (saved to database)
-  const hasRealVariantId = variant.id && !variant.id.startsWith("temp-") && !variant.id.includes("-");
+  const hasRealVariantId = Boolean(variant.isPersisted && variant.id);
 
   // Handle adding a new pricing slab
   const handleAddSlab = async () => {
@@ -333,12 +334,9 @@ export default function VariantCard({
         const newImages: ImageData[] = [];
 
         // Saved variant IDs are UUIDs too; only local placeholder IDs are temporary.
-        const isRealVariantId =
-          variant.id &&
-          typeof variant.id === "string" &&
-          !variant.id.startsWith("new-") &&
-          !variant.id.startsWith("temp-") &&
-          !variant.id.startsWith("field");
+        // Newly generated variants get a client-side UUID too. Only variants
+        // loaded from the server are safe to upload against immediately.
+        const isRealVariantId = Boolean(variant.isPersisted && variant.id);
         if (isEditMode && isRealVariantId) {
           for (let i = 0; i < validFiles.length; i++) {
             const file = validFiles[i];
@@ -451,12 +449,14 @@ export default function VariantCard({
 
         onImagesChange(index, finalImages);
 
-        if (isEditMode && !isRealVariantId) {
+        if (!isRealVariantId) {
           toast.success(
             `${newImages.length} image(s) added. Images will be uploaded when you save the product.`
           );
-        } else {
+        } else if (newImages.length > 0) {
           toast.success(`${newImages.length} image(s) uploaded successfully`);
+        } else {
+          toast.error("No images were uploaded. Please try again.");
         }
       } catch (error) {
         console.error("Error uploading images:", error);
@@ -908,6 +908,7 @@ export default function VariantCard({
                 readOnly
                 placeholder="Auto-generated"
               />
+              <p className="text-[11px] text-muted-foreground">A unique code for this option. It is generated automatically.</p>
             </div>
 
             <div className="space-y-1">
@@ -923,6 +924,7 @@ export default function VariantCard({
                 className="h-8"
                 required
               />
+              <p className="text-[11px] text-muted-foreground">How many units of this exact option are available to sell.</p>
             </div>
 
             <div className="space-y-1">
@@ -939,6 +941,7 @@ export default function VariantCard({
                 className="h-8"
                 required
               />
+              <p className="text-[11px] text-muted-foreground">The regular price for this option.</p>
             </div>
 
             <div className="space-y-1">
@@ -955,6 +958,7 @@ export default function VariantCard({
                 className="h-8"
                 placeholder="Optional"
               />
+              <p className="text-[11px] text-muted-foreground">Optional discounted price. Leave blank if there is no sale.</p>
             </div>
 
             {/* MOQ Settings */}
@@ -1227,6 +1231,7 @@ export default function VariantCard({
                 {currentImages.length}/{maxImages}
               </Badge>
             </div>
+            <p className="text-xs text-muted-foreground">These photos belong only to this variant. Upload up to 5 images; new variant images are saved with the product.</p>
 
             {/* Upload Area */}
             {remainingSlots > 0 && (

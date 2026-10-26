@@ -97,14 +97,14 @@ export default function ProductContent({ slug }) {
             .map((v) => ({ attributeValueIds: v.attributes?.map((a) => a.attributeValueId) || [], variant: v }));
           setAvailableCombinations(combos);
           if (pd.attributeOptions?.length) {
+            // Start from a real variant so the visible selection is always a valid combination.
             const defaults = {};
-            pd.attributeOptions.forEach((a) => { if (a.values?.length) defaults[a.id] = a.values[0].id; });
-            setSelectedAttributes(defaults);
-            const match = combos.find((c) => {
-              const cIds = c.attributeValueIds.sort().join(",");
-              return cIds === Object.values(defaults).sort().join(",");
+            const firstVariant = combos[0]?.variant;
+            firstVariant?.attributes?.forEach((a) => {
+              defaults[a.attributeId] = a.attributeValueId;
             });
-            const v = match?.variant || pd.variants[0];
+            setSelectedAttributes(defaults);
+            const v = firstVariant || pd.variants[0];
             setSelectedVariant(v);
             const moq = v.moq || 1;
             setQuantity(moq);
@@ -121,6 +121,16 @@ export default function ProductContent({ slug }) {
       .catch((err) => { console.error(err); setError(err.message); })
       .finally(() => { setLoading(false); setInitialLoading(false); });
   }, [slug]);
+
+  // Keep the gallery in sync with the selected purchasable variant.
+  useEffect(() => {
+    const variantImages = selectedVariant?.images || [];
+    if (variantImages.length > 0) {
+      setMainImage(
+        variantImages.find((image) => image.isPrimary) || variantImages[0]
+      );
+    }
+  }, [selectedVariant]);
 
   /* ── Price visibility ── */
   useEffect(() => {
@@ -184,15 +194,25 @@ export default function ProductContent({ slug }) {
 
   const handleAttributeChange = (attrId, valueId) => {
     const next = { ...selectedAttributes, [attrId]: valueId };
-    setSelectedAttributes(next);
-    const match = findMatchingVariant(next);
+    // Prefer an exact combination. If this choice requires another attribute to
+    // change too (for example, a polish has different colors), select the first
+    // valid variant containing this value and sync all selectors to it.
+    const match = findMatchingVariant(next) || availableCombinations.find((c) =>
+      c.variant.attributes?.some((a) => a.attributeId === attrId && a.attributeValueId === valueId)
+    )?.variant;
     if (match) {
+      const matchedAttributes = {};
+      match.attributes?.forEach((a) => {
+        matchedAttributes[a.attributeId] = a.attributeValueId;
+      });
+      setSelectedAttributes(matchedAttributes);
       setSelectedVariant(match);
       const moq = match.moq || 1;
       const qty = quantity < moq ? moq : quantity;
       if (quantity < moq) setQuantity(qty);
       setEffectivePriceInfo(getEffectivePrice(match, qty));
     } else {
+      setSelectedAttributes(next);
       const fallbackVariant = product?.variants?.[0] || null;
       setSelectedVariant(fallbackVariant);
       if (fallbackVariant) setEffectivePriceInfo(getEffectivePrice(fallbackVariant, quantity));
@@ -204,21 +224,14 @@ export default function ProductContent({ slug }) {
     if (!product?.attributeOptions) return [];
     const attr = product.attributeOptions.find((a) => a.id === attrId);
     if (!attr?.values) return [];
-    const others = { ...selectedAttributes }; delete others[attrId];
-    const available = new Set();
-
-    availableCombinations.forEach((c) => {
-      const othIds = Object.values(others);
-      const matchesOthers = othIds.length === 0 || othIds.every((id) => c.attributeValueIds.includes(id));
-      if (matchesOthers) {
-        c.variant.attributes?.forEach((a) => {
-          if (a.attributeId === attrId) available.add(a.attributeValueId);
-        });
-      }
-    });
-
-    if (!available.size) return attr.values;
-    return attr.values.filter((v) => available.has(v.id));
+    const available = new Set(
+      availableCombinations.flatMap((c) =>
+        (c.variant.attributes || [])
+          .filter((a) => a.attributeId === attrId)
+          .map((a) => a.attributeValueId)
+      )
+    );
+    return available.size ? attr.values.filter((v) => available.has(v.id)) : attr.values;
   };
 
   /* ── Quantity ── */
