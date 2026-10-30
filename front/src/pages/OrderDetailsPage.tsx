@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { orders } from "@/api/adminService";
+import api from "@/api/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -149,6 +150,8 @@ export default function OrderDetailsPage() {
     description?: string;
   }
 
+  const [shipAction, setShipAction] = useState<"sync" | "label" | "invoice" | null>(null);
+
   // Define fetchOrderDetails outside of useEffect so it can be reused
   const fetchOrderDetails = useCallback(async () => {
     if (!id) return;
@@ -194,6 +197,51 @@ export default function OrderDetailsPage() {
   useEffect(() => {
     fetchOrderDetails();
   }, [id, fetchOrderDetails]);
+
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    const e = error as { response?: { data?: { message?: string } } };
+    return e?.response?.data?.message || fallback;
+  };
+
+  // Create the order in Shiprocket (or retry AWB / pickup if it was created but not assigned)
+  const handleShiprocketSync = async () => {
+    if (!id) return;
+    try {
+      setShipAction("sync");
+      const response = await api.post(`/api/admin/shiprocket/orders/${id}/sync`);
+      toast.success(response.data?.message || "Order synced to Shiprocket");
+      await fetchOrderDetails();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not sync order to Shiprocket"));
+    } finally {
+      setShipAction(null);
+    }
+  };
+
+  // Label / invoice: Shiprocket returns a PDF link, open it in a new tab
+  const handleShiprocketDocument = async (kind: "label" | "invoice") => {
+    if (!id) return;
+    try {
+      setShipAction(kind);
+      const response = await api.get(`/api/admin/shiprocket/orders/${id}/${kind}`);
+      const payload = response.data?.data?.[kind];
+      const url = kind === "label" ? payload?.label_url : payload?.invoice_url;
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      } else {
+        toast.error(
+          payload?.response || payload?.message ||
+            (kind === "label"
+              ? "Label is not ready. Make sure an AWB is assigned first."
+              : "Invoice is not ready yet.")
+        );
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, `Could not get the ${kind}`));
+    } finally {
+      setShipAction(null);
+    }
+  };
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -1246,6 +1294,46 @@ export default function OrderDetailsPage() {
                     </div>
                   )}
                 </div>
+
+                <div className="mt-5 flex flex-wrap gap-2 border-t border-[#E5E7EB] pt-4">
+                  {(!orderDetails.shiprocket.orderId || !orderDetails.shiprocket.awbCode) && (
+                    <Button
+                      size="sm"
+                      onClick={handleShiprocketSync}
+                      disabled={shipAction !== null}
+                    >
+                      {shipAction === "sync" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {orderDetails.shiprocket.orderId ? "Assign AWB / Schedule Pickup" : "Sync to Shiprocket"}
+                    </Button>
+                  )}
+                  {orderDetails.shiprocket.orderId && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleShiprocketDocument("label")}
+                        disabled={shipAction !== null || !orderDetails.shiprocket.awbCode}
+                      >
+                        {shipAction === "label" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Shipping Label
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleShiprocketDocument("invoice")}
+                        disabled={shipAction !== null}
+                      >
+                        {shipAction === "invoice" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Invoice
+                      </Button>
+                    </>
+                  )}
+                </div>
+                {!orderDetails.shiprocket.orderId && (
+                  <p className="mt-2 text-xs text-[#9CA3AF]">
+                    Not in Shiprocket yet. It syncs automatically when Shiprocket is enabled in settings; use the button to retry.
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}

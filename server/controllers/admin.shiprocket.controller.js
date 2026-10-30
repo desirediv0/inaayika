@@ -20,6 +20,7 @@ import {
     printInvoice,
     getPickupLocations,
     addPickupLocation,
+    ensureAwbAndPickup,
 } from "../utils/shiprocket.js";
 
 // Get Shiprocket settings
@@ -275,10 +276,26 @@ export const syncOrderToShiprocket = asyncHandler(async (req, res) => {
     }
 
     if (order.shiprocketOrderId) {
-        throw new ApiError(400, "Order already synced to Shiprocket");
+        // Already created in Shiprocket: only retry the missing AWB / pickup step
+        if (order.awbCode && order.shiprocketStatus === "PICKUP_SCHEDULED") {
+            throw new ApiError(400, "Order already synced to Shiprocket");
+        }
+        try {
+            const retried = await ensureAwbAndPickup(orderId);
+            return res.status(200).json(
+                new ApiResponsive(200, { order: retried }, "AWB / pickup updated in Shiprocket")
+            );
+        } catch (err) {
+            throw new ApiError(400, err.message || "Could not assign AWB in Shiprocket");
+        }
     }
 
-    const result = await processOrderForShipping(orderId);
+    let result;
+    try {
+        result = await processOrderForShipping(orderId);
+    } catch (err) {
+        throw new ApiError(400, err.message || "Shiprocket rejected the order");
+    }
 
     if (!result) {
         throw new ApiError(400, "Shiprocket is disabled or configuration is missing");
@@ -420,6 +437,12 @@ export const getOrderInvoice = asyncHandler(async (req, res) => {
 
 // Webhook handler for Shiprocket tracking updates
 export const handleWebhook = asyncHandler(async (req, res) => {
+    // Shiprocket sends the token you configure in its webhook settings in the x-api-key header
+    const expectedToken = process.env.SHIPROCKET_WEBHOOK_TOKEN;
+    if (expectedToken && req.headers["x-api-key"] !== expectedToken) {
+        throw new ApiError(401, "Invalid webhook token");
+    }
+
     const {
         awb,
         current_status,
@@ -443,12 +466,14 @@ export const handleWebhook = asyncHandler(async (req, res) => {
     if (awb) {
         order = await prisma.order.findFirst({
             where: { awbCode: awb },
+            include: { tracking: true },
         });
     }
 
     if (!order && sr_order_id) {
         order = await prisma.order.findFirst({
-            where: { shiprocketOrderId: sr_order_id },
+            where: { shiprocketOrderId: Number(sr_order_id) },
+            include: { tracking: true },
         });
     }
 
@@ -457,6 +482,7 @@ export const handleWebhook = asyncHandler(async (req, res) => {
         const orderNumber = order_id.split("_")[0];
         order = await prisma.order.findUnique({
             where: { orderNumber },
+            include: { tracking: true },
         });
     }
 
@@ -466,9 +492,15 @@ export const handleWebhook = asyncHandler(async (req, res) => {
         return res.status(200).json({ status: "ok" });
     }
 
+    // Shiprocket sends statuses like "PICKED UP" / "OUT FOR DELIVERY"; normalise to PICKED_UP etc.
+    const normalizedStatus = String(current_status || "")
+        .trim()
+        .toUpperCase()
+        .replace(/[\s-]+/g, "_");
+
     // Update order with tracking status
     const updateData = {
-        shiprocketStatus: current_status,
+        shiprocketStatus: normalizedStatus || current_status,
     };
 
     if (courier_name) {
@@ -487,8 +519,8 @@ export const handleWebhook = asyncHandler(async (req, res) => {
         RTO_DELIVERED: "CANCELLED",
     };
 
-    if (statusMapping[current_status]) {
-        updateData.status = statusMapping[current_status];
+    if (statusMapping[normalizedStatus]) {
+        updateData.status = statusMapping[normalizedStatus];
     }
 
     await prisma.order.update({
@@ -503,8 +535,8 @@ export const handleWebhook = asyncHandler(async (req, res) => {
         await prisma.tracking.update({
             where: { orderId: order.id },
             data: {
-                status: current_status === "DELIVERED" ? "DELIVERED" : "IN_TRANSIT",
-                ...(current_status === "DELIVERED" && { deliveredAt: new Date() }),
+                status: normalizedStatus === "DELIVERED" ? "DELIVERED" : "IN_TRANSIT",
+                ...(normalizedStatus === "DELIVERED" && { deliveredAt: new Date() }),
             },
         });
 

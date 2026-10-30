@@ -11,6 +11,7 @@ import { processReferralReward } from "./referral.controller.js";
 import { decrypt } from "../utils/encryption.js";
 import { processOrderForShipping } from "../utils/shiprocket.js";
 import { validateCouponForOrder } from "../utils/couponRules.js";
+import { notifyStoreOfNewOrder } from "../utils/orderNotifications.js";
 import { getShippingTotal, MINIMUM_ORDER_VALUE } from "../utils/shipping.js";
 
 // Unit price for a quantity: variant slab > product slab > sale/regular price
@@ -955,6 +956,9 @@ export const paymentVerification = asyncHandler(async (req, res) => {
       console.error("Order confirmation email error:", emailError);
       // Don't throw error, continue with response
     }
+
+    // Alert the shop owner about the new order (never blocks the response)
+    notifyStoreOfNewOrder(result.order.id);
 
     // Return success response
     return res.status(200).json(
@@ -2029,6 +2033,9 @@ export const createCashOrder = asyncHandler(async (req, res) => {
     } catch (emailError) {
       console.error("Order confirmation email error:", emailError);
     }
+
+    // Alert the shop owner about the new order (never blocks the response)
+    notifyStoreOfNewOrder(result.order.id);
 
     // Return success response
     return res.status(200).json(

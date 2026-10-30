@@ -565,7 +565,10 @@ export async function buildShiprocketOrderPayload(order) {
         // Include shipping cost in sub_total for Shiprocket
         // Shiprocket calculates: sub_total - total_discount = final amount
         // So we need: (subTotal + shipping) - discount = total
-        sub_total: parseFloat(order.subTotal) + parseFloat(order.shippingCost || 0),
+        sub_total:
+            parseFloat(order.subTotal) +
+            parseFloat(order.shippingCost || 0) +
+            (order.paymentMethod === "CASH" ? parseFloat(order.codCharge || 0) : 0),
         total_discount: parseFloat(order.discount) || 0,
 
         // Dimensions
@@ -683,4 +686,67 @@ export async function processOrderForShipping(orderId) {
         console.error("Failed to process order for Shiprocket:", error);
         throw error;
     }
+}
+
+/**
+ * Assign AWB + schedule pickup for an order that is already created in Shiprocket
+ * (used to retry when the automatic AWB step failed, e.g. wallet balance or serviceability).
+ */
+export async function ensureAwbAndPickup(orderId) {
+    const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        select: {
+            shiprocketShipmentId: true,
+            awbCode: true,
+        },
+    });
+
+    if (!order?.shiprocketShipmentId) {
+        throw new Error("Order is not created in Shiprocket yet");
+    }
+
+    let awbCode = order.awbCode;
+
+    if (!awbCode) {
+        const awbResponse = await assignAWB(order.shiprocketShipmentId);
+        const data = awbResponse.response?.data;
+        awbCode = data?.awb_code || null;
+
+        if (!awbCode) {
+            throw new Error(
+                awbResponse.message ||
+                "Shiprocket did not assign an AWB. Check wallet balance and courier serviceability."
+            );
+        }
+
+        await prisma.order.update({
+            where: { id: orderId },
+            data: {
+                awbCode,
+                courierName: data?.courier_name || null,
+                shiprocketStatus: "AWB_ASSIGNED",
+            },
+        });
+    }
+
+    try {
+        await schedulePickup(order.shiprocketShipmentId);
+        await prisma.order.update({
+            where: { id: orderId },
+            data: { shiprocketStatus: "PICKUP_SCHEDULED" },
+        });
+    } catch (pickupError) {
+        console.error("Failed to schedule pickup:", pickupError);
+    }
+
+    return prisma.order.findUnique({
+        where: { id: orderId },
+        select: {
+            shiprocketOrderId: true,
+            shiprocketShipmentId: true,
+            awbCode: true,
+            courierName: true,
+            shiprocketStatus: true,
+        },
+    });
 }

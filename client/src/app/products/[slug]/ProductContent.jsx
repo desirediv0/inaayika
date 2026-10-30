@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import ReviewSection from "./ReviewSection";
 import { useAddVariantToCart } from "@/lib/cart-utils";
 import { useCart } from "@/lib/cart-context";
+import { MINIMUM_ORDER_VALUE } from "@/lib/shipping";
 import { ProductCard } from "@/components/products/ProductCard";
 
 /* ─────────────────────────────────────────────
@@ -671,6 +672,10 @@ export default function ProductContent({ slug }) {
                 )}
               </button>
             </div>
+
+            <p className="-mt-3 mb-5 text-[11px] text-neutral-500">
+              Minimum order value is <strong>₹{MINIMUM_ORDER_VALUE}</strong> in products (shipping is charged separately).
+            </p>
 
             {/* Quick Delivery Tag */}
             <div className="flex items-center gap-3 py-3 px-4 bg-neutral-50 rounded-xl border border-neutral-100 text-xs text-neutral-700 mb-6">
