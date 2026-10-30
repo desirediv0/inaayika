@@ -358,6 +358,7 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
     where: { id: orderId },
     include: {
       razorpayPayment: true,
+      tracking: true,
       user: {
         select: {
           id: true,

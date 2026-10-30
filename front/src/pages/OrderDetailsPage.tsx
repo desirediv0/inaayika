@@ -301,7 +301,9 @@ export default function OrderDetailsPage() {
       );
     }
 
-    const currentStepIndex = steps.findIndex(step => step.key === currentStatus);
+    // Online orders are created as PAID (= placed and paid); show them at the first step
+    const timelineStatus = currentStatus === "PAID" ? "PENDING" : currentStatus;
+    const currentStepIndex = steps.findIndex(step => step.key === timelineStatus);
 
     return (
       <div className="w-full py-4">
@@ -626,6 +628,14 @@ export default function OrderDetailsPage() {
             >
               {getStatusLabel(orderDetails.status)}
             </Badge>
+
+            {orderDetails.paymentMethod === "CASH" &&
+              orderDetails.status !== "CANCELLED" &&
+              orderDetails.status !== "REFUNDED" && (
+                <Badge className="text-xs font-medium border px-3 py-1 bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]">
+                  COD - collect {formatCurrency(Number(orderDetails.total) || 0)}
+                </Badge>
+              )}
 
             {/* Status update buttons */}
             {orderDetails.status !== "DELIVERED" &&
