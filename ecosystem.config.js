@@ -37,7 +37,7 @@ module.exports = {
       env: {
         PORT: 4006,
         NODE_ENV: 'production',
-        DOTENV_CONFIG_PATH: '.env.production'
+        DOTENV_CONFIG_PATH: '.env'
       },
       error_file: "/root/.pm2/logs/inaayika-server-error.log",
       out_file: "/root/.pm2/logs/inaayika-server-out.log",
