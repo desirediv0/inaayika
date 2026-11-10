@@ -298,7 +298,11 @@ function RegisterForm({ onSwitchTab }) {
     if (formData.name.trim().length < 3) { toast.error("Name should be at least 3 characters"); return false; }
     if (!formData.phone || formData.phone.length < 10) { toast.error("Please enter a valid phone number"); return false; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) { toast.error("Please enter a valid email address"); return false; }
-    if (formData.password.length < 8) { toast.error("Password should be at least 8 characters"); return false; }
+    if (formData.password.length < 8) { toast.error("Password must be at least 8 characters"); return false; }
+    if (!/[A-Z]/.test(formData.password)) { toast.error("Password must contain an uppercase letter"); return false; }
+    if (!/[a-z]/.test(formData.password)) { toast.error("Password must contain a lowercase letter"); return false; }
+    if (!/\d/.test(formData.password)) { toast.error("Password must contain a number"); return false; }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) { toast.error("Password must contain a special character"); return false; }
     if (formData.password !== formData.confirmPassword) { toast.error("Passwords do not match"); return false; }
     return true;
   };
