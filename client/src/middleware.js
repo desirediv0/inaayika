@@ -3,16 +3,6 @@ import { NextResponse } from "next/server";
 // Define private routes that require authentication
 const privateRoutes = ["/profile", "/checkout", "/wishlist", "/orders"];
 
-// Define auth routes that should redirect to dashboard if already logged in
-const authRoutes = [
-    "/auth",
-    "/auth",
-    "/verify-email",
-    "/resend-verification",
-    "/forgot-password",
-    "/reset-password",
-];
-
 export function middleware(request) {
     const { pathname } = request.nextUrl;
 
@@ -25,17 +15,9 @@ export function middleware(request) {
         pathname.startsWith(route)
     );
 
-    // Check if the path is an auth route (login, register, etc.)
-    const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
-
     // If accessing a private route without authentication, redirect to login
     if (isPrivateRoute && !isAuthenticated) {
         return NextResponse.redirect(new URL("/auth", request.url));
-    }
-
-    // If accessing an auth route while already authenticated, redirect to account dashboard
-    if (isAuthRoute && isAuthenticated && !pathname.includes("verify-email")) {
-        return NextResponse.redirect(new URL("/profile", request.url));
     }
 
     return NextResponse.next();

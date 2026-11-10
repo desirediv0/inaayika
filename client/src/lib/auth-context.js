@@ -92,7 +92,10 @@ export function AuthProvider({ children }) {
             const res = await fetchApi("/users/login", {
                 method: "POST",
                 credentials: "include",
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({
+                    email: email.trim().toLowerCase(),
+                    password,
+                }),
             });
 
             // Set user data from response
@@ -137,7 +140,10 @@ export function AuthProvider({ children }) {
         try {
             const res = await fetchApi("/users/register", {
                 method: "POST",
-                body: JSON.stringify(userData),
+                body: JSON.stringify({
+                    ...userData,
+                    email: userData.email?.trim().toLowerCase(),
+                }),
             });
             return res;
         } catch (err) {
@@ -237,7 +243,7 @@ export function AuthProvider({ children }) {
         try {
             const res = await fetchApi("/users/resend-verification", {
                 method: "POST",
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email: email?.trim().toLowerCase() }),
             });
 
             return res;
@@ -280,7 +286,7 @@ export function AuthProvider({ children }) {
             const res = await fetchApi("/users/verify-otp", {
                 method: "POST",
                 credentials: "include",
-                body: JSON.stringify({ email, otp }),
+                body: JSON.stringify({ email: email.trim().toLowerCase(), otp }),
             });
 
             // Auto-login logic: Check if response has user or token
@@ -333,7 +339,7 @@ export function AuthProvider({ children }) {
         try {
             const res = await fetchApi("/users/forgot-password", {
                 method: "POST",
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email: email?.trim().toLowerCase() }),
             });
             return res;
         } catch (err) {
@@ -348,7 +354,7 @@ export function AuthProvider({ children }) {
     const resetPassword = async (token, password) => {
         setLoading(true);
         try {
-            const res = await fetchApi(`/users/reset-password/${token}`, {
+            const res = await fetchApi(`/users/reset-password/${encodeURIComponent(token)}`, {
                 method: "POST",
                 body: JSON.stringify({ password }),
             });

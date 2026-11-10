@@ -152,7 +152,7 @@ function AuthForm() {
             <div className="p-7 md:p-9">
               {activeTab === "login" && <LoginForm onSwitchTab={handleTabChange} />}
               {activeTab === "register" && <RegisterForm onSwitchTab={handleTabChange} />}
-              {activeTab === "verify" && <VerifyOtpForm defaultEmail={pendingEmail} />}
+              {activeTab === "verify" && <VerifyOtpForm defaultEmail={pendingEmail} onSwitchTab={handleTabChange} />}
             </div>
           </div>
 
@@ -297,7 +297,7 @@ function RegisterForm({ onSwitchTab }) {
   const validateForm = () => {
     if (formData.name.trim().length < 3) { toast.error("Name should be at least 3 characters"); return false; }
     if (!formData.phone || formData.phone.length < 10) { toast.error("Please enter a valid phone number"); return false; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { toast.error("Please enter a valid email address"); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) { toast.error("Please enter a valid email address"); return false; }
     if (formData.password.length < 8) { toast.error("Password should be at least 8 characters"); return false; }
     if (formData.password !== formData.confirmPassword) { toast.error("Passwords do not match"); return false; }
     return true;
@@ -308,7 +308,8 @@ function RegisterForm({ onSwitchTab }) {
     if (!validateForm()) return;
     setIsSubmitting(true);
     try {
-      const res = await register({ name: formData.name, email: formData.email, phone: formData.phone, password: formData.password });
+      const email = formData.email.trim().toLowerCase();
+      const res = await register({ name: formData.name.trim(), email, phone: formData.phone, password: formData.password });
       const payload = res?.data ?? res;
       const emailSent = payload?.emailSent !== false;
       if (payload?.debugOtp) {
@@ -318,21 +319,22 @@ function RegisterForm({ onSwitchTab }) {
       } else {
         toast.warning(res?.message || "Account created but email could not be sent.");
       }
-      localStorage.setItem("registeredEmail", formData.email);
-      setTimeout(() => router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`), 600);
+      localStorage.setItem("registeredEmail", email);
+      setTimeout(() => router.push(`/verify-otp?email=${encodeURIComponent(email)}`), 600);
     } catch (error) {
       const msg = error.message || "Registration failed. Please try again.";
       const isAlreadyReg = msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already exists");
       if (isAlreadyReg) {
-        if (typeof window !== "undefined") localStorage.setItem("registeredEmail", formData.email);
+        const email = formData.email.trim().toLowerCase();
+        if (typeof window !== "undefined") localStorage.setItem("registeredEmail", email);
         toast.error(
           <div className="space-y-1.5">
             <p className="font-semibold">{msg}</p>
             <div className="flex items-center gap-3 text-xs pt-1">
-              <Link href={`/verify-otp?email=${encodeURIComponent(formData.email)}`} className="underline font-bold text-[#003E29]">
+              <Link href={`/verify-otp?email=${encodeURIComponent(email)}`} className="underline font-bold text-[#003E29]">
                 🔑 Enter OTP Code
               </Link>
-              <Link href={`/resend-verification?email=${encodeURIComponent(formData.email)}`} className="underline text-gray-700">
+              <Link href={`/resend-verification?email=${encodeURIComponent(email)}`} className="underline text-gray-700">
                 Resend OTP
               </Link>
             </div>
@@ -426,7 +428,7 @@ function RegisterForm({ onSwitchTab }) {
   );
 }
 
-function VerifyOtpForm({ defaultEmail = "" }) {
+function VerifyOtpForm({ defaultEmail = "", onSwitchTab }) {
   const [email, setEmail] = useState(defaultEmail || "");
   const [otp, setOtp] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

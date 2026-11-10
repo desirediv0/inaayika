@@ -24,19 +24,31 @@ import {
   isExpiredOTP,
 } from "../helper/generateOTP.js";
 
+const normalizeEmail = (email) =>
+  typeof email === "string" ? email.trim().toLowerCase() : "";
+
+const findUserByEmail = (email) =>
+  prisma.user.findFirst({
+    where: {
+      email: {
+        equals: normalizeEmail(email),
+        mode: "insensitive",
+      },
+    },
+  });
+
 // Register a new user
 export const registerUser = asyncHandler(async (req, res, next) => {
   const { name, email, password, phone, referralCode } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
   // Validate required fields
-  if (!name || !email || !password) {
+  if (!name || !normalizedEmail || !password) {
     throw new ApiError(400, "All fields are required");
   }
 
   // Check if email already exists
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
-  });
+  const existingUser = await findUserByEmail(normalizedEmail);
 
   if (existingUser) {
     throw new ApiError(409, "Email already registered");
@@ -66,7 +78,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
     const user = await tx.user.create({
       data: {
         name,
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         phone: phone || "",
         otp: otpCode,
@@ -149,19 +161,19 @@ export const registerUser = asyncHandler(async (req, res, next) => {
   // Send OTP email
   try {
     await sendEmail({
-      email,
+      email: normalizedEmail,
       subject: "Your OTP for Email Verification - INAAYIKA",
       html: getEmailOtpTemplate(otpCode, 10),
     });
 
-    console.log("Verification OTP sent to:", email);
+    console.log("Verification OTP sent to:", normalizedEmail);
     emailSent = true;
   } catch (error) {
     console.error("Error sending verification email:", error);
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         "[dev] OTP email failed — use debugOtp in API response or fix SMTP. Recipient was:",
-        email
+        normalizedEmail
       );
     }
   }
@@ -184,18 +196,18 @@ export const registerUser = asyncHandler(async (req, res, next) => {
 // Login user
 export const loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
   // Validate required fields
-  if (!email || !password) {
+  if (!normalizedEmail || typeof password !== "string" || !password) {
     throw new ApiError(400, "Email and password are required");
   }
 
   // Find user
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+  const user = await findUserByEmail(normalizedEmail);
 
   if (!user) {
+    console.warn("[AUTH] Login rejected: user_not_found");
     throw new ApiError(401, "Invalid email or password");
   }
 
@@ -206,6 +218,7 @@ export const loginUser = asyncHandler(async (req, res, next) => {
 
   // Check if user has a password set (could be null for OAuth users)
   if (!user.password) {
+    console.warn("[AUTH] Login rejected: password_not_set");
     throw new ApiError(401, "Invalid email or password");
   }
 
@@ -213,11 +226,13 @@ export const loginUser = asyncHandler(async (req, res, next) => {
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
+    console.warn("[AUTH] Login rejected: password_mismatch");
     throw new ApiError(401, "Invalid email or password");
   }
 
   // Check if email (OTP) is verified
   if (!user.otpVerified) {
+    console.warn("[AUTH] Login rejected: email_not_verified");
     throw new ApiError(
       403,
       "Please verify your email using the OTP sent to you"
@@ -343,8 +358,9 @@ export const verifyEmail = asyncHandler(async (req, res, next) => {
 // Verify OTP
 export const verifyOtp = asyncHandler(async (req, res, next) => {
   const { email, otp } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  if (!email || !otp) {
+  if (!normalizedEmail || !otp) {
     throw new ApiError(400, "Email and OTP are required");
   }
 
@@ -352,7 +368,7 @@ export const verifyOtp = asyncHandler(async (req, res, next) => {
     throw new ApiError(400, "Invalid OTP format");
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await findUserByEmail(normalizedEmail);
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -420,15 +436,14 @@ export const verifyOtp = asyncHandler(async (req, res, next) => {
 // Forgot password - request reset
 export const forgotPassword = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  if (!email) {
+  if (!normalizedEmail) {
     throw new ApiError(400, "Email is required");
   }
 
   // Find user
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+  const user = await findUserByEmail(normalizedEmail);
 
   if (!user) {
     // Return success even if user doesn't exist (for security)
@@ -447,15 +462,18 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
   const resetToken = jwt.sign(
     { id: user.id, purpose: "pwdreset" },
     process.env.RESET_TOKEN_SECRET || process.env.ACCESS_JWT_SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "15m" }
   );
 
   // Send password reset email
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+  const resetLink = new URL(
+    `/reset-password/${encodeURIComponent(resetToken)}`,
+    process.env.FRONTEND_URL
+  ).toString();
 
   try {
     await sendEmail({
-      email,
+      email: user.email,
       subject: "Reset Your Password - INAAYIKA",
       html: getResetTemplate(resetLink),
     });
@@ -523,6 +541,12 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
+    }
+    if (error.name === "TokenExpiredError") {
+      throw new ApiError(
+        400,
+        "Reset link has expired. Please request a new one."
+      );
     }
     throw new ApiError(400, "Invalid reset token");
   }
@@ -1694,15 +1718,14 @@ export const deleteReview = asyncHandler(async (req, res, next) => {
 // Resend verification email
 export const resendVerificationEmail = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  if (!email) {
+  if (!normalizedEmail) {
     throw new ApiError(400, "Email is required");
   }
 
   // Find user by email
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+  const user = await findUserByEmail(normalizedEmail);
 
   if (!user) {
     // For security reasons, always return success even if user doesn't exist
