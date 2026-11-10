@@ -425,10 +425,36 @@ export const paymentVerification = asyncHandler(async (req, res) => {
     // Check if payment already processed
     const existingPayment = await prisma.razorpayPayment.findUnique({
       where: { razorpayPaymentId: razorpay_payment_id },
+      include: {
+        order: {
+          select: {
+            id: true,
+            orderNumber: true,
+            userId: true,
+          },
+        },
+      },
     });
 
     if (existingPayment) {
-      throw new ApiError(400, "Payment already processed");
+      if (
+        existingPayment.razorpayOrderId !== razorpay_order_id ||
+        existingPayment.order.userId !== userId
+      ) {
+        throw new ApiError(409, "Payment is already associated with another order");
+      }
+
+      return res.status(200).json(
+        new ApiResponsive(
+          200,
+          {
+            orderId: existingPayment.order.id,
+            orderNumber: existingPayment.order.orderNumber,
+            paymentId: existingPayment.id,
+          },
+          "Payment was already verified and the order is confirmed"
+        )
+      );
     }
 
     // Check for cancelled orders with this Razorpay order ID
@@ -976,6 +1002,37 @@ export const paymentVerification = asyncHandler(async (req, res) => {
     console.error("Payment Verification Error:", error);
 
     if (error.code === "P2002") {
+      const existingPayment = await prisma.razorpayPayment.findUnique({
+        where: { razorpayPaymentId: razorpay_payment_id },
+        include: {
+          order: {
+            select: {
+              id: true,
+              orderNumber: true,
+              userId: true,
+            },
+          },
+        },
+      });
+
+      if (
+        existingPayment &&
+        existingPayment.razorpayOrderId === razorpay_order_id &&
+        existingPayment.order.userId === userId
+      ) {
+        return res.status(200).json(
+          new ApiResponsive(
+            200,
+            {
+              orderId: existingPayment.order.id,
+              orderNumber: existingPayment.order.orderNumber,
+              paymentId: existingPayment.id,
+            },
+            "Payment was already verified and the order is confirmed"
+          )
+        );
+      }
+
       throw new ApiError(400, "Duplicate payment record");
     }
 

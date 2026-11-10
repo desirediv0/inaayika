@@ -33,6 +33,8 @@ const getImageUrl = (image) => {
     return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
 };
 
+const PENDING_RAZORPAY_VERIFICATION_KEY = "pendingRazorpayVerification";
+
 export default function CheckoutPage() {
     const { isAuthenticated, user } = useAuth();
     const router = useRouter();
@@ -50,6 +52,8 @@ export default function CheckoutPage() {
     const [orderCreated, setOrderCreated] = useState(false);
     const [orderId, setOrderId] = useState("");
     const [paymentId, setPaymentId] = useState("");
+    const [pendingVerification, setPendingVerification] = useState(null);
+    const [pendingVerificationLoaded, setPendingVerificationLoaded] = useState(false);
     const [razorpayKey, setRazorpayKey] = useState("");
     const [error, setError] = useState("");
     const [showAddressForm, setShowAddressForm] = useState(false);
@@ -130,12 +134,64 @@ export default function CheckoutPage() {
         }
     }, [isAuthenticated, router]);
 
+    useEffect(() => {
+        try {
+            const savedVerification = window.sessionStorage.getItem(
+                PENDING_RAZORPAY_VERIFICATION_KEY
+            );
+            if (savedVerification) {
+                const payload = JSON.parse(savedVerification);
+                if (
+                    payload.razorpay_order_id &&
+                    payload.razorpay_payment_id &&
+                    payload.razorpay_signature &&
+                    payload.shippingAddressId
+                ) {
+                    setPendingVerification(payload);
+                    setError(
+                        "Your payment response is saved. Retry order confirmation before attempting payment again."
+                    );
+                } else {
+                    try {
+                        window.sessionStorage.removeItem(
+                            PENDING_RAZORPAY_VERIFICATION_KEY
+                        );
+                    } catch (storageError) {
+                        console.error("Could not clear invalid payment recovery data:", storageError);
+                    }
+                }
+            }
+        } catch (storageError) {
+            console.error("Could not restore pending payment verification:", storageError);
+            try {
+                window.sessionStorage.removeItem(PENDING_RAZORPAY_VERIFICATION_KEY);
+            } catch (removeError) {
+                console.error("Could not clear payment recovery data:", removeError);
+            }
+        } finally {
+            setPendingVerificationLoaded(true);
+        }
+    }, []);
+
     // Redirect if cart is empty (but not if order is already created)
     useEffect(() => {
-        if (isAuthenticated && cart.items?.length === 0 && !orderCreated) {
+        if (
+            isAuthenticated &&
+            pendingVerificationLoaded &&
+            cart.items?.length === 0 &&
+            !orderCreated &&
+            !pendingVerification
+        ) {
             router.push("/cart");
         }
-    }, [isAuthenticated, cart, router, orderCreated]);
+    }, [
+        isAuthenticated,
+        cart,
+        router,
+        orderCreated,
+        pendingVerification,
+        pendingVerificationLoaded,
+    ]);
 
     // Fetch payment settings
     useEffect(() => {
@@ -283,8 +339,65 @@ export default function CheckoutPage() {
         }, 100);
     };
 
+    const verifyRazorpayPayment = async (payload) => {
+        setProcessing(true);
+        setError("");
+        toast.loading("Verifying your payment...", {
+            id: "payment-verification",
+            duration: 10000,
+        });
+
+        try {
+            const verificationResponse = await fetchApi("/payment/verify", {
+                method: "POST",
+                credentials: "include",
+                body: JSON.stringify(payload),
+            });
+
+            toast.dismiss("payment-verification");
+            if (!verificationResponse.success) {
+                throw new Error(
+                    verificationResponse.message || "Payment verification failed"
+                );
+            }
+
+            try {
+                window.sessionStorage.removeItem(PENDING_RAZORPAY_VERIFICATION_KEY);
+            } catch (storageError) {
+                console.error("Could not clear verified payment recovery data:", storageError);
+            }
+            setPendingVerification(null);
+            setOrderId(verificationResponse.data.orderId);
+            toast.success("Payment verified successfully! 🎉", {
+                duration: 3000,
+            });
+            handleSuccessfulPayment(
+                { razorpay_payment_id: payload.razorpay_payment_id },
+                verificationResponse.data
+            );
+        } catch (verificationError) {
+            console.error("Payment verification error:", verificationError);
+            toast.dismiss("payment-verification");
+            setPendingVerification(payload);
+            setError(
+                "Payment may have been received, but order confirmation could not be completed. Retry order confirmation; do not pay again."
+            );
+            toast.error(
+                "Payment may have succeeded. Retry order confirmation before trying another payment."
+            );
+        } finally {
+            setProcessing(false);
+        }
+    };
+
     // Process checkout
     const handleCheckout = async () => {
+        if (pendingVerification) {
+            setError(
+                "Finish confirming the previous payment before starting another checkout."
+            );
+            return;
+        }
         if (totals.subtotal < MINIMUM_ORDER_VALUE) {
             toast.error(`Product subtotal must be at least ₹${MINIMUM_ORDER_VALUE}; shipping is added separately.`);
             return;
@@ -435,52 +548,27 @@ export default function CheckoutPage() {
                         contact: user?.phone || "",
                     },
                     handler: async function (response) {
-                        setProcessing(true);
-                        toast.loading("Verifying your payment...", {
-                            id: "payment-verification",
-                            duration: 10000,
-                        });
-
+                        const verificationPayload = {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            shippingAddressId: selectedAddressId,
+                            billingAddressSameAsShipping: true,
+                            couponCode: coupon?.code || null,
+                            couponId: coupon?.id || null,
+                            discountAmount: totals.discount || 0,
+                            notes: "",
+                        };
                         try {
-                            const verificationResponse = await fetchApi("/payment/verify", {
-                                method: "POST",
-                                credentials: "include",
-                                body: JSON.stringify({
-                                    razorpay_order_id: response.razorpay_order_id,
-                                    razorpay_payment_id: response.razorpay_payment_id,
-                                    razorpay_signature: response.razorpay_signature,
-                                    razorpayOrderId: response.razorpay_order_id,
-                                    razorpayPaymentId: response.razorpay_payment_id,
-                                    razorpaySignature: response.razorpay_signature,
-                                    shippingAddressId: selectedAddressId,
-                                    billingAddressSameAsShipping: true,
-                                    couponCode: coupon?.code || null,
-                                    couponId: coupon?.id || null,
-                                    discountAmount: totals.discount || 0,
-                                    notes: "",
-                                }),
-                            });
-
-                            toast.dismiss("payment-verification");
-
-                            if (verificationResponse.success) {
-                                toast.success("Payment verified successfully! 🎉", {
-                                    duration: 3000,
-                                });
-                                setOrderId(verificationResponse.data.orderId);
-                                handleSuccessfulPayment(response, verificationResponse.data);
-                            } else {
-                                throw new Error(
-                                    verificationResponse.message || "Payment verification failed"
-                                );
-                            }
-                        } catch (error) {
-                            console.error("Payment verification error:", error);
-                            toast.dismiss("payment-verification");
-                            setError(error.message || "Payment verification failed");
-                            toast.error(error.message || "Verification failed. Please contact support.");
-                            setProcessing(false);
+                            window.sessionStorage.setItem(
+                                PENDING_RAZORPAY_VERIFICATION_KEY,
+                                JSON.stringify(verificationPayload)
+                            );
+                        } catch (storageError) {
+                            console.error("Could not save payment recovery data:", storageError);
                         }
+                        setPendingVerification(verificationPayload);
+                        await verifyRazorpayPayment(verificationPayload);
                     },
                     theme: {
                         color: "#000000",
@@ -609,6 +697,16 @@ export default function CheckoutPage() {
                         <div>
                             <p className="  uppercase tracking-wider">Payment Action Blocked</p>
                             <p className="font-light mt-0.5">{error}</p>
+                            {pendingVerification && (
+                                <button
+                                    type="button"
+                                    onClick={() => verifyRazorpayPayment(pendingVerification)}
+                                    disabled={processing}
+                                    className="mt-3 rounded-lg bg-[#003E29] px-4 py-2 font-semibold uppercase tracking-wider text-white disabled:opacity-50"
+                                >
+                                    {processing ? "Confirming…" : "Retry order confirmation"}
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
@@ -851,7 +949,7 @@ export default function CheckoutPage() {
                             {/* Checkout action */}
                             <button
                                 onClick={handleCheckout}
-                                disabled={processing || !selectedAddressId || totals.subtotal < MINIMUM_ORDER_VALUE}
+                                disabled={processing || !!pendingVerification || !selectedAddressId || totals.subtotal < MINIMUM_ORDER_VALUE}
                                 className="w-full text-white text-xs font-semibold uppercase tracking-widest py-4.5 rounded-xl transition-all shadow-md border border-[#D4AF37]/30 hover:bg-[#002216] disabled:opacity-40 h-12"
                                 style={{ background: "#003E29" }}
                             >

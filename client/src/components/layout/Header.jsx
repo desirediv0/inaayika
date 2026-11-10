@@ -198,8 +198,9 @@ export function Navbar() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
-    router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
+    const query = searchQuery.trim();
+    if (!query) return;
+    router.push(`/products?search=${encodeURIComponent(query)}`);
     setIsSearchOpen(false);
     setSearchQuery("");
   };

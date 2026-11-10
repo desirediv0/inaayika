@@ -72,8 +72,7 @@ function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const decodePlus = (s) => (s ? s.replace(/\+/g, " ") : "");
-  const searchQuery = decodePlus(searchParams.get("search") || "");
+  const searchQuery = searchParams.get("search") || "";
   const categorySlug = searchParams.get("category") || "";
   const productType = searchParams.get("productType") || "";
   const colorId = searchParams.get("color") || "";
@@ -154,6 +153,18 @@ function ProductsContent() {
 
   /* ── Sync search input ── */
   useEffect(() => { setSearchInput(filters.search || ""); }, [filters.search]);
+
+  /* The header search can change the query while this page stays mounted. */
+  useEffect(() => {
+    setFilters((current) =>
+      current.search === searchQuery
+        ? current
+        : { ...current, search: searchQuery }
+    );
+    setPagination((current) =>
+      current.page === 1 ? current : { ...current, page: 1 }
+    );
+  }, [searchQuery]);
 
   /* ── Fetch Filter Details ── */
   useEffect(() => {
