@@ -6,12 +6,19 @@ export function cn(...inputs) {
 }
 
 
-// API URL — must match backend (server often runs on 5000). Set NEXT_PUBLIC_API_URL in .env.local
+// Never ship a local development API URL in a production browser bundle.
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL;
+const isLocalApiUrl =
+  /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/|$)/i.test(
+    configuredApiUrl || ""
+  );
+
 export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "development"
-    ? "http://localhost:4004/api"
-    : "https://api.inaayika.com/api");
+  process.env.NODE_ENV === "development"
+    ? configuredApiUrl || "http://localhost:4004/api"
+    : isLocalApiUrl
+      ? "https://api.inaayika.com/api"
+      : configuredApiUrl || "https://api.inaayika.com/api";
 
 // Track in-flight requests to prevent duplicates
 const pendingRequests = {};
