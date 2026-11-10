@@ -38,6 +38,39 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     effectiveMaxPrice = parsedMin;
   }
 
+  const variantPriceRange = {
+    ...(effectiveMinPrice !== null && { gte: effectiveMinPrice }),
+    ...(effectiveMaxPrice !== null && { lte: effectiveMaxPrice }),
+  };
+  const selectedAttributeValueIds = [
+    ...(color ? [color] : []),
+    ...(size ? [size] : []),
+    ...(attributeValueIds
+      ? attributeValueIds.split(",").map((id) => id.trim()).filter(Boolean)
+      : []),
+  ];
+  const uniqueAttributeValueIds = [...new Set(selectedAttributeValueIds)];
+  const variantConditions = [];
+
+  if (effectiveMinPrice !== null || effectiveMaxPrice !== null) {
+    variantConditions.push({
+      OR: [
+        { salePrice: null, price: variantPriceRange },
+        { salePrice: { not: null, ...variantPriceRange } },
+      ],
+    });
+  }
+
+  variantConditions.push(
+    ...uniqueAttributeValueIds.map((valueId) => ({
+      attributes: {
+        some: {
+          attributeValueId: valueId,
+        },
+      },
+    }))
+  );
+
   // Normalize search: treat + as space (when querystrings use + for spaces)
   const normalizedSearch =
     typeof search === "string" ? search.replace(/\+/g, " ") : "";
@@ -98,92 +131,13 @@ export const getAllProducts = asyncHandler(async (req, res) => {
       },
     }),
     // Filter by price range via variants
-    ...((effectiveMinPrice !== null || effectiveMaxPrice !== null) && {
+    ...(variantConditions.length > 0 && {
       variants: {
         some: {
-          AND: [
-            { isActive: true },
-            // Min price
-            ...(effectiveMinPrice !== null
-              ? [
-                {
-                  OR: [
-                    { price: { gte: effectiveMinPrice } },
-                    {
-                      AND: [
-                        { salePrice: { not: null } },
-                        { salePrice: { gte: effectiveMinPrice } },
-                      ],
-                    },
-                  ],
-                },
-              ]
-              : []),
-            // Max price
-            ...(effectiveMaxPrice !== null
-              ? [
-                {
-                  OR: [
-                    {
-                      AND: [
-                        { salePrice: { not: null } },
-                        { salePrice: { lte: effectiveMaxPrice } },
-                      ],
-                    },
-                    {
-                      AND: [
-                        { salePrice: null },
-                        { price: { lte: effectiveMaxPrice } },
-                      ],
-                    },
-                  ],
-                },
-              ]
-              : []),
-          ],
+          AND: [{ isActive: true }, ...variantConditions],
         },
       },
     }),
-    // Filter by attribute values (dynamic - supports all attributes)
-    // Collect all attribute value IDs
-    ...((() => {
-      const allAttributeValueIds = [];
-
-      // Add color and size if provided (backward compatibility)
-      if (color) allAttributeValueIds.push(color);
-      if (size) allAttributeValueIds.push(size);
-
-      // Add all attribute value IDs from attributeValueIds parameter
-      if (attributeValueIds) {
-        const valueIds = attributeValueIds.split(",").map((id) => id.trim()).filter(Boolean);
-        allAttributeValueIds.push(...valueIds);
-      }
-
-      // Remove duplicates
-      const uniqueAttributeValueIds = [...new Set(allAttributeValueIds)];
-
-      if (uniqueAttributeValueIds.length === 0) return {};
-
-      // Filter: product must have at least one variant with ALL selected attribute values
-      return {
-        variants: {
-          some: {
-            AND: [
-              { isActive: true },
-              // Variant must have ALL selected attribute values
-              // Each attribute value ID must be present in variant's attributes
-              ...uniqueAttributeValueIds.map((valueId) => ({
-                attributes: {
-                  some: {
-                    attributeValueId: valueId,
-                  },
-                },
-              })),
-            ],
-          },
-        },
-      };
-    })()),
   };
 
   // Get total count for pagination

@@ -55,6 +55,16 @@ function FilterSection({ title, isOpen, onToggle, children }) {
   );
 }
 
+const PRICE_MIN = 0;
+const PRICE_MAX = 10000;
+
+const clampPrice = (value, min, max, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed)
+    ? Math.min(max, Math.max(min, parsed))
+    : fallback;
+};
+
 /* ─────────────────────────────────────────────
    MAIN PRODUCTS CONTENT
 ───────────────────────────────────────────── */
@@ -120,18 +130,19 @@ function ProductsContent() {
 
   const [selectedPredefinedRange, setSelectedPredefinedRange] = useState(() => {
     if (!minPrice && !maxPrice) return "all";
-    const minN = Number(minPrice || 10);
-    const maxN = Number(maxPrice || 10000);
-    if (minN === 10 && maxN === 499) return "under499";
+    const minN = Number(minPrice || PRICE_MIN);
+    const maxN = Number(maxPrice || PRICE_MAX);
+    if ((minN === 0 || minN === 10) && maxN === 499) return "under499";
     if (minN === 500 && maxN === 999) return "500-999";
     if (minN === 1000 && maxN === 2499) return "1000-2499";
     if (minN === 2500 && maxN === 4999) return "2500-4999";
     if (minN === 5000 && maxN === 10000) return "5000-10000";
-    if (minN === 10 && maxN === 10000) return "all";
+    if ((minN === PRICE_MIN || minN === 10) && maxN === PRICE_MAX) return "all";
     return "custom";
   });
-  const [maxPossiblePrice, setMaxPossiblePrice] = useState(10000);
-  const [priceRange, setPriceRange] = useState({ min: minPrice ? Number(minPrice) : 10, max: maxPrice ? Number(maxPrice) : 10000 });
+  const [priceRange, setPriceRange] = useState({ min: minPrice ? Number(minPrice) : PRICE_MIN, max: maxPrice ? Number(maxPrice) : PRICE_MAX });
+  const [minPriceInput, setMinPriceInput] = useState(minPrice);
+  const [maxPriceInput, setMaxPriceInput] = useState(maxPrice);
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [pagination, setPagination] = useState({ page: pageParam, limit: 12, total: 0, pages: 0 });
 
@@ -144,13 +155,12 @@ function ProductsContent() {
   /* ── Sync search input ── */
   useEffect(() => { setSearchInput(filters.search || ""); }, [filters.search]);
 
-  /* ── Fetch Max Price and Filter Details ── */
+  /* ── Fetch Filter Details ── */
   useEffect(() => {
     Promise.all([
       fetchApi("/public/categories"),
       fetchApi("/public/filter-attributes"),
-      fetchApi("/public/products/max-price"),
-    ]).then(([catRes, attrRes, maxPriceRes]) => {
+    ]).then(([catRes, attrRes]) => {
       setCategories(catRes.data?.categories || []);
       setColors(attrRes.data?.colors || []);
       setSizes(attrRes.data?.sizes || []);
@@ -161,13 +171,6 @@ function ProductsContent() {
         if (attrRes.data?.colors?.length) attrs.push({ id: "color-attr", name: "Color", values: attrRes.data.colors });
         if (attrRes.data?.sizes?.length) attrs.push({ id: "size-attr", name: "Size", values: attrRes.data.sizes });
         setAllAttributes(attrs);
-      }
-      if (maxPriceRes.data?.maxPrice) {
-        const fetchedMax = Math.ceil(maxPriceRes.data.maxPrice);
-        setMaxPossiblePrice(fetchedMax);
-        if (!maxPrice) {
-          setPriceRange((prev) => ({ ...prev, max: fetchedMax }));
-        }
       }
     }).catch(console.error);
   }, []);
@@ -251,7 +254,9 @@ function ProductsContent() {
   const clearFilters = () => {
     const cf = { search: "", category: "", productType: "", color: "", size: "", minPrice: "", maxPrice: "", sort: "createdAt", order: "desc" };
     setFilters(cf); setSelectedColors([]); setSelectedSizes([]); setSelectedAttributes({});
-    setPriceRange({ min: 10, max: 10000 });
+    setPriceRange({ min: PRICE_MIN, max: PRICE_MAX });
+    setMinPriceInput("");
+    setMaxPriceInput("");
     setSelectedPredefinedRange("all");
     updateURL(cf); setPagination((p) => ({ ...p, page: 1 }));
     setMobileFilterOpen(false);
@@ -278,6 +283,56 @@ function ProductsContent() {
     return "default";
   };
 
+  const handlePriceInputChange = (field, value) => {
+    if (field === "min") setMinPriceInput(value);
+    else setMaxPriceInput(value);
+    setSelectedPredefinedRange("custom");
+  };
+
+  const handlePriceInputBlur = (field) => {
+    if (field === "min") {
+      const min = minPriceInput.trim()
+        ? clampPrice(minPriceInput, PRICE_MIN, priceRange.max, PRICE_MIN)
+        : PRICE_MIN;
+      setPriceRange((prev) => ({ ...prev, min }));
+      setMinPriceInput(minPriceInput.trim() ? String(min) : "");
+      return;
+    }
+
+    const max = maxPriceInput.trim()
+      ? clampPrice(maxPriceInput, priceRange.min, PRICE_MAX, PRICE_MAX)
+      : PRICE_MAX;
+    setPriceRange((prev) => ({ ...prev, max }));
+    setMaxPriceInput(maxPriceInput.trim() ? String(max) : "");
+  };
+
+  const applyPriceRange = () => {
+    const minInput = minPriceInput.trim();
+    const maxInput = maxPriceInput.trim();
+    const min = minInput
+      ? clampPrice(minInput, PRICE_MIN, PRICE_MAX, PRICE_MIN)
+      : PRICE_MIN;
+    const max = maxInput
+      ? clampPrice(maxInput, min, PRICE_MAX, PRICE_MAX)
+      : PRICE_MAX;
+    setPriceRange({ min, max });
+    setMinPriceInput(minInput ? String(min) : "");
+    setMaxPriceInput(maxInput ? String(max) : "");
+    setSelectedPredefinedRange(minInput || maxInput ? "custom" : "all");
+    handleMultipleFiltersChange({
+      minPrice: minInput ? String(min) : "",
+      maxPrice: maxInput ? String(max) : "",
+    });
+  };
+
+  const clearPriceRange = () => {
+    setPriceRange({ min: PRICE_MIN, max: PRICE_MAX });
+    setMinPriceInput("");
+    setMaxPriceInput("");
+    setSelectedPredefinedRange("all");
+    handleMultipleFiltersChange({ minPrice: "", maxPrice: "" });
+  };
+
   const handlePageChange = (p) => {
     if (p < 1 || p > pagination.pages) return;
     setPagination((prev) => ({ ...prev, page: p }));
@@ -292,6 +347,13 @@ function ProductsContent() {
     selectedColors.length > 0, selectedSizes.length > 0,
     filters.minPrice, filters.maxPrice,
   ].filter(Boolean).length;
+  const priceLabel = minPriceInput.trim() && maxPriceInput.trim()
+    ? `₹${minPriceInput} – ₹${maxPriceInput}`
+    : minPriceInput.trim()
+      ? `From ₹${minPriceInput}`
+      : maxPriceInput.trim()
+        ? `Up to ₹${maxPriceInput}`
+        : "Any price";
 
   const getColsClass = () => {
     if (viewMode === "list") return "grid-cols-1";
@@ -302,7 +364,7 @@ function ProductsContent() {
   };
 
   const SidebarContent = () => (
-    <div className="space-y-6">
+    <div className="w-full min-w-0 space-y-6">
       {/* Category Filter */}
       <FilterSection
         title="Filter By Categories"
@@ -333,7 +395,7 @@ function ProductsContent() {
         isOpen={!!openSections.price}
         onToggle={() => setOpenSections((p) => ({ ...p, price: !p.price }))}
       >
-        <div className="space-y-4 pt-1">
+        <div className="w-full min-w-0 space-y-4 pt-1">
           {/* Dropdown Box for Pre-defined Price Ranges */}
           <div>
             <label className="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5 font-semibold">
@@ -344,26 +406,28 @@ function ProductsContent() {
               onChange={(e) => {
                 const val = e.target.value;
                 setSelectedPredefinedRange(val);
-                let min = 10;
-                let max = 10000;
-                if (val === "under499") { min = 10; max = 499; }
+                let min = PRICE_MIN;
+                let max = PRICE_MAX;
+                if (val === "under499") { min = PRICE_MIN; max = 499; }
                 else if (val === "500-999") { min = 500; max = 999; }
                 else if (val === "1000-2499") { min = 1000; max = 2499; }
                 else if (val === "2500-4999") { min = 2500; max = 4999; }
                 else if (val === "5000-10000") { min = 5000; max = 10000; }
-                else if (val === "all") { min = 10; max = 10000; }
+                else if (val === "all") { min = PRICE_MIN; max = PRICE_MAX; }
 
                 if (val !== "custom") {
                   setPriceRange({ min, max });
+                  setMinPriceInput(min === PRICE_MIN ? "" : String(min));
+                  setMaxPriceInput(val === "all" ? "" : String(max));
                   handleMultipleFiltersChange({
-                    minPrice: String(min),
-                    maxPrice: String(max),
+                    minPrice: min === PRICE_MIN ? "" : String(min),
+                    maxPrice: val === "all" ? "" : String(max),
                   });
                 }
               }}
               className="w-full p-2 bg-white border border-[#E9E2D5] text-xs font-medium text-zinc-800 rounded focus:outline-none focus:border-[#003E29] cursor-pointer shadow-sm"
             >
-              <option value="all">All Prices (₹10 - ₹10,000)</option>
+              <option value="all">All Prices (Any price)</option>
               <option value="under499">Under ₹499</option>
               <option value="500-999">₹500 - ₹999</option>
               <option value="1000-2499">₹1,000 - ₹2,499</option>
@@ -373,24 +437,22 @@ function ProductsContent() {
             </select>
           </div>
 
-          {/* Min & Max Range Sliders (10 to 10000) */}
-          <div className="space-y-3">
+          {/* Independent Min and Max sliders */}
+          <div className="w-full min-w-0 space-y-3">
             <div>
               <div className="flex justify-between text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mb-1">
-                <span>Min Price: ₹{priceRange.min}</span>
+                <span>Min Price: {minPriceInput.trim() ? `₹${minPriceInput}` : "Any"}</span>
               </div>
               <input
                 type="range"
-                min="10"
-                max="10000"
-                step="10"
+                min={PRICE_MIN}
+                max={priceRange.max}
+                step="50"
                 value={priceRange.min}
                 onChange={(e) => {
-                  const newMin = parseInt(e.target.value) || 10;
-                  setPriceRange((prev) => ({
-                    min: newMin,
-                    max: prev.max < newMin ? newMin : prev.max,
-                  }));
+                  const newMin = Number.parseInt(e.target.value, 10);
+                  setPriceRange((prev) => ({ ...prev, min: newMin }));
+                  setMinPriceInput(newMin === PRICE_MIN ? "" : String(newMin));
                   setSelectedPredefinedRange("custom");
                 }}
                 className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-1.5 rounded-lg transition-all"
@@ -398,21 +460,19 @@ function ProductsContent() {
             </div>
             <div>
               <div className="flex justify-between text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mb-1">
-                <span>Max Price: ₹{priceRange.max}</span>
+                <span>Max Price: {maxPriceInput.trim() ? `₹${maxPriceInput}` : "Any"}</span>
                 <span>Max: ₹10,000</span>
               </div>
               <input
                 type="range"
-                min="10"
-                max="10000"
-                step="10"
+                min={priceRange.min}
+                max={PRICE_MAX}
+                step="50"
                 value={priceRange.max}
                 onChange={(e) => {
-                  const newMax = parseInt(e.target.value) || 10000;
-                  setPriceRange((prev) => ({
-                    min: prev.min > newMax ? 10 : prev.min,
-                    max: newMax,
-                  }));
+                  const newMax = Number.parseInt(e.target.value, 10);
+                  setPriceRange((prev) => ({ ...prev, max: newMax }));
+                  setMaxPriceInput(newMax === PRICE_MAX ? "" : String(newMax));
                   setSelectedPredefinedRange("custom");
                 }}
                 className="w-full accent-[#003E29] cursor-pointer bg-zinc-200 h-1.5 rounded-lg transition-all"
@@ -421,65 +481,55 @@ function ProductsContent() {
           </div>
 
           {/* Direct Min & Max Inputs */}
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
+          <div className="box-border flex w-full min-w-0 items-end gap-2">
+            <div className="min-w-0 flex-1">
               <span className="text-[9px] uppercase tracking-wider text-zinc-400 block mb-0.5 font-semibold">Min ₹</span>
               <input
-                type="number"
-                min="10"
-                max="10000"
-                value={priceRange.min}
-                onChange={(e) => {
-                  const val = Math.max(10, Math.min(10000, parseInt(e.target.value) || 10));
-                  setPriceRange((prev) => ({
-                    min: val,
-                    max: prev.max < val ? val : prev.max,
-                  }));
-                  setSelectedPredefinedRange("custom");
-                }}
-                className="w-full px-2.5 py-1.5 border border-[#E9E2D5] rounded text-xs text-zinc-800 bg-white font-medium focus:outline-none focus:border-[#003E29]"
+                type="text"
+                inputMode="numeric"
+                placeholder="Min"
+                value={minPriceInput}
+                onChange={(e) => handlePriceInputChange("min", e.target.value)}
+                onBlur={() => handlePriceInputBlur("min")}
+                onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+                className="box-border w-full min-w-0 px-2.5 py-2 border border-[#E9E2D5] rounded text-base text-zinc-800 bg-white font-medium focus:outline-none focus:border-[#003E29]"
               />
             </div>
-            <span className="text-zinc-400 text-xs mt-3">—</span>
-            <div className="flex-1">
+            <span className="shrink-0 text-zinc-400 text-xs">—</span>
+            <div className="min-w-0 flex-1">
               <span className="text-[9px] uppercase tracking-wider text-zinc-400 block mb-0.5 font-semibold">Max ₹</span>
               <input
-                type="number"
-                min="10"
-                max="10000"
-                value={priceRange.max}
-                onChange={(e) => {
-                  const val = Math.max(10, Math.min(10000, parseInt(e.target.value) || 10000));
-                  setPriceRange((prev) => ({
-                    min: prev.min > val ? 10 : prev.min,
-                    max: val,
-                  }));
-                  setSelectedPredefinedRange("custom");
-                }}
-                className="w-full px-2.5 py-1.5 border border-[#E9E2D5] rounded text-xs text-zinc-800 bg-white font-medium focus:outline-none focus:border-[#003E29]"
+                type="text"
+                inputMode="numeric"
+                placeholder="Max"
+                value={maxPriceInput}
+                onChange={(e) => handlePriceInputChange("max", e.target.value)}
+                onBlur={() => handlePriceInputBlur("max")}
+                onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+                className="box-border w-full min-w-0 px-2.5 py-2 border border-[#E9E2D5] rounded text-base text-zinc-800 bg-white font-medium focus:outline-none focus:border-[#003E29]"
               />
             </div>
           </div>
 
           {/* Filter Action Button */}
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-semibold text-[#003E29]">
-              Price: ₹{Math.min(priceRange.min, priceRange.max)} — ₹{Math.max(priceRange.min, priceRange.max)}
+          <div className="flex w-full min-w-0 flex-col gap-2 pt-1">
+            <span className="min-w-0 break-words text-xs font-semibold text-[#003E29]">
+              {priceLabel}
             </span>
-            <button
-              onClick={() => {
-                const finalMin = Math.min(priceRange.min, priceRange.max);
-                const finalMax = Math.max(priceRange.min, priceRange.max);
-                setPriceRange({ min: finalMin, max: finalMax });
-                handleMultipleFiltersChange({
-                  minPrice: String(finalMin),
-                  maxPrice: String(finalMax),
-                });
-              }}
-              className="px-4 py-1.5 bg-[#003E29] text-white text-[10px] tracking-widest uppercase hover:bg-[#002e1f] transition-colors rounded shadow-sm font-semibold"
-            >
-              Filter
-            </button>
+            <div className="flex w-full min-w-0 gap-2">
+              <button
+                onClick={applyPriceRange}
+                className="box-border min-w-0 flex-1 px-4 py-2 bg-[#003E29] text-white text-[10px] tracking-widest uppercase hover:bg-[#002e1f] transition-colors rounded shadow-sm font-semibold"
+              >
+                Filter
+              </button>
+              <button
+                onClick={clearPriceRange}
+                className="box-border min-w-0 flex-1 px-4 py-2 border border-[#E9E2D5] bg-white text-zinc-600 text-[10px] tracking-widest uppercase hover:border-[#B08D57] transition-colors rounded shadow-sm font-semibold"
+              >
+                Clear
+              </button>
+            </div>
           </div>
         </div>
       </FilterSection>
@@ -579,7 +629,7 @@ function ProductsContent() {
             <span>{mobileFilterOpen ? "▲ Hide" : "▼ Show Filters"}</span>
           </button>
           {mobileFilterOpen && (
-            <div className="mt-3 p-4 bg-white border border-[#E9E2D5] rounded-xl shadow-md space-y-4">
+            <div className="mt-3 box-border w-full min-w-0 overflow-x-hidden p-4 pb-36 bg-white border border-[#E9E2D5] rounded-xl shadow-md space-y-4">
               {SidebarContent()}
             </div>
           )}
