@@ -608,7 +608,7 @@ function ProductsContent() {
     <div className="min-h-screen font-sans" style={{ background: "#FDFBF7" }}>
 
       {/* ── Header Breadcrumb & Title ── */}
-      <div className="relative w-full h-[160px] sm:h-[200px] border-b flex items-center justify-center overflow-hidden mb-6 sm:mb-10" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+      <div className="relative w-full h-[180px] sm:h-[300px] border-b flex items-center justify-center overflow-hidden mb-6 sm:mb-10" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
         <div className="text-center relative z-10">
           <div className="text-[9px] uppercase tracking-[0.35em] flex items-center justify-center gap-2 mb-3" style={{ color: "#B08D57" }}>
             <Link href="/" className="hover:text-[#003E29] transition-colors">Home</Link>
@@ -623,7 +623,7 @@ function ProductsContent() {
             src="/shop-header.jpg"
             alt="Jewelry Backdrop"
             fill
-            className="object-cover object-[center_25%]"
+            className="object-cover object-[center_6%]"
           />
         </div>
       </div>
@@ -665,12 +665,12 @@ function ProductsContent() {
                   For the terms of the campaign, check our details page. Handcrafted adornments delivered to your doorstep.
                 </p>
               </div>
-              <div className="relative w-full md:w-[35%] min-h-[160px] md:min-h-full">
+              <div className="relative w-full md:w-[35%] min-h-[320px] md:min-h-[440px]">
                 <Image
                   src="/shop-banner.jpg"
                   alt="Exclusive Campaign Model"
                   fill
-                  className="object-cover object-[center_30%]"
+                  className="object-cover object-[center_10%]"
                 />
               </div>
             </div>
