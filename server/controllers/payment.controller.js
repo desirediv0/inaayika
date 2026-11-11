@@ -314,6 +314,9 @@ export const checkout = asyncHandler(async (req, res) => {
       // Server-calculated discount, never the client-supplied number
       notes.discountAmount = verifiedDiscount;
     }
+    // Lets the server finish the order from the Razorpay webhook if the browser never reports back
+    notes.userId = userId;
+    notes.shippingAddressId = shippingAddressId;
     // Store payment gateway info in notes
     notes.paymentGateway = paymentConfig.paymentSettings.gateway;
     notes.paymentMode = paymentConfig.paymentSettings.mode;
@@ -2153,3 +2156,103 @@ function mapRazorpayMethod(method) {
 
   return methodMap[method] || "OTHER";
 }
+
+/* ─────────────────────────────────────────
+   Recovery: create the order for a payment that Razorpay captured but the browser never confirmed
+   (network drop / timeout on /payment/verify). Safe to call repeatedly: an existing payment is returned as-is.
+───────────────────────────────────────── */
+export const recoverPaidOrder = async (razorpayPaymentId, overrides = {}) => {
+  const existing = await prisma.razorpayPayment.findUnique({
+    where: { razorpayPaymentId },
+    include: { order: { select: { id: true, orderNumber: true } } },
+  });
+  if (existing) return { alreadyExists: true, order: existing.order };
+
+  const config = await getPaymentGatewayConfig(null, "RAZORPAY");
+  const payment = await config.razorpayInstance.payments.fetch(razorpayPaymentId);
+  if (payment.status !== "captured") {
+    throw new Error(`Payment ${razorpayPaymentId} is "${payment.status}", not captured`);
+  }
+  const rzOrder = await config.razorpayInstance.orders.fetch(payment.order_id);
+  const notes = rzOrder.notes || {};
+
+  let userId = overrides.userId || notes.userId;
+  if (!userId) {
+    // Older payments carry no user in notes: match by the customer's email / phone from Razorpay
+    const phone10 = String(payment.contact || "").replace(/D/g, "").slice(-10);
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          ...(payment.email ? [{ email: { equals: payment.email, mode: "insensitive" } }] : []),
+          ...(phone10 ? [{ phone: { endsWith: phone10 } }] : []),
+        ],
+      },
+    });
+    userId = user?.id;
+  }
+  if (!userId) throw new Error("Could not identify the customer for this payment; pass userId explicitly");
+
+  let shippingAddressId = overrides.shippingAddressId || notes.shippingAddressId;
+  if (!shippingAddressId) {
+    const addr = await prisma.address.findFirst({
+      where: { userId },
+      orderBy: [{ isDefault: "desc" }],
+    });
+    shippingAddressId = addr?.id;
+  }
+  if (!shippingAddressId) throw new Error("Customer has no address on file");
+
+  const signature = crypto
+    .createHmac("sha256", config.paymentSettings.razorpayKeySecret)
+    .update(`${payment.order_id}|${razorpayPaymentId}`)
+    .digest("hex");
+
+  const req = {
+    user: { id: userId },
+    body: {
+      razorpay_order_id: payment.order_id,
+      razorpay_payment_id: razorpayPaymentId,
+      razorpay_signature: signature,
+      shippingAddressId,
+      billingAddressSameAsShipping: true,
+    },
+  };
+  const out = { code: 200, body: null, error: null };
+  const res = {
+    status(c) { out.code = c; return this; },
+    json(b) { out.body = b; return this; },
+  };
+  await paymentVerification(req, res, (err) => { out.error = err; });
+  if (out.error) throw out.error;
+  return { alreadyExists: false, order: out.body?.data };
+};
+
+// Razorpay webhook (public). Razorpay's body is only used as a trigger; the payment itself is fetched
+// from Razorpay with our own keys, so a forged request cannot create an order.
+export const razorpayWebhook = asyncHandler(async (req, res) => {
+  const event = req.body?.event;
+  const paymentId =
+    req.body?.payload?.payment?.entity?.id ||
+    req.body?.payload?.order?.entity?.payments?.[0]?.id;
+
+  if (!["payment.captured", "order.paid"].includes(event) || !paymentId) {
+    return res.status(200).json({ status: "ignored" });
+  }
+
+  // Give the normal browser flow a head start so we don't race it
+  await new Promise((r) => setTimeout(r, 20000));
+
+  try {
+    const result = await recoverPaidOrder(paymentId);
+    if (!result.alreadyExists) console.log("Webhook created missing order for payment", paymentId);
+  } catch (err) {
+    console.error("Webhook order recovery failed:", paymentId, err.message);
+    notifyPaymentOrderFailure({
+      userId: null,
+      razorpayOrderId: req.body?.payload?.payment?.entity?.order_id,
+      razorpayPaymentId: paymentId,
+      reason: `Webhook recovery failed: ${err.message}`,
+    });
+  }
+  return res.status(200).json({ status: "ok" });
+});

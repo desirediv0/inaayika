@@ -20,6 +20,9 @@ router.get("/settings", getPaymentSettings);
 // PhonePe callback (public route - called by PhonePe)
 router.post("/phonepe-callback", phonePeCallback);
 
+// Razorpay webhook (public - called by Razorpay)
+router.post("/razorpay-webhook", razorpayWebhook);
+
 // All other payment routes require authentication
 router.use(verifyJWTToken);
 
