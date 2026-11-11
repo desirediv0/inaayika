@@ -4,6 +4,10 @@ import { useState, useEffect, useRef } from "react";
 
 // Real stock of one variant (size x colour). No made-up fallback numbers.
 const getVariantStock = (v) => Number(v?.stock ?? v?.quantity ?? 0) || 0;
+const getVariantLabel = (variant) =>
+  variant?.attributes?.map((attribute) => `${attribute.attribute}: ${attribute.value}`).join(" / ") ||
+  variant?.sku ||
+  "Default";
 import Link from "next/link";
 import Image from "next/image";
 import { fetchApi, formatCurrency } from "@/lib/utils";
@@ -58,6 +62,7 @@ export default function ProductContent({ slug }) {
 
   // Frequently Bought Together (Bundle) State
   const [bundleSelected, setBundleSelected] = useState({});
+  const [bundleVariantIds, setBundleVariantIds] = useState({});
   const [isAddingBundle, setIsAddingBundle] = useState(false);
 
   const { isAuthenticated } = useAuth();
@@ -71,7 +76,7 @@ export default function ProductContent({ slug }) {
   // How many of a variant are already in the cart (server cart items and guest items)
   const getInCart = (variantId) =>
     (cart?.items || [])
-      .filter((i) => (i.variant?.id || i.productVariantId) === variantId)
+      .filter((i) => String(i.variant?.id || i.productVariantId) === String(variantId))
       .reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
 
   /* ── Slab pricing ── */
@@ -94,42 +99,64 @@ export default function ProductContent({ slug }) {
     return { price, originalPrice, source: "DEFAULT", slab: null };
   };
 
+  useEffect(() => {
+    if (!selectedVariant) return;
+    const remaining = Math.max(
+      0,
+      getVariantStock(selectedVariant) - getInCart(selectedVariant.id)
+    );
+    if (remaining > 0 && quantity > remaining) {
+      setQuantity(remaining);
+      setEffectivePriceInfo(getEffectivePrice(selectedVariant, remaining));
+    }
+    // Cart-item helpers are intentionally read for the current variant/cart snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart?.items, quantity, selectedVariant?.id]);
+
   /* ── Fetch product ── */
   useEffect(() => {
     if (!slug) return;
     setLoading(true); setInitialLoading(true);
+    setSelectedAttributes({});
+    setSelectedVariant(null);
+    setQuantity(1);
+    setEffectivePriceInfo(null);
     fetchApi(`/public/products/${slug}`)
       .then((res) => {
         const pd = res.data.product;
         setProduct(pd);
         setRelatedProducts(res.data.relatedProducts || []);
         if (pd.images?.length) setMainImage(pd.images[0]);
-        if (pd.variants?.length) {
-          const combos = pd.variants
-            .filter((v) => v.isActive)
-            .map((v) => ({ attributeValueIds: v.attributes?.map((a) => a.attributeValueId) || [], variant: v }));
-          setAvailableCombinations(combos);
+        const activeVariants = (pd.variants || []).filter((variant) => variant.isActive !== false);
+        const combos = activeVariants.map((variant) => ({
+          attributeValueIds: variant.attributes?.map((attribute) => attribute.attributeValueId) || [],
+          variant,
+        }));
+        setAvailableCombinations(combos);
+        const firstVariant = activeVariants.find((variant) => getVariantStock(variant) > 0) || null;
+        if (firstVariant) {
           if (pd.attributeOptions?.length) {
-            // Start from a real variant so the visible selection is always a valid combination.
             const defaults = {};
-            const firstVariant =
-              combos.find((c) => getVariantStock(c.variant) > 0)?.variant || combos[0]?.variant;
             firstVariant?.attributes?.forEach((a) => {
               defaults[a.attributeId] = a.attributeValueId;
             });
             setSelectedAttributes(defaults);
-            const v = firstVariant || pd.variants[0];
+            const v = firstVariant;
             setSelectedVariant(v);
             const moq = v.moq || 1;
             setQuantity(moq);
             setEffectivePriceInfo(getEffectivePrice(v, moq));
           } else {
-            const v = pd.variants[0];
+            const v = firstVariant;
             setSelectedVariant(v);
             const moq = v.moq || 1;
             setQuantity(moq);
             setEffectivePriceInfo(getEffectivePrice(v, moq));
           }
+        } else {
+          setSelectedVariant(null);
+          setSelectedAttributes({});
+          setQuantity(1);
         }
       })
       .catch((err) => { console.error(err); setError(err.message); })
@@ -179,12 +206,29 @@ export default function ProductContent({ slug }) {
     if (product) {
       const initial = { [product.id]: true };
       relatedProducts.slice(0, 3).forEach((p) => {
-        // Items with no stock start unchecked
-        initial[p.id] = (p.variants || []).some((v) => getVariantStock(v) > 0);
+        initial[p.id] = (p.variants || []).some(
+          (variant) => variant.isActive !== false && getVariantStock(variant) > 0
+        );
       });
       setBundleSelected(initial);
     }
   }, [product, relatedProducts]);
+
+  useEffect(() => {
+    setBundleVariantIds((current) => {
+      const next = {};
+      relatedProducts.slice(0, 3).forEach((relatedProduct) => {
+        const variants = (relatedProduct.variants || []).filter(
+          (variant) => variant.isActive !== false
+        );
+        const selected = variants.find((variant) => variant.id === current[relatedProduct.id]);
+        const available = selected ||
+          variants.find((variant) => getVariantStock(variant) > 0);
+        if (available) next[relatedProduct.id] = available.id;
+      });
+      return next;
+    });
+  }, [relatedProducts]);
 
   /* ── Attribute select ── */
   const findMatchingVariant = (selection) => {
@@ -209,12 +253,17 @@ export default function ProductContent({ slug }) {
 
   const handleAttributeChange = (attrId, valueId) => {
     const next = { ...selectedAttributes, [attrId]: valueId };
-    // Prefer an exact combination. If this choice requires another attribute to
-    // change too (for example, a polish has different colors), select the first
-    // valid variant containing this value and sync all selectors to it.
-    const match = findMatchingVariant(next) || availableCombinations.find((c) =>
-      c.variant.attributes?.some((a) => a.attributeId === attrId && a.attributeValueId === valueId)
-    )?.variant;
+    const match = findMatchingVariant(next) ||
+      availableCombinations.find((combination) =>
+        combination.variant.attributes?.some(
+          (attribute) => attribute.attributeId === attrId && attribute.attributeValueId === valueId
+        ) && getVariantStock(combination.variant) > 0
+      )?.variant ||
+      availableCombinations.find((combination) =>
+        combination.variant.attributes?.some(
+          (attribute) => attribute.attributeId === attrId && attribute.attributeValueId === valueId
+        )
+      )?.variant;
     if (match) {
       const matchedAttributes = {};
       match.attributes?.forEach((a) => {
@@ -223,15 +272,17 @@ export default function ProductContent({ slug }) {
       setSelectedAttributes(matchedAttributes);
       setSelectedVariant(match);
       const moq = match.moq || 1;
-      const qty = quantity < moq ? moq : quantity;
-      if (quantity < moq) setQuantity(qty);
+      const remaining = Math.max(0, getVariantStock(match) - getInCart(match.id));
+      const minimumAdd = Math.max(1, moq - getInCart(match.id));
+      const qty = remaining > 0
+        ? Math.min(Math.max(quantity, minimumAdd), remaining)
+        : minimumAdd;
+      setQuantity(qty);
       setEffectivePriceInfo(getEffectivePrice(match, qty));
     } else {
       setSelectedAttributes(next);
-      const fallbackVariant = product?.variants?.[0] || null;
-      setSelectedVariant(fallbackVariant);
-      if (fallbackVariant) setEffectivePriceInfo(getEffectivePrice(fallbackVariant, quantity));
-      else setEffectivePriceInfo(null);
+      setSelectedVariant(null);
+      setEffectivePriceInfo(null);
     }
   };
 
@@ -246,16 +297,18 @@ export default function ProductContent({ slug }) {
           .map((a) => a.attributeValueId)
       )
     );
-    return available.size ? attr.values.filter((v) => available.has(v.id)) : attr.values;
+    return attr.values.filter((v) => available.has(v.id));
   };
 
   /* ── Quantity ── */
   const handleQuantityChange = (delta) => {
     const moq = selectedVariant?.moq || 1;
     const stock = getVariantStock(selectedVariant);
-    const remaining = Math.max(0, stock - getInCart(selectedVariant?.id));
+    const inCart = getInCart(selectedVariant?.id);
+    const remaining = Math.max(0, stock - inCart);
+    const minimumAdd = Math.max(1, moq - inCart);
     const next = quantity + delta;
-    if (next < moq) return;
+    if (next < minimumAdd) return;
     if (delta > 0 && next > remaining) {
       setStockMsg(
         remaining > 0
@@ -275,8 +328,14 @@ export default function ProductContent({ slug }) {
     const v = selectedVariant;
     if (!v) { setStockMsg("Please select an option"); return; }
     const stock = getVariantStock(v);
-    const remaining = Math.max(0, stock - getInCart(v.id));
+    const inCart = getInCart(v.id);
+    const remaining = Math.max(0, stock - inCart);
+    const minimumAdd = Math.max(1, (v.moq || 1) - inCart);
     if (stock <= 0) { setStockMsg("This option is out of stock"); return; }
+    if (quantity < minimumAdd) {
+      setStockMsg(`Minimum order quantity is ${v.moq || 1} units`);
+      return;
+    }
     if (quantity > remaining) {
       setStockMsg(
         remaining > 0
@@ -295,7 +354,12 @@ export default function ProductContent({ slug }) {
         setCartSuccess(true);
         setTimeout(() => setCartSuccess(false), 3000);
       } else {
-        // Server said no (e.g. stock changed): show it inline, no toast, no scrolling
+        const available = result.error?.data?.errors?.find(
+          (item) => item.code === "INSUFFICIENT_STOCK"
+        )?.available;
+        if (Number.isInteger(available) && available >= 0) {
+          setQuantity(Math.max(1, Math.min(quantity, available)));
+        }
         setStockMsg(result.error?.message || "Could not add to cart");
       }
     } catch (err) { console.error(err); setStockMsg("Could not add to cart"); }
@@ -318,10 +382,11 @@ export default function ProductContent({ slug }) {
       }
       for (const p of relatedProducts.slice(0, 3)) {
         if (bundleSelected[p.id]) {
+          const variant = (p.variants || []).find((item) => item.id === bundleVariantIds[p.id]);
           lines.push({
             name: p.name,
-            variant: (p.variants || []).find((v) => getVariantStock(v) > 0) || null,
-            qty: 1,
+            variant: variant || null,
+            qty: variant?.moq || 1,
           });
         }
       }
@@ -502,6 +567,7 @@ export default function ProductContent({ slug }) {
   const stock = getVariantStock(selectedVariant);
   const inCartQty = getInCart(selectedVariant?.id);
   const remainingStock = Math.max(0, stock - inCartQty);
+  const minimumAddQuantity = Math.max(1, (selectedVariant?.moq || 1) - inCartQty);
   const isValueOutOfStock = (attrId, valueId) => {
     const combos = availableCombinations.filter((c) =>
       (c.variant.attributes || []).some((a) => a.attributeId === attrId && a.attributeValueId === valueId)
@@ -514,17 +580,43 @@ export default function ProductContent({ slug }) {
 
   // Bundle calculations
   const bundleItems = [
-    { id: product.id, name: product.name, price: parseFloat(effectivePriceInfo?.price || selectedVariant?.salePrice || selectedVariant?.price || product.basePrice || product.regularPrice || 0), isMain: true, stock: stock, image: primary?.url },
+    {
+      id: product.id,
+      name: product.name,
+      variant: selectedVariant,
+      variants: selectedVariant ? [selectedVariant] : [],
+      quantity,
+      price: selectedVariant
+        ? parseFloat(effectivePriceInfo?.price || selectedVariant.salePrice || selectedVariant.price || 0)
+        : 0,
+      isMain: true,
+      stock,
+      image: primary?.url,
+    },
     ...relatedProducts.slice(0, 3).map((p) => {
-      const v = (p.variants || []).find((x) => getVariantStock(x) > 0) || p.variants?.[0] || {};
-      const price = v.salePrice || v.price || p.basePrice || p.regularPrice || 0;
-      return { id: p.id, name: p.name, price: parseFloat(price), isMain: false, stock: getVariantStock(v), image: p.image || p.images?.[0]?.url };
+      const variants = (p.variants || []).filter((variant) => variant.isActive !== false);
+      const variant = variants.find((item) => item.id === bundleVariantIds[p.id]) ||
+        variants.find((item) => getVariantStock(item) > 0) ||
+        null;
+      const price = variant
+        ? getEffectivePrice(variant, variant.moq || 1)?.price
+        : p.basePrice || p.regularPrice || 0;
+      return {
+        id: p.id,
+        name: p.name,
+        variant,
+        variants,
+        quantity: variant?.moq || 1,
+        price: parseFloat(price),
+        isMain: false,
+        stock: getVariantStock(variant),
+        image: variant?.images?.[0]?.url || p.image || p.images?.[0]?.url,
+      };
     })
   ];
 
   const bundleTotal = bundleItems.reduce((sum, item) => {
-    const qty = item.isMain ? quantity : 1;
-    return sum + (bundleSelected[item.id] ? (item.price * qty) : 0);
+    return sum + (bundleSelected[item.id] ? (item.price * item.quantity) : 0);
   }, 0);
 
   const shareProduct = (platform) => {
@@ -709,6 +801,16 @@ export default function ProductContent({ slug }) {
               {!outOfStock && inCartQty > 0 && (
                 <span className="text-neutral-500"> &middot; {inCartQty} in your cart</span>
               )}
+              {inCartQty > 0 && (
+                <span className="text-neutral-500">
+                  {" "}&middot; {remainingStock > 0 ? `Only ${remainingStock} more available` : "No more available"}
+                </span>
+              )}
+              {selectedVariant && remainingStock > 0 && remainingStock < minimumAddQuantity && (
+                <p className="mt-1 text-red-600" role="status">
+                  Only {remainingStock} available; this option requires at least {minimumAddQuantity} more.
+                </p>
+              )}
               {stockMsg && <p className="mt-1 text-red-600" role="alert">{stockMsg}</p>}
             </div>
 
@@ -718,7 +820,7 @@ export default function ProductContent({ slug }) {
               <div className="flex items-center border border-neutral-300 rounded-xl overflow-hidden h-12 bg-white">
                 <button
                   onClick={() => handleQuantityChange(-1)}
-                  disabled={quantity <= (selectedVariant?.moq || 1) || isAddingToCart}
+                  disabled={!selectedVariant || quantity <= minimumAddQuantity || isAddingToCart || isAddingBundle}
                   className="w-10 h-full flex items-center justify-center text-neutral-500 hover:bg-neutral-50 disabled:opacity-40"
                 >
                   <Minus className="h-3.5 w-3.5" />
@@ -728,7 +830,7 @@ export default function ProductContent({ slug }) {
                 </span>
                 <button
                   onClick={() => handleQuantityChange(1)}
-                  disabled={quantity >= remainingStock || isAddingToCart}
+                  disabled={!selectedVariant || quantity >= remainingStock || isAddingToCart || isAddingBundle}
                   className="w-10 h-full flex items-center justify-center text-neutral-500 hover:bg-neutral-50 disabled:opacity-40"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -739,7 +841,7 @@ export default function ProductContent({ slug }) {
               <button
                 id="main-add-to-cart-btn"
                 onClick={handleAddToCart}
-                disabled={isAddingToCart || outOfStock || remainingStock <= 0}
+                disabled={isAddingToCart || isAddingBundle || !selectedVariant || outOfStock || quantity > remainingStock || remainingStock < minimumAddQuantity}
                 className="flex-1 h-12 bg-[#003E29] hover:bg-[#002216] text-white text-[11px] uppercase tracking-[0.25em] rounded-none transition-all flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.99]"
               >
                 {isAddingToCart ? (
@@ -859,6 +961,30 @@ export default function ProductContent({ slug }) {
                       <p className={`text-[10px] font-semibold mt-0.5 ${item.stock > 0 ? "text-green-600" : "text-red-600"}`}>
                         {item.stock > 0 ? `${item.stock} in stock` : "Out of stock"}
                       </p>
+                      {!item.isMain && item.variants.length > 1 && (
+                        <select
+                          aria-label={`Choose ${item.name} variant`}
+                          value={item.variant?.id || ""}
+                          disabled={isAddingBundle}
+                          onChange={(event) => {
+                            setBundleVariantIds((current) => ({
+                              ...current,
+                              [item.id]: event.target.value,
+                            }));
+                            setBundleMsg("");
+                          }}
+                          className="mt-1 max-w-full rounded border border-neutral-200 bg-white px-2 py-1 text-[10px]"
+                        >
+                          {item.variants.map((variant) => {
+                            const available = getVariantStock(variant);
+                            return (
+                              <option key={variant.id} value={variant.id} disabled={available <= 0}>
+                                {getVariantLabel(variant)}{available <= 0 ? " (Out of stock)" : ""}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      )}
                     </div>
 
                     <div className="text-xs   text-neutral-900">
@@ -881,7 +1007,7 @@ export default function ProductContent({ slug }) {
 
                 <button
                   onClick={handleAddBundleToCart}
-                  disabled={isAddingBundle || !Object.values(bundleSelected).some(Boolean)}
+                  disabled={isAddingBundle || isAddingToCart || !Object.values(bundleSelected).some(Boolean)}
                   className="w-full h-11 bg-[#003E29] hover:bg-[#002e1f] text-white text-xs   uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   {isAddingBundle ? "Adding Bundle..." : "Add All to Cart"}
@@ -1038,17 +1164,25 @@ export default function ProductContent({ slug }) {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center border border-neutral-300 rounded-lg overflow-hidden h-9 bg-white">
-                <button onClick={() => handleQuantityChange(-1)} className="px-2.5 h-full hover:bg-neutral-50 disabled:opacity-40">
+                <button
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={!selectedVariant || quantity <= minimumAddQuantity || isAddingToCart || isAddingBundle}
+                  className="px-2.5 h-full hover:bg-neutral-50 disabled:opacity-40"
+                >
                   <Minus className="h-3 w-3" />
                 </button>
                 <span className="px-2.5   text-xs text-neutral-900">{quantity}</span>
-                <button onClick={() => handleQuantityChange(1)} className="px-2.5 h-full hover:bg-neutral-50 disabled:opacity-40">
+                <button
+                  onClick={() => handleQuantityChange(1)}
+                  disabled={!selectedVariant || quantity >= remainingStock || isAddingToCart || isAddingBundle}
+                  className="px-2.5 h-full hover:bg-neutral-50 disabled:opacity-40"
+                >
                   <Plus className="h-3 w-3" />
                 </button>
               </div>
               <button
                 onClick={handleAddToCart}
-                disabled={isAddingToCart || outOfStock || remainingStock <= 0}
+                disabled={isAddingToCart || isAddingBundle || !selectedVariant || outOfStock || quantity > remainingStock || remainingStock < minimumAddQuantity}
                 className="px-6 h-9 bg-[#003E29] hover:bg-[#002216] text-white text-[10px] uppercase tracking-[0.25em] rounded-none transition-colors flex items-center justify-center"
               >
                 {isAddingToCart ? "Adding..." : "Add to Cart"}

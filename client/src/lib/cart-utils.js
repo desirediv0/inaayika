@@ -81,12 +81,12 @@ export const useAddVariantToCart = () => {
     ) => {
         try {
             if (!selectedVariant) {
-                toast.error("Please select a product variant");
+                if (!options.silent) toast.error("Please select a product variant");
                 return { success: false, error: "No variant selected" };
             }
 
             await addToCart(selectedVariant.id, quantity, { silent: true });
-            toast.success(`${productName} added to cart`);
+            if (!options.silent) toast.success(`${productName} added to cart`);
             return { success: true };
         } catch (error) {
             console.error("Error adding variant to cart:", error);

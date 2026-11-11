@@ -296,6 +296,11 @@ export const addToCart = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Quantity must be at least 1", [{ code: "INVALID_QUANTITY" }]);
   }
 
+  let cartItem;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      cartItem = await prisma.$transaction(
+        async (prisma) => {
   // Check if product variant exists and is active
   const productVariant = await prisma.productVariant.findFirst({
     where: {
@@ -318,14 +323,6 @@ export const addToCart = asyncHandler(async (req, res) => {
   if (productVariant.quantity <= 0) {
     throw new ApiError(400, "This item is out of stock", [{ code: "OUT_OF_STOCK", available: 0 }]);
   }
-  if (productVariant.quantity < requestedQty) {
-    throw new ApiError(
-      400,
-      `Only ${productVariant.quantity} available`,
-      [{ code: "INSUFFICIENT_STOCK", available: productVariant.quantity }]
-    );
-  }
-
   // Check MOQ (Minimum Order Quantity)
   let effectiveMOQ = 1;
 
@@ -365,11 +362,6 @@ export const addToCart = asyncHandler(async (req, res) => {
         effectiveMOQ = globalMOQ.minQuantity;
       }
     }
-  }
-
-  // Validate quantity meets MOQ
-  if (quantity < effectiveMOQ) {
-    throw new ApiError(400, `Minimum order quantity is ${effectiveMOQ} units`);
   }
 
   // Check if item already exists in cart
@@ -478,6 +470,17 @@ export const addToCart = asyncHandler(async (req, res) => {
       },
     });
   } else {
+    if (requestedQty > productVariant.quantity) {
+      throw new ApiError(400, `Only ${productVariant.quantity} available`, [
+        { code: "INSUFFICIENT_STOCK", available: productVariant.quantity, inCart: 0 },
+      ]);
+    }
+    if (requestedQty < effectiveMOQ) {
+      throw new ApiError(400, `Minimum order quantity is ${effectiveMOQ} units`, [
+        { code: "MINIMUM_QUANTITY", minimum: effectiveMOQ },
+      ]);
+    }
+
     // Create new cart item
     cartItem = await prisma.cartItem.create({
       data: {
@@ -509,6 +512,23 @@ export const addToCart = asyncHandler(async (req, res) => {
     });
   }
 
+  return cartItem;
+        },
+        { isolationLevel: "Serializable" }
+      );
+    } catch (error) {
+      const retryable = error?.code === "P2034" || error?.code === "P2002";
+      if (!retryable || attempt === 2) {
+        if (retryable) {
+          throw new ApiError(409, "Your cart changed, please try again", [
+            { code: "CART_CONFLICT" },
+          ]);
+        }
+        throw error;
+      }
+    }
+  }
+
   return res
     .status(200)
     .json(new ApiResponsive(200, cartItem, "Item added to cart successfully"));
@@ -520,8 +540,8 @@ export const updateCartItem = asyncHandler(async (req, res) => {
   const { cartItemId } = req.params;
   const { quantity } = req.body;
 
-  if (!quantity || quantity < 1) {
-    throw new ApiError(400, "Quantity must be at least 1");
+  if (!Number.isInteger(Number(quantity)) || Number(quantity) < 1) {
+    throw new ApiError(400, "Quantity must be at least 1", [{ code: "INVALID_QUANTITY" }]);
   }
 
   // Check if cart item exists and belongs to user
@@ -540,8 +560,13 @@ export const updateCartItem = asyncHandler(async (req, res) => {
   }
 
   // Check stock availability
-  if (existingCartItem.productVariant.quantity < quantity) {
-    throw new ApiError(400, "Not enough stock available");
+  if (existingCartItem.productVariant.quantity < Number(quantity)) {
+    throw new ApiError(400, `Only ${existingCartItem.productVariant.quantity} available`, [
+      {
+        code: "INSUFFICIENT_STOCK",
+        available: existingCartItem.productVariant.quantity,
+      },
+    ]);
   }
 
   // Check MOQ (Minimum Order Quantity)
