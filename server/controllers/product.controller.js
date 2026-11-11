@@ -665,7 +665,6 @@ export const getProductBySlug = asyncHandler(async (req, res) => {
         variants: {
           where: { isActive: true },
           orderBy: { price: "asc" },
-          take: 1,
           include: {
             attributes: {
               include: {

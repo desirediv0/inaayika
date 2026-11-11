@@ -9,7 +9,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { fetchApi, cn, sortCategories } from "@/lib/utils";
 import { ClientOnly } from "@/components/client-only";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import {
   FiShoppingCart, FiUser, FiMenu, FiX, FiSearch,
   FiHeart, FiChevronDown, FiChevronRight, FiPackage,
@@ -224,8 +224,6 @@ export function Navbar() {
             : "bg-[#FDFBF7]"
         )}
       >
-        <Toaster position="top-center" richColors />
-
         {/* ── Gold reading-progress hairline ── */}
         <div className="absolute top-0 left-0 right-0 h-[2px] z-[60] pointer-events-none" aria-hidden="true">
           <div

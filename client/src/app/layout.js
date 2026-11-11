@@ -6,6 +6,7 @@ import { CartProvider } from "@/lib/cart-context";
 import { AuthProvider } from "@/lib/auth-context";
 import { FloatingWhatsApp } from "@/components/ui/FloatingWhatsApp";
 import { FloatingBookCall } from "@/components/ui/FloatingBookCall";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata = {
   title: "Inaayika | Handcrafted Premium Jewellery",
@@ -35,6 +36,7 @@ export default function RootLayout({ children }) {
             <Footer />
             <FloatingWhatsApp />
             <FloatingBookCall />
+            <Toaster position="top-center" richColors />
           </CartProvider>
         </AuthProvider>
       </body>

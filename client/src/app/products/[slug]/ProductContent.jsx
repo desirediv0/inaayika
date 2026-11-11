@@ -242,13 +242,7 @@ export default function ProductContent({ slug }) {
 
     if (exactMatch) return exactMatch.variant;
 
-    return availableCombinations.find((c) => {
-      const variantValues = c.variant.attributes || [];
-      return Object.entries(selection).every(([attrId, valueId]) => {
-        if (!valueId) return true;
-        return variantValues.some((a) => a.attributeId === attrId && a.attributeValueId === valueId);
-      });
-    })?.variant || null;
+    return null;
   };
 
   const handleAttributeChange = (attrId, valueId) => {
@@ -764,7 +758,15 @@ export default function ProductContent({ slug }) {
                   <div className="flex flex-wrap gap-2">
                     {values.map((v) => {
                       const active = selId === v.id;
-                      const soldOut = isValueOutOfStock(attr.id, v.id);
+                      const nextSelection = { ...selectedAttributes, [attr.id]: v.id };
+                      const nextIds = Object.values(nextSelection).filter(Boolean).sort();
+                      const exactVariant = availableCombinations.find((combination) => {
+                        const combinationIds = [...combination.attributeValueIds].sort();
+                        return combinationIds.length === nextIds.length &&
+                          combinationIds.every((id, index) => id === nextIds[index]);
+                      })?.variant;
+                      const soldOut = isValueOutOfStock(attr.id, v.id) ||
+                        (exactVariant && getVariantStock(exactVariant) <= 0);
                       return (
                         <button
                           key={v.id}
