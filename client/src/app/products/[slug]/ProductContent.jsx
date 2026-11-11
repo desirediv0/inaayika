@@ -935,7 +935,7 @@ export default function ProductContent({ slug }) {
 
               {/* Bundle checklist */}
               <div className="lg:col-span-8 space-y-4">
-                {bundleItems.map((item, idx) => (
+                {bundleItems.map((item) => (
                   <div key={item.id} className="flex items-center gap-4 py-2 border-b border-neutral-100 last:border-0">
                     <input
                       type="checkbox"
