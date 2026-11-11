@@ -108,3 +108,37 @@ export const notifyStoreOfNewOrder = async (orderId) => {
     console.error("New-order alert error:", err?.message || err);
   }
 };
+
+/**
+ * Money was captured by Razorpay but the order could not be created. The owner must hear about this
+ * immediately so the customer can be helped or refunded. Never throws.
+ */
+export const notifyPaymentOrderFailure = async ({ userId, razorpayOrderId, razorpayPaymentId, reason }) => {
+  try {
+    const recipients = getRecipients();
+    if (!recipients.length) return;
+    let customer = "";
+    if (userId) {
+      const u = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true, phone: true },
+      });
+      if (u) customer = `${esc(u.name || "")} &middot; ${esc(u.email || "")} &middot; ${esc(u.phone || "")}`;
+    }
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222">
+        <h2 style="color:#b91c1c">Payment received but ORDER NOT CREATED</h2>
+        <p>A customer paid, but the order failed to save. Please contact them or refund from the Razorpay dashboard.</p>
+        <p><b>Reason:</b> ${esc(reason)}</p>
+        <p><b>Razorpay payment:</b> ${esc(razorpayPaymentId)}<br><b>Razorpay order:</b> ${esc(razorpayOrderId)}</p>
+        <p><b>Customer:</b> ${customer || esc(userId)}</p>
+      </div>`;
+    for (const email of recipients) {
+      await sendEmail({ email, subject: "URGENT: payment taken, order not created", html }).catch((e) =>
+        console.error("Failure alert email failed:", e?.message || e)
+      );
+    }
+  } catch (err) {
+    console.error("Failure alert error:", err?.message || err);
+  }
+};

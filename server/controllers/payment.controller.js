@@ -11,7 +11,7 @@ import { processReferralReward } from "./referral.controller.js";
 import { decrypt } from "../utils/encryption.js";
 import { processOrderForShipping } from "../utils/shiprocket.js";
 import { validateCouponForOrder } from "../utils/couponRules.js";
-import { notifyStoreOfNewOrder } from "../utils/orderNotifications.js";
+import { notifyStoreOfNewOrder, notifyPaymentOrderFailure } from "../utils/orderNotifications.js";
 import { getShippingTotal, MINIMUM_ORDER_VALUE } from "../utils/shipping.js";
 
 // Unit price for a quantity: variant slab > product slab > sale/regular price
@@ -700,21 +700,28 @@ export const paymentVerification = asyncHandler(async (req, res) => {
     // and use the server-calculated discount instead of whatever the client sent
     let appliedCoupon = null;
     if (couponCode || couponId) {
-      const result = await validateCouponForOrder({
-        code: couponCode,
-        couponId,
-        userId,
-        shippingAddress,
-        items: cartItems.map((ci) => ({
-          productId: ci.productVariant.product.id,
-          price: calculateSlabPrice(ci.productVariant, ci.quantity),
-          quantity: ci.quantity,
-        })),
-      });
-      appliedCoupon = result.coupon;
-      couponCode = result.coupon.code;
-      couponId = result.coupon.id;
-      discount = result.discount;
+      try {
+        const result = await validateCouponForOrder({
+          code: couponCode,
+          couponId,
+          userId,
+          shippingAddress,
+          items: cartItems.map((ci) => ({
+            productId: ci.productVariant.product.id,
+            price: calculateSlabPrice(ci.productVariant, ci.quantity),
+            quantity: ci.quantity,
+          })),
+        });
+        appliedCoupon = result.coupon;
+        couponCode = result.coupon.code;
+        couponId = result.coupon.id;
+        discount = result.discount;
+      } catch (couponError) {
+        // The customer has ALREADY paid (the coupon was validated before the payment was created).
+        // Never lose the order over this: keep the discount that was charged.
+        console.error("Coupon re-validation failed after payment, keeping paid discount:", couponError.message);
+        discount = Math.min(parseFloat(discount) || 0, subTotal);
+      }
     } else {
       discount = 0;
     }
@@ -1000,6 +1007,16 @@ export const paymentVerification = asyncHandler(async (req, res) => {
     );
   } catch (error) {
     console.error("Payment Verification Error:", error);
+
+    // Money is taken but no order exists (except the "already processed" 409): tell the owner now
+    if (error.statusCode !== 409) {
+      notifyPaymentOrderFailure({
+        userId,
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+        reason: error.message || "Unknown error",
+      });
+    }
 
     if (error.code === "P2002") {
       const existingPayment = await prisma.razorpayPayment.findUnique({
