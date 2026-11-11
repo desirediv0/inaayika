@@ -620,10 +620,10 @@ function ProductsContent() {
         </div>
         <div className="absolute right-0 top-0 bottom-0 w-[350px] opacity-20 md:opacity-100 pointer-events-none">
           <Image
-            src="/shop-header.png"
+            src="/shop-header.jpg"
             alt="Jewelry Backdrop"
             fill
-            className="object-cover object-left"
+            className="object-cover object-[center_25%]"
           />
         </div>
       </div>
@@ -667,10 +667,10 @@ function ProductsContent() {
               </div>
               <div className="relative w-full md:w-[35%] min-h-[160px] md:min-h-full">
                 <Image
-                  src="/shop-banner.png"
+                  src="/shop-banner.jpg"
                   alt="Exclusive Campaign Model"
                   fill
-                  className="object-cover"
+                  className="object-cover object-[center_30%]"
                 />
               </div>
             </div>

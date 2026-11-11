@@ -202,12 +202,14 @@ export default function CheckoutPage() {
                 });
                 if (response.success) {
                     setPaymentSettings({
-                        cashEnabled: false,
+                        cashEnabled: response.data.cashEnabled ?? false,
                         razorpayEnabled: response.data.razorpayEnabled ?? true,
                         codCharge: response.data.codCharge ?? 0,
                     });
                     if (response.data.razorpayEnabled ?? true) {
                         setPaymentMethod("RAZORPAY");
+                    } else if (response.data.cashEnabled) {
+                        setPaymentMethod("CASH");
                     }
                 }
             } catch (error) {
