@@ -290,9 +290,10 @@ export const addToCart = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Product variant ID is required");
   }
 
-  // Validate quantity
-  if (quantity < 1) {
-    throw new ApiError(400, "Quantity must be at least 1");
+  // Validate quantity (whole number >= 1)
+  const requestedQty = Number(quantity);
+  if (!Number.isInteger(requestedQty) || requestedQty < 1) {
+    throw new ApiError(400, "Quantity must be at least 1", [{ code: "INVALID_QUANTITY" }]);
   }
 
   // Check if product variant exists and is active
@@ -313,9 +314,16 @@ export const addToCart = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Product variant not found or inactive");
   }
 
-  // Check stock availability
-  if (productVariant.quantity < quantity) {
-    throw new ApiError(400, "Not enough stock available");
+  // Check stock availability (stock is per variant = size x colour)
+  if (productVariant.quantity <= 0) {
+    throw new ApiError(400, "This item is out of stock", [{ code: "OUT_OF_STOCK", available: 0 }]);
+  }
+  if (productVariant.quantity < requestedQty) {
+    throw new ApiError(
+      400,
+      `Only ${productVariant.quantity} available`,
+      [{ code: "INSUFFICIENT_STOCK", available: productVariant.quantity }]
+    );
   }
 
   // Check MOQ (Minimum Order Quantity)
@@ -378,11 +386,18 @@ export const addToCart = asyncHandler(async (req, res) => {
 
   if (existingCartItem) {
     // Update quantity if item already exists
-    const newQuantity = existingCartItem.quantity + parseInt(quantity);
+    const newQuantity = existingCartItem.quantity + requestedQty;
 
-    // Recheck stock with new quantity
+    // Recheck stock including what is already in the cart
     if (productVariant.quantity < newQuantity) {
-      throw new ApiError(400, "Not enough stock available");
+      const canAdd = Math.max(0, productVariant.quantity - existingCartItem.quantity);
+      throw new ApiError(
+        400,
+        canAdd > 0
+          ? `Only ${canAdd} more available (you already have ${existingCartItem.quantity} in your cart)`
+          : `You already have all ${productVariant.quantity} available in your cart`,
+        [{ code: "INSUFFICIENT_STOCK", available: canAdd, inCart: existingCartItem.quantity }]
+      );
     }
 
     // Recheck MOQ with new quantity
@@ -426,12 +441,19 @@ export const addToCart = asyncHandler(async (req, res) => {
       throw new ApiError(400, `Minimum order quantity is ${effectiveMOQ} units`);
     }
 
-    cartItem = await prisma.cartItem.update({
+    // Compare-and-set: only update if nobody changed the quantity since we read it (no lost updates
+    // when two requests arrive together)
+    const casResult = await prisma.cartItem.updateMany({
+      where: { id: existingCartItem.id, quantity: existingCartItem.quantity },
+      data: { quantity: newQuantity },
+    });
+    if (casResult.count === 0) {
+      throw new ApiError(409, "Your cart changed, please try again", [{ code: "CART_CONFLICT" }]);
+    }
+
+    cartItem = await prisma.cartItem.findUnique({
       where: {
         id: existingCartItem.id,
-      },
-      data: {
-        quantity: newQuantity,
       },
       include: {
         productVariant: {

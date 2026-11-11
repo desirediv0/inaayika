@@ -76,7 +76,8 @@ export const useAddVariantToCart = () => {
     const addVariantToCart = async (
         selectedVariant,
         quantity = 1,
-        productName = "Product"
+        productName = "Product",
+        options = {}
     ) => {
         try {
             if (!selectedVariant) {
@@ -84,12 +85,12 @@ export const useAddVariantToCart = () => {
                 return { success: false, error: "No variant selected" };
             }
 
-            await addToCart(selectedVariant.id, quantity);
+            await addToCart(selectedVariant.id, quantity, { silent: true });
             toast.success(`${productName} added to cart`);
             return { success: true };
         } catch (error) {
             console.error("Error adding variant to cart:", error);
-            toast.error(error?.message || "Failed to add product to cart");
+            if (!options.silent) toast.error(error?.message || "Failed to add product to cart");
             return { success: false, error };
         }
     };

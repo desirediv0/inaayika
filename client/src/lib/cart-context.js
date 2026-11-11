@@ -257,7 +257,7 @@ export function CartProvider({ children }) {
     };
 
     // Universal add to cart function
-    const addToCart = async (productVariantId, quantity = 1) => {
+    const addToCart = async (productVariantId, quantity = 1, options = {}) => {
         if (!mounted) return;
 
         setLoading(true);
@@ -281,7 +281,7 @@ export function CartProvider({ children }) {
             }
         } catch (err) {
             setError(err.message);
-            toast.error(err.message || "Failed to add item to cart");
+            if (!options.silent) toast.error(err.message || "Failed to add item to cart");
             throw err;
         } finally {
             setLoading(false);

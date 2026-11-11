@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
+// Real stock of one variant (size x colour). No made-up fallback numbers.
+const getVariantStock = (v) => Number(v?.stock ?? v?.quantity ?? 0) || 0;
 import Link from "next/link";
 import Image from "next/image";
 import { fetchApi, formatCurrency } from "@/lib/utils";
@@ -60,7 +63,16 @@ export default function ProductContent({ slug }) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const { addVariantToCart } = useAddVariantToCart();
-  const { addToCart } = useCart();
+  const { addToCart, cart } = useCart();
+  const addLockRef = useRef(false);
+  const [stockMsg, setStockMsg] = useState("");
+  const [bundleMsg, setBundleMsg] = useState("");
+
+  // How many of a variant are already in the cart (server cart items and guest items)
+  const getInCart = (variantId) =>
+    (cart?.items || [])
+      .filter((i) => (i.variant?.id || i.productVariantId) === variantId)
+      .reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
 
   /* ── Slab pricing ── */
   const getEffectivePrice = (variant, qty) => {
@@ -100,7 +112,8 @@ export default function ProductContent({ slug }) {
           if (pd.attributeOptions?.length) {
             // Start from a real variant so the visible selection is always a valid combination.
             const defaults = {};
-            const firstVariant = combos[0]?.variant;
+            const firstVariant =
+              combos.find((c) => getVariantStock(c.variant) > 0)?.variant || combos[0]?.variant;
             firstVariant?.attributes?.forEach((a) => {
               defaults[a.attributeId] = a.attributeValueId;
             });
@@ -166,7 +179,8 @@ export default function ProductContent({ slug }) {
     if (product) {
       const initial = { [product.id]: true };
       relatedProducts.slice(0, 3).forEach((p) => {
-        initial[p.id] = true;
+        // Items with no stock start unchecked
+        initial[p.id] = (p.variants || []).some((v) => getVariantStock(v) > 0);
       });
       setBundleSelected(initial);
     }
@@ -238,50 +252,107 @@ export default function ProductContent({ slug }) {
   /* ── Quantity ── */
   const handleQuantityChange = (delta) => {
     const moq = selectedVariant?.moq || 1;
-    const stock = selectedVariant?.stock || selectedVariant?.quantity || 0;
+    const stock = getVariantStock(selectedVariant);
+    const remaining = Math.max(0, stock - getInCart(selectedVariant?.id));
     const next = quantity + delta;
     if (next < moq) return;
-    if (stock > 0 && next > stock) return;
+    if (delta > 0 && next > remaining) {
+      setStockMsg(
+        remaining > 0
+          ? `Only ${remaining} more available`
+          : "You already have all available units in your cart"
+      );
+      return;
+    }
+    setStockMsg("");
     setQuantity(next);
     if (selectedVariant) setEffectivePriceInfo(getEffectivePrice(selectedVariant, next));
   };
 
   /* ── Add to cart ── */
   const handleAddToCart = async () => {
-    const v = selectedVariant || product?.variants?.[0];
-    if (!v) return;
+    if (addLockRef.current) return; // ignore rapid double clicks
+    const v = selectedVariant;
+    if (!v) { setStockMsg("Please select an option"); return; }
+    const stock = getVariantStock(v);
+    const remaining = Math.max(0, stock - getInCart(v.id));
+    if (stock <= 0) { setStockMsg("This option is out of stock"); return; }
+    if (quantity > remaining) {
+      setStockMsg(
+        remaining > 0
+          ? `Only ${remaining} more available`
+          : "You already have all available units in your cart"
+      );
+      if (remaining > 0) setQuantity(remaining);
+      return;
+    }
+    setStockMsg("");
+    addLockRef.current = true;
     setIsAddingToCart(true); setCartSuccess(false);
     try {
-      const result = await addVariantToCart(v, quantity, product.name);
-      if (result.success) { setCartSuccess(true); setTimeout(() => setCartSuccess(false), 3000); }
-    } catch (err) { console.error(err); }
-    finally { setIsAddingToCart(false); }
+      const result = await addVariantToCart(v, quantity, product.name, { silent: true });
+      if (result.success) {
+        setCartSuccess(true);
+        setTimeout(() => setCartSuccess(false), 3000);
+      } else {
+        // Server said no (e.g. stock changed): show it inline, no toast, no scrolling
+        setStockMsg(result.error?.message || "Could not add to cart");
+      }
+    } catch (err) { console.error(err); setStockMsg("Could not add to cart"); }
+    finally { setIsAddingToCart(false); addLockRef.current = false; }
   };
 
   /* ── Add Bundle to Cart ── */
   const handleAddBundleToCart = async () => {
+    if (addLockRef.current) return; // ignore rapid double clicks
+    addLockRef.current = true;
     setIsAddingBundle(true);
+    setBundleMsg("");
+    const failed = [];
+    let added = 0;
     try {
-      // Add main product
-      const mainV = selectedVariant || product?.variants?.[0];
-      if (mainV && bundleSelected[product.id]) {
-        await addToCart(mainV.id, quantity);
+      // Each checked item is validated and added on its own; failures are reported by name and the rest still go in
+      const lines = [];
+      if (bundleSelected[product.id]) {
+        lines.push({ name: product.name, variant: selectedVariant, qty: quantity });
       }
-      // Add checked related products
       for (const p of relatedProducts.slice(0, 3)) {
         if (bundleSelected[p.id]) {
-          const v = p.variants?.[0];
-          if (v) {
-            await addToCart(v.id, 1);
-          }
+          lines.push({
+            name: p.name,
+            variant: (p.variants || []).find((v) => getVariantStock(v) > 0) || null,
+            qty: 1,
+          });
         }
       }
-      setCartSuccess(true);
-      setTimeout(() => setCartSuccess(false), 3000);
+      for (const line of lines) {
+        const v = line.variant;
+        if (!v) { failed.push(`${line.name} (select an option)`); continue; }
+        const remaining = Math.max(0, getVariantStock(v) - getInCart(v.id));
+        if (remaining < line.qty) {
+          failed.push(remaining > 0 ? `${line.name} (only ${remaining} more available)` : `${line.name} (out of stock)`);
+          continue;
+        }
+        try {
+          await addToCart(v.id, line.qty, { silent: true });
+          added++;
+        } catch (err) {
+          failed.push(`${line.name} (${err?.message || "could not be added"})`);
+        }
+      }
+      if (added > 0) {
+        setCartSuccess(true);
+        setTimeout(() => setCartSuccess(false), 3000);
+      }
+      if (failed.length) {
+        setBundleMsg(`${added > 0 ? "Added the rest. " : ""}Not added: ${failed.join(", ")}`);
+      }
     } catch (err) {
       console.error(err);
+      setBundleMsg("Could not add the bundle. Please try again.");
     } finally {
       setIsAddingBundle(false);
+      addLockRef.current = false;
     }
   };
 
@@ -428,26 +499,26 @@ export default function ProductContent({ slug }) {
   const images = getImages();
   const primary = mainImage && images.some((i) => i.url === mainImage.url)
     ? mainImage : (images.find((i) => i.isPrimary) || images[0]);
-  const stock = selectedVariant?.stock || selectedVariant?.quantity || product.stock || 15;
-  // Varies per product (stable between renders), derived from product id/slug
-  const cartAlertSeed = String(product?.id || slug || "");
-  let cartAlertHash = 0;
-  for (let i = 0; i < cartAlertSeed.length; i++) cartAlertHash = (cartAlertHash * 31 + cartAlertSeed.charCodeAt(i)) >>> 0;
-  const cartAlertCount = 2 + (cartAlertHash % 17);
-  const outOfStock = stock === 0;
+  const stock = getVariantStock(selectedVariant);
+  const inCartQty = getInCart(selectedVariant?.id);
+  const remainingStock = Math.max(0, stock - inCartQty);
+  const isValueOutOfStock = (attrId, valueId) => {
+    const combos = availableCombinations.filter((c) =>
+      (c.variant.attributes || []).some((a) => a.attributeId === attrId && a.attributeValueId === valueId)
+    );
+    return combos.length > 0 && combos.every((c) => getVariantStock(c.variant) <= 0);
+  };
+  const outOfStock = stock <= 0;
 
   // Calculate Ordered Bar values
-  const orderedCount = Math.floor(((product.id ? product.id.charCodeAt(0) : 5) % 12) + 4);
-  const totalBar = orderedCount + stock;
-  const progressPercent = (orderedCount / totalBar) * 100;
 
   // Bundle calculations
   const bundleItems = [
     { id: product.id, name: product.name, price: parseFloat(effectivePriceInfo?.price || selectedVariant?.salePrice || selectedVariant?.price || product.basePrice || product.regularPrice || 0), isMain: true, stock: stock, image: primary?.url },
     ...relatedProducts.slice(0, 3).map((p) => {
-      const v = p.variants?.[0] || {};
+      const v = (p.variants || []).find((x) => getVariantStock(x) > 0) || p.variants?.[0] || {};
       const price = v.salePrice || v.price || p.basePrice || p.regularPrice || 0;
-      return { id: p.id, name: p.name, price: parseFloat(price), isMain: false, stock: p.stock || p.quantity || 10, image: p.image || p.images?.[0]?.url };
+      return { id: p.id, name: p.name, price: parseFloat(price), isMain: false, stock: getVariantStock(v), image: p.image || p.images?.[0]?.url };
     })
   ];
 
@@ -587,14 +658,6 @@ export default function ProductContent({ slug }) {
 
 
 
-            {/* Cart Alert Badge */}
-            <div className="mb-6 flex items-center gap-2.5 p-3.5 rounded-none text-xs border" style={{ background: "#F7F3EB", borderColor: "#E9E2D5", color: "#8a6d3f" }}>
-              <ShoppingCart className="h-4.5 w-4.5 text-amber-700 animate-bounce flex-shrink-0" />
-              <span>
-                <strong>{cartAlertCount} {cartAlertCount === 1 ? "person has" : "people have"}</strong> in their cart right now.{stock <= 10 ? " It's running out!" : ""}
-              </span>
-            </div>
-
             {/* Attributes Selection */}
             {product.attributeOptions?.map((attr) => {
               const values = getAvailableValues(attr.id);
@@ -609,16 +672,20 @@ export default function ProductContent({ slug }) {
                   <div className="flex flex-wrap gap-2">
                     {values.map((v) => {
                       const active = selId === v.id;
+                      const soldOut = isValueOutOfStock(attr.id, v.id);
                       return (
                         <button
                           key={v.id}
-                          onClick={() => handleAttributeChange(attr.id, v.id)}
-                          className={`px-4 py-2 text-xs font-semibold border rounded-lg transition-all duration-300 ${active
-                            ? "border-[#003E29] bg-[#003E29] text-white shadow-sm"
-                            : "border-neutral-200 text-neutral-700 hover:border-[#003E29]"
+                          disabled={soldOut}
+                          onClick={() => { setStockMsg(""); handleAttributeChange(attr.id, v.id); }}
+                          className={`px-4 py-2 text-xs font-semibold border rounded-lg transition-all duration-300 ${soldOut
+                            ? "border-neutral-200 text-neutral-300 line-through cursor-not-allowed"
+                            : active
+                              ? "border-[#003E29] bg-[#003E29] text-white shadow-sm"
+                              : "border-neutral-200 text-neutral-700 hover:border-[#003E29]"
                             }`}
                         >
-                          {v.value}
+                          {v.value}{soldOut ? " (Out of stock)" : ""}
                         </button>
                       );
                     })}
@@ -634,6 +701,16 @@ export default function ProductContent({ slug }) {
                 Added to your shopping bag!
               </div>
             )}
+
+            <div className="mb-3 text-xs">
+              <span className={outOfStock ? "font-semibold text-red-600" : "font-semibold text-green-700"}>
+                {outOfStock ? "Out of stock" : `${stock} in stock`}
+              </span>
+              {!outOfStock && inCartQty > 0 && (
+                <span className="text-neutral-500"> &middot; {inCartQty} in your cart</span>
+              )}
+              {stockMsg && <p className="mt-1 text-red-600" role="alert">{stockMsg}</p>}
+            </div>
 
             {/* Stepper + Add to Cart Row */}
             <div className="flex gap-3 mb-6">
@@ -651,7 +728,7 @@ export default function ProductContent({ slug }) {
                 </span>
                 <button
                   onClick={() => handleQuantityChange(1)}
-                  disabled={quantity >= stock || isAddingToCart}
+                  disabled={quantity >= remainingStock || isAddingToCart}
                   className="w-10 h-full flex items-center justify-center text-neutral-500 hover:bg-neutral-50 disabled:opacity-40"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -662,7 +739,7 @@ export default function ProductContent({ slug }) {
               <button
                 id="main-add-to-cart-btn"
                 onClick={handleAddToCart}
-                disabled={isAddingToCart || outOfStock}
+                disabled={isAddingToCart || outOfStock || remainingStock <= 0}
                 className="flex-1 h-12 bg-[#003E29] hover:bg-[#002216] text-white text-[11px] uppercase tracking-[0.25em] rounded-none transition-all flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.99]"
               >
                 {isAddingToCart ? (
@@ -760,7 +837,7 @@ export default function ProductContent({ slug }) {
                       type="checkbox"
                       id={`bundle-${item.id}`}
                       checked={!!bundleSelected[item.id]}
-                      disabled={item.isMain}
+                      disabled={item.isMain || item.stock <= 0}
                       onChange={(e) => {
                         setBundleSelected({
                           ...bundleSelected,
@@ -779,8 +856,8 @@ export default function ProductContent({ slug }) {
                         {item.isMain ? <span className="text-neutral-400 font-normal uppercase mr-1">This Item:</span> : null}
                         {item.name}
                       </label>
-                      <p className="text-[10px] text-green-600 font-semibold mt-0.5">
-                        {item.stock > 0 ? `${item.stock} in stock` : "Pre-order"}
+                      <p className={`text-[10px] font-semibold mt-0.5 ${item.stock > 0 ? "text-green-600" : "text-red-600"}`}>
+                        {item.stock > 0 ? `${item.stock} in stock` : "Out of stock"}
                       </p>
                     </div>
 
@@ -809,6 +886,7 @@ export default function ProductContent({ slug }) {
                 >
                   {isAddingBundle ? "Adding Bundle..." : "Add All to Cart"}
                 </button>
+                {bundleMsg && <p className="text-[11px] text-red-600 leading-snug" role="alert">{bundleMsg}</p>}
               </div>
 
             </div>
@@ -970,7 +1048,7 @@ export default function ProductContent({ slug }) {
               </div>
               <button
                 onClick={handleAddToCart}
-                disabled={isAddingToCart || outOfStock}
+                disabled={isAddingToCart || outOfStock || remainingStock <= 0}
                 className="px-6 h-9 bg-[#003E29] hover:bg-[#002216] text-white text-[10px] uppercase tracking-[0.25em] rounded-none transition-colors flex items-center justify-center"
               >
                 {isAddingToCart ? "Adding..." : "Add to Cart"}
