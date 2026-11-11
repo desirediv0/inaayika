@@ -10,6 +10,7 @@ import {
   cancelOrder,
   createCashOrder,
   phonePeCallback,
+  razorpayWebhook,
 } from "../controllers/payment.controller.js";
 
 const router = express.Router();
