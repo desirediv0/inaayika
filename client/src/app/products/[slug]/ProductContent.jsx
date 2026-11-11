@@ -466,7 +466,7 @@ export default function ProductContent({ slug }) {
         </div>
       );
 
-    if (product?.flashSale?.isActive) {
+    if (!selectedVariant && product?.flashSale?.isActive) {
       const flashPrice = parseFloat(product.flashSale.flashSalePrice);
       const regPrice = parseFloat(product.basePrice);
       return (
