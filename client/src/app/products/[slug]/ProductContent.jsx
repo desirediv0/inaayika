@@ -418,7 +418,6 @@ export default function ProductContent({ slug }) {
         setTimeout(() => setCartSuccess(false), 3000);
       }
       const notes = [];
-      if (alreadyInCart.length) notes.push(`Already in your cart: ${alreadyInCart.join(", ")}`);
       if (failed.length) notes.push(`${added > 0 ? "Added the rest. " : ""}Not added: ${failed.join(", ")}`);
       if (notes.length) setBundleMsg(notes.join(". "));
     } catch (err) {
@@ -628,6 +627,20 @@ export default function ProductContent({ slug }) {
     const alreadyInCart = item.variant ? getInCart(item.variant.id) > 0 : false;
     return sum + (bundleSelected[item.id] && !alreadyInCart ? (item.price * item.quantity) : 0);
   }, 0);
+
+  // Bundle rows that are already in the cart are shown as such and are never added a second time
+  const bundleInCartQty = (item) => (item.variant ? getInCart(item.variant.id) : 0);
+  const bundleAddable = bundleItems.filter(
+    (item) => bundleSelected[item.id] && bundleInCartQty(item) === 0 && item.stock > 0
+  );
+  const bundleAllInCart = bundleItems.length > 0 && bundleItems.every((item) => bundleInCartQty(item) > 0 || item.stock <= 0);
+  // The price shown is the sum of the ticked, in-stock items. It does not change when items are added to the cart,
+  // only when the customer ticks/unticks a row or picks another option.
+  const bundleShownTotal = bundleItems.reduce(
+    (sum, item) => sum + (bundleSelected[item.id] && item.stock > 0 ? item.price * item.quantity : 0),
+    0
+  );
+  const bundleInCartCount = bundleItems.filter((item) => bundleSelected[item.id] && bundleInCartQty(item) > 0).length;
 
   const shareProduct = (platform) => {
     const productUrl = window.location.href;
@@ -964,7 +977,7 @@ export default function ProductContent({ slug }) {
                       type="checkbox"
                       id={`bundle-${item.id}`}
                       checked={!!bundleSelected[item.id]}
-                      disabled={item.isMain || item.stock <= 0}
+                      disabled={item.isMain || item.stock <= 0 || bundleInCartQty(item) > 0}
                       onChange={(e) => {
                         setBundleSelected({
                           ...bundleSelected,
@@ -986,6 +999,9 @@ export default function ProductContent({ slug }) {
                       <p className={`text-[10px] font-semibold mt-0.5 ${item.stock > 0 ? "text-green-600" : "text-red-600"}`}>
                         {item.stock > 0 ? `${item.stock} in stock` : "Out of stock"}
                       </p>
+                      {bundleInCartQty(item) > 0 && (
+                        <p className="text-[10px] font-semibold mt-0.5 text-[#003E29]">✓ Already in your cart ({bundleInCartQty(item)})</p>
+                      )}
                       {!item.isMain && item.variants.length > 1 && (
                         <select
                           aria-label={`Choose ${item.name} variant`}
@@ -1023,19 +1039,26 @@ export default function ProductContent({ slug }) {
               <div className="lg:col-span-4 p-6 bg-white border border-neutral-100 rounded-xl flex flex-col gap-4 text-center lg:text-left shadow-sm">
                 <div>
                   <span className="text-xs text-neutral-400 font-semibold uppercase tracking-wider block mb-1">
-                    Selected Bundle Price
+                    Bundle price
                   </span>
                   <span className="text-2xl   text-black">
-                    {formatCurrency(bundleTotal)}
+                    {formatCurrency(bundleShownTotal)}
                   </span>
+                  {bundleInCartCount > 0 && (
+                    <span className="block mt-1 text-[11px] text-neutral-500">
+                      {bundleAddable.length === 0
+                        ? "All selected items are in your cart"
+                        : `${bundleInCartCount} already in your cart · ${bundleAddable.length} to add`}
+                    </span>
+                  )}
                 </div>
 
                 <button
-                  onClick={handleAddBundleToCart}
-                  disabled={isAddingBundle || isAddingToCart || !Object.values(bundleSelected).some(Boolean)}
+                  onClick={bundleAllInCart ? () => router.push("/cart") : handleAddBundleToCart}
+                  disabled={isAddingBundle || isAddingToCart || (!bundleAllInCart && bundleAddable.length === 0)}
                   className="w-full h-11 bg-[#003E29] hover:bg-[#002e1f] text-white text-xs   uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
-                  {isAddingBundle ? "Adding Bundle..." : "Add All to Cart"}
+                  {isAddingBundle ? "Adding Bundle..." : bundleAllInCart ? "All in your cart · View Cart" : "Add All to Cart"}
                 </button>
                 {bundleMsg && <p className="text-[11px] text-red-600 leading-snug" role="alert">{bundleMsg}</p>}
               </div>
