@@ -64,7 +64,7 @@ function CardImage({ candidates, index, alt, className, sizes, style }) {
 export const ProductCard = ({ product, viewMode = "grid", onWishlistChange }) => {
   const isList = viewMode === "list";
   const { isAuthenticated } = useAuth();
-  const { addToCart } = useCart();
+  const { addToCart, cart } = useCart();
   const router = useRouter();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -206,10 +206,30 @@ export const ProductCard = ({ product, viewMode = "grid", onWishlistChange }) =>
   const handleAddToCart = async (e) => {
     e.preventDefault(); e.stopPropagation();
     if (!showPrice) { toast.error("Please login to purchase items"); return; }
-    const variantId = product.variants?.[0]?.id;
-    if (!variantId) {
+    const activeVariants = (product.variants || []).filter((v) => v.isActive !== false);
+    if (activeVariants.length === 0) {
       toast.error("Select options on product page");
       router.push(`/products/${product.slug}`);
+      return;
+    }
+    // Several options (colour / design ...): let the customer pick one on the product page instead of guessing
+    if (activeVariants.length > 1) {
+      toast.info("Please choose an option");
+      router.push(`/products/${product.slug}`);
+      return;
+    }
+    const variant = activeVariants[0];
+    const variantId = variant.id;
+    const stock = Number(variant.stock ?? variant.quantity ?? 0);
+    const inCart = (cart?.items || [])
+      .filter((i) => String(i.variant?.id || i.productVariantId) === String(variantId))
+      .reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
+    if (stock <= 0) {
+      toast.error("This item is out of stock");
+      return;
+    }
+    if (inCart >= stock) {
+      toast.info(`You already have all ${stock} available in your cart`);
       return;
     }
     setIsAddingToCart(true);
