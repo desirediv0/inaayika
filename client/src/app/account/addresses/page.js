@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { fetchApi } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MapPin, Plus, Edit, Trash2, Home, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import AddressForm from "@/components/AddressForm";
@@ -29,12 +30,18 @@ export default function AddressesPage() {
 
     const handleFormSuccess = () => { setShowAddForm(false); setEditingAddress(null); fetchAddresses(); };
 
-    const handleDeleteAddress = async (id) => {
-        if (!confirm("Are you sure you want to delete this address?")) return;
+    const [addressToDelete, setAddressToDelete] = useState(null);
+
+    const handleDeleteAddress = (id) => setAddressToDelete(id);
+
+    const confirmDeleteAddress = async () => {
+        const id = addressToDelete;
+        if (!id) return;
         setDeletingId(id);
         try {
             const response = await fetchApi(`/users/addresses/${id}`, { method: "DELETE", credentials: "include" });
             if (response.success) { toast.success("Address deleted successfully"); fetchAddresses(); }
+            setAddressToDelete(null);
         } catch (error) {
             toast.error(error.message || "Failed to delete address");
         } finally { setDeletingId(null); }
@@ -111,6 +118,17 @@ export default function AddressesPage() {
                     ))}
                 </div>
             )}
+
+            <ConfirmDialog
+                open={addressToDelete !== null}
+                onOpenChange={(open) => { if (!open) setAddressToDelete(null); }}
+                title="Delete this address?"
+                description="This saved address will be removed from your account."
+                confirmLabel="Yes, delete"
+                cancelLabel="No, keep it"
+                loading={deletingId !== null && deletingId === addressToDelete}
+                onConfirm={confirmDeleteAddress}
+            />
         </div>
     );
 }

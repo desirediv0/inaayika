@@ -7,6 +7,7 @@ import { MINIMUM_ORDER_VALUE } from "@/lib/shipping";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import {
     Trash2,
@@ -360,15 +361,22 @@ export default function CartPage() {
         [removeFromCart]
     );
 
-    const handleClearCart = useCallback(async () => {
-        if (window.confirm("Are you sure you want to clear your cart?")) {
-            try {
-                await clearCart();
-                toast.success("Cart has been cleared");
-            } catch (err) {
-                console.error("Error clearing cart:", err);
-                toast.error("Failed to clear cart");
-            }
+    const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+    const [clearing, setClearing] = useState(false);
+
+    const handleClearCart = useCallback(() => setClearConfirmOpen(true), []);
+
+    const confirmClearCart = useCallback(async () => {
+        setClearing(true);
+        try {
+            await clearCart();
+            toast.success("Cart has been cleared");
+            setClearConfirmOpen(false);
+        } catch (err) {
+            console.error("Error clearing cart:", err);
+            toast.error("Failed to clear cart");
+        } finally {
+            setClearing(false);
         }
     }, [clearCart]);
 
@@ -537,6 +545,16 @@ export default function CartPage() {
                                     <Trash2 className="h-3.5 w-3.5" />
                                     Clear Cart
                                 </button>
+                                <ConfirmDialog
+                                    open={clearConfirmOpen}
+                                    onOpenChange={setClearConfirmOpen}
+                                    title="Clear your cart?"
+                                    description="All items will be removed from your shopping bag. This can't be undone."
+                                    confirmLabel="Yes, clear cart"
+                                    cancelLabel="No, keep items"
+                                    loading={clearing}
+                                    onConfirm={confirmClearCart}
+                                />
                             </div>
                         </div>
                     </div>
