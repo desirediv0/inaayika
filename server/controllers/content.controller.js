@@ -380,7 +380,7 @@ const getContactInfo = asyncHandler(async (req, res) => {
     // Default fallback contact info
     const contactInfo = {
       address: "Gurugram, Haryana",
-      phone: "+91 95602 47619",
+      phone: "+91 87964 49692",
       email: "info@inaayika.com",
       hours: "Monday - Saturday: 9:00 AM - 9:00 PM",
       mapCoordinates: {

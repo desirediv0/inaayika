@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Star, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 
 export default function ReviewSection({ product }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviewForm, setReviewForm] = useState({
@@ -19,6 +19,18 @@ export default function ReviewSection({ product }) {
   });
   const [showForm, setShowForm] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+
+  // Arriving from the "review your purchase" email (?review=true): ask for login if needed, then open the form
+  useEffect(() => {
+    if (authLoading || typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("review") !== "true") return;
+    if (!isAuthenticated) {
+      router.replace("/auth?redirect=" + encodeURIComponent("/products/" + product.slug + "?review=true"));
+      return;
+    }
+    setShowForm(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated]);
 
   const handleRatingClick = (rating) => {
     setReviewForm((prev) => ({ ...prev, rating }));
@@ -58,7 +70,7 @@ export default function ReviewSection({ product }) {
     e.preventDefault();
 
     if (!isAuthenticated) {
-      router.push(`/auth?redirect=/products/${product.slug}&review=true`);
+      router.push("/auth?redirect=" + encodeURIComponent("/products/" + product.slug + "?review=true"));
       return;
     }
 
@@ -185,7 +197,7 @@ export default function ReviewSection({ product }) {
             <h3 className="font-semibold text-lg mb-4">Write a Review</h3>
 
             {!showForm ? (
-              <Button onClick={() => { if (!isAuthenticated) { router.push(`/auth?redirect=/products/${product.slug}&review=true`); return; } setShowForm(true); }} className="px-8 py-2 bg-primary hover:bg-primary/90 rounded-md">Write a Review</Button>
+              <Button onClick={() => { if (!isAuthenticated) { router.push("/auth?redirect=" + encodeURIComponent("/products/" + product.slug + "?review=true")); return; } setShowForm(true); }} className="px-8 py-2 bg-primary hover:bg-primary/90 rounded-md">Write a Review</Button>
             ) : <ReviewFormComponent />}
 
             {!canReview() && (
@@ -199,7 +211,7 @@ export default function ReviewSection({ product }) {
       ) : (
         <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
           <p className="text-gray-500 mb-6">No reviews yet. Be the first to review this product!</p>
-          <Button onClick={() => { if (!isAuthenticated) { router.push(`/auth?redirect=/products/${product.slug}&review=true`); return; } setShowForm(true); }} className="px-8 py-2 bg-primary hover:bg-primary/90 rounded-md">Write a Review</Button>
+          <Button onClick={() => { if (!isAuthenticated) { router.push("/auth?redirect=" + encodeURIComponent("/products/" + product.slug + "?review=true")); return; } setShowForm(true); }} className="px-8 py-2 bg-primary hover:bg-primary/90 rounded-md">Write a Review</Button>
 
           {showForm && (
             <div className="max-w-lg mx-auto mt-8 p-6 bg-white rounded-lg shadow-sm border">

@@ -115,13 +115,19 @@ export default function WishlistPage() {
 
             /* Wishlist grid */
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {wishlistItems.map((product) => (
-                <div key={product.id} className="relative group">
-                  <ProductCard product={product} />
+              {wishlistItems.map((item) => (
+                <div key={item.id} className="relative group">
+                  {/* The card expects the product id as `id`; the API's `id` is the wishlist row */}
+                  <ProductCard
+                    product={{ ...item, id: item.productId }}
+                    onWishlistChange={(productId, saved) => {
+                      if (!saved) setWishlistItems((cur) => cur.filter((w) => w.productId !== productId));
+                    }}
+                  />
 
-                  {/* Trash Hover Button */}
+                  {/* Remove button (always visible so it works on touch screens) */}
                   <button
-                    onClick={(e) => { e.preventDefault(); removeFromWishlist(product.id); }}
+                    onClick={(e) => { e.preventDefault(); removeFromWishlist(item.id); }}
                     className="absolute top-3 right-14 z-30 w-8 h-8 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 shadow-md border border-neutral-100 transition-all duration-300 transform active:scale-95"
                     title="Remove from wishlist"
                   >

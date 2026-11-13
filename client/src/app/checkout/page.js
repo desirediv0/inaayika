@@ -48,6 +48,7 @@ export default function CheckoutPage() {
         codCharge: 0,
     });
     const [paymentMethod, setPaymentMethod] = useState("RAZORPAY");
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [orderCreated, setOrderCreated] = useState(false);
     const [orderId, setOrderId] = useState("");
@@ -64,6 +65,8 @@ export default function CheckoutPage() {
 
     const cartTotals = getCartTotals();
     const selectedAddress = addresses.find((address) => address.id === selectedAddressId);
+    const codCharge =
+        paymentMethod === "CASH" ? parseFloat(paymentSettings.codCharge) || 0 : 0;
     const totals = selectedAddress
         ? (() => {
             const shipping = getShippingTotal(
@@ -74,10 +77,13 @@ export default function CheckoutPage() {
             return {
                 ...cartTotals,
                 shipping,
-                total: cartTotals.subtotal - cartTotals.discount + shipping + cartTotals.tax,
+                codCharge,
+                total: cartTotals.subtotal - cartTotals.discount + shipping + cartTotals.tax + codCharge,
             };
         })()
-        : cartTotals;
+        : { ...cartTotals, codCharge, total: (cartTotals.total || 0) + codCharge };
+    // A saved Razorpay confirmation only blocks online payment, never Cash on Delivery
+    const blockedByPending = !!pendingVerification && paymentMethod !== "CASH";
 
     // Re-check the coupon for the selected delivery address. A first-order coupon is refused when the
     // same account, mobile number or address has already ordered.
@@ -215,6 +221,8 @@ export default function CheckoutPage() {
             } catch (error) {
                 console.error("Error fetching payment settings:", error);
                 setPaymentMethod("RAZORPAY");
+            } finally {
+                setSettingsLoaded(true);
             }
         };
         fetchPaymentSettings();
@@ -231,17 +239,17 @@ export default function CheckoutPage() {
             });
 
             if (response.success) {
-                setAddresses(response.data.addresses || []);
+                const list = response.data.addresses || [];
+                setAddresses(list);
 
-                if (response.data.addresses?.length > 0) {
-                    const defaultAddress = response.data.addresses.find(
-                        (addr) => addr.isDefault
+                if (list.length > 0) {
+                    const fallback = list.find((addr) => addr.isDefault) || list[0];
+                    // keep the address the customer already picked if it still exists
+                    setSelectedAddressId((current) =>
+                        list.some((addr) => addr.id === current) ? current : fallback.id
                     );
-                    if (defaultAddress) {
-                        setSelectedAddressId(defaultAddress.id);
-                    } else {
-                        setSelectedAddressId(response.data.addresses[0].id);
-                    }
+                } else {
+                    setShowAddressForm(true);
                 }
             }
         } catch (error) {
@@ -394,7 +402,8 @@ export default function CheckoutPage() {
 
     // Process checkout
     const handleCheckout = async () => {
-        if (pendingVerification) {
+        if (blockedByPending) {
+            toast.error("Please confirm your previous payment first.");
             setError(
                 "Finish confirming the previous payment before starting another checkout."
             );
@@ -405,7 +414,13 @@ export default function CheckoutPage() {
             return;
         }
         if (!selectedAddressId) {
-            toast.error("Please select a shipping address");
+            toast.error("Please add or select a shipping address first");
+            setShowAddressForm(true);
+            document.getElementById("checkout-address")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+        }
+        if (settingsLoaded && !paymentSettings.razorpayEnabled && !paymentSettings.cashEnabled) {
+            toast.error("Payments are temporarily unavailable. Please message us on WhatsApp.");
             return;
         }
 
@@ -447,7 +462,7 @@ export default function CheckoutPage() {
                 const orderData = {
                     orderNumber: orderResponse.data.orderNumber,
                     orderId: orderResponse.data.orderId,
-                    paymentMethod: orderResponse.data.paymentMethod || "CASH",
+                    paymentMethod: orderResponse.data.paymentMethod || paymentMethod,
                 };
                 setOrderNumber(orderResponse.data.orderNumber);
                 setOrderId(orderResponse.data.orderId || "");
@@ -719,7 +734,7 @@ export default function CheckoutPage() {
                     <div className="lg:col-span-8 space-y-6">
 
                         {/* Address Section */}
-                        <div className="bg-white rounded-2xl border border-neutral-100 p-6 md:p-8 shadow-sm">
+                        <div id="checkout-address" className="bg-white rounded-2xl border border-neutral-100 p-6 md:p-8 shadow-sm">
                             <div className="flex items-center justify-between border-b border-neutral-100 pb-4 mb-6">
                                 <h2 className="text-lg    uppercase tracking-wider text-neutral-900 flex items-center gap-2">
                                     <MapPin className="h-5 w-5 text-neutral-800" />
@@ -797,6 +812,11 @@ export default function CheckoutPage() {
                             <h2 className="text-lg    uppercase tracking-wider text-neutral-900 border-b border-neutral-100 pb-4 mb-6">
                                 Payment Method
                             </h2>
+                            {settingsLoaded && !paymentSettings.razorpayEnabled && !paymentSettings.cashEnabled && (
+                                <p className="rounded-xl bg-red-50 p-4 text-xs text-red-700">
+                                    No payment method is available right now. Please message us on WhatsApp and we will complete your order.
+                                </p>
+                            )}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {paymentSettings.razorpayEnabled && (
                                     <div
@@ -932,6 +952,12 @@ export default function CheckoutPage() {
                                         <span className="text-green-600   tracking-widest">FREE</span>
                                     )}
                                 </div>
+                                {paymentMethod === "CASH" && totals.codCharge > 0 && (
+                                    <div className="flex justify-between">
+                                        <span className="uppercase tracking-wider">COD Charges</span>
+                                        <span className="text-neutral-900">{formatCurrency(totals.codCharge)}</span>
+                                    </div>
+                                )}
                             </div>
 
                             {totals.subtotal < MINIMUM_ORDER_VALUE && (
@@ -951,12 +977,20 @@ export default function CheckoutPage() {
                             {/* Checkout action */}
                             <button
                                 onClick={handleCheckout}
-                                disabled={processing || !!pendingVerification || !selectedAddressId || totals.subtotal < MINIMUM_ORDER_VALUE}
+                                disabled={processing}
                                 className="w-full text-white text-xs font-semibold uppercase tracking-widest py-4.5 rounded-xl transition-all shadow-md border border-[#D4AF37]/30 hover:bg-[#002216] disabled:opacity-40 h-12"
                                 style={{ background: "#003E29" }}
                             >
-                                {processing ? "Processing…" : `Pay Now • ${formatCurrency(totals.total)}`}
+                                {processing
+                                    ? "Processing…"
+                                    : `${paymentMethod === "CASH" ? "Place Order" : "Pay Now"} • ${formatCurrency(totals.total)}`}
                             </button>
+                            {!selectedAddressId && (
+                                <p className="text-[10px] text-red-600 text-center">Please select a delivery address to continue.</p>
+                            )}
+                            {blockedByPending && (
+                                <p className="text-[10px] text-red-600 text-center">Confirm your previous payment above before paying again.</p>
+                            )}
 
                             <p className="text-[9px] text-neutral-400 text-center leading-relaxed font-light">
                                 Transaction processed via bank grade 256-bit SSL encrypted connection

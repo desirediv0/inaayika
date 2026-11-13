@@ -51,6 +51,17 @@ export default function ProductContent({ slug }) {
   const [quantity, setQuantity] = useState(1);
   const [effectivePriceInfo, setEffectivePriceInfo] = useState(null);
   const [activeTab, setActiveTab] = useState("description");
+
+  // Link from the review-request email (?review=true): open the Reviews tab and scroll to it
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("review") !== "true") return;
+    setActiveTab("reviews");
+    const timer = setTimeout(() => {
+      document.getElementById("product-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -367,6 +378,7 @@ export default function ProductContent({ slug }) {
     setIsAddingBundle(true);
     setBundleMsg("");
     const failed = [];
+    const alreadyInCart = [];
     let added = 0;
     try {
       // Each checked item is validated and added on its own; failures are reported by name and the rest still go in
@@ -387,6 +399,8 @@ export default function ProductContent({ slug }) {
       for (const line of lines) {
         const v = line.variant;
         if (!v) { failed.push(`${line.name} (select an option)`); continue; }
+        // Never add an item that is already in the cart a second time
+        if (getInCart(v.id) > 0) { alreadyInCart.push(line.name); continue; }
         const remaining = Math.max(0, getVariantStock(v) - getInCart(v.id));
         if (remaining < line.qty) {
           failed.push(remaining > 0 ? `${line.name} (only ${remaining} more available)` : `${line.name} (out of stock)`);
@@ -403,9 +417,10 @@ export default function ProductContent({ slug }) {
         setCartSuccess(true);
         setTimeout(() => setCartSuccess(false), 3000);
       }
-      if (failed.length) {
-        setBundleMsg(`${added > 0 ? "Added the rest. " : ""}Not added: ${failed.join(", ")}`);
-      }
+      const notes = [];
+      if (alreadyInCart.length) notes.push(`Already in your cart: ${alreadyInCart.join(", ")}`);
+      if (failed.length) notes.push(`${added > 0 ? "Added the rest. " : ""}Not added: ${failed.join(", ")}`);
+      if (notes.length) setBundleMsg(notes.join(". "));
     } catch (err) {
       console.error(err);
       setBundleMsg("Could not add the bundle. Please try again.");
@@ -610,7 +625,8 @@ export default function ProductContent({ slug }) {
   ];
 
   const bundleTotal = bundleItems.reduce((sum, item) => {
-    return sum + (bundleSelected[item.id] ? (item.price * item.quantity) : 0);
+    const alreadyInCart = item.variant ? getInCart(item.variant.id) > 0 : false;
+    return sum + (bundleSelected[item.id] && !alreadyInCart ? (item.price * item.quantity) : 0);
   }, 0);
 
   const shareProduct = (platform) => {
@@ -1022,7 +1038,7 @@ export default function ProductContent({ slug }) {
         )}
 
         {/* TABS SECTION */}
-        <div className="mb-16">
+        <div className="mb-16" id="product-tabs">
           <div className="flex gap-0 border-b border-neutral-200 overflow-x-auto mb-8">
             {[
               { key: "description", label: "Description" },

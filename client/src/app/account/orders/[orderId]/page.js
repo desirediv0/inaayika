@@ -33,6 +33,8 @@ export default function OrderDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [cancelling, setCancelling] = useState(false);
+    const [showCancel, setShowCancel] = useState(false);
+    const [cancelReason, setCancelReason] = useState("");
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -62,26 +64,41 @@ export default function OrderDetailPage() {
         fetchOrder();
     }, [isAuthenticated, authLoading, orderId, router]);
 
+    const isPrepaidOrder = !!order && !order.isCod;
+    // Customers can cancel within 24 hours of placing the order (matches the cancellation policy)
+    const withinCancelWindow = !!order && Date.now() - new Date(order.createdAt).getTime() <= 24 * 60 * 60 * 1000;
+
     const handleCancelOrder = async () => {
         if (!order || order.status === "CANCELLED" || order.status === "DELIVERED") return;
-
-        if (!confirm("Are you sure you want to cancel this order?")) return;
+        if (!cancelReason.trim()) {
+            toast.error("Please tell us why you are cancelling");
+            return;
+        }
 
         setCancelling(true);
         try {
             const response = await fetchApi(`/users/orders/${orderId}/cancel`, {
                 method: "POST",
                 credentials: "include",
+                body: JSON.stringify({ reason: cancelReason.trim() }),
             });
             if (response.success) {
-                toast.success("Order cancelled successfully");
-                setOrder({ ...order, status: "CANCELLED" });
+                toast.success(response.message || "Order cancelled successfully");
+                const refund = response.data?.refund;
+                setOrder({
+                    ...order,
+                    status: "CANCELLED",
+                    cancelReason: cancelReason.trim(),
+                    refundStatus: refund?.status || null,
+                    refundAmount: refund?.amount ?? null,
+                });
+                setShowCancel(false);
             } else {
                 toast.error(response.message || "Failed to cancel order");
             }
         } catch (err) {
             console.error("Failed to cancel order:", err);
-            toast.error("Failed to cancel order. Please try again.");
+            toast.error(err?.message || "Failed to cancel order. Please try again.");
         } finally {
             setCancelling(false);
         }
@@ -170,8 +187,13 @@ export default function OrderDetailPage() {
                     <Button variant="outline" onClick={() => window.print()} className="no-print">
                         <DynamicIcon name="Printer" className="mr-2 h-4 w-4" /> Print / Save Invoice
                     </Button>
-                    {order.status !== "CANCELLED" && order.status !== "DELIVERED" && order.status !== "SHIPPED" && (
-                        <Button variant="destructive" size="sm" onClick={handleCancelOrder} disabled={cancelling}>
+                    {order.status !== "CANCELLED" && order.status !== "DELIVERED" && order.status !== "SHIPPED" && !withinCancelWindow && (
+                        <a href="https://wa.me/918796449692" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 underline no-print">
+                            Cancellation window (24h) is over. Need help? WhatsApp us
+                        </a>
+                    )}
+                    {order.status !== "CANCELLED" && order.status !== "DELIVERED" && order.status !== "SHIPPED" && withinCancelWindow && (
+                        <Button variant="destructive" size="sm" onClick={() => setShowCancel(true)} disabled={cancelling}>
                             {cancelling ? (
                                 <><DynamicIcon name="Loader2" className="mr-2 h-4 w-4 animate-spin" /> Cancelling...</>
                             ) : (
@@ -181,6 +203,56 @@ export default function OrderDetailPage() {
                     )}
                 </div>
             </div>
+
+            {order.status === "CANCELLED" && (
+                <div className="mb-6 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-800 no-print">
+                    <p className="font-semibold">This order was cancelled{order.cancelledByRole === "SELLER" ? " by the seller" : ""}.</p>
+                    {order.cancelReason && <p className="mt-1">Reason: {order.cancelReason}</p>}
+                    {order.refundStatus && order.refundStatus !== "NOT_REQUIRED" && (
+                        <p className="mt-1">
+                            Refund of {formatCurrency(order.refundAmount || 0)} to your original payment method:{" "}
+                            <strong>
+                                {order.refundStatus === "PROCESSED"
+                                    ? "Initiated (3-5 business days)"
+                                    : order.refundStatus === "FAILED" ? "Being processed by our team" : "Pending"}
+                            </strong>
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {showCancel && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 no-print" role="dialog" aria-modal="true">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                        <h2 className="text-lg font-semibold mb-1">Cancel order #{order.orderNumber}?</h2>
+                        <p className="text-sm text-gray-500 mb-4">This cannot be undone.</p>
+
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">Reason</label>
+                        <textarea
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                            rows={3}
+                            placeholder="Tell us why you are cancelling"
+                            className="w-full rounded-lg border border-gray-200 p-3 text-sm mb-4 focus:outline-none focus:ring-1 focus:ring-[#003E29]"
+                        />
+
+                        {isPrepaidOrder ? (
+                            <p className="mb-4 rounded-lg bg-neutral-50 p-3 text-xs text-gray-600">
+                                {formatCurrency(order.total)} will be refunded to your original payment method (card / UPI / net banking) in 3-5 business days.
+                            </p>
+                        ) : (
+                            <p className="mb-4 text-xs text-gray-500">Cash on Delivery order: no payment was collected, so no refund is needed.</p>
+                        )}
+
+                        <div className="flex justify-end gap-3">
+                            <Button variant="outline" onClick={() => setShowCancel(false)} disabled={cancelling}>Keep order</Button>
+                            <Button variant="destructive" onClick={handleCancelOrder} disabled={cancelling}>
+                                {cancelling ? "Cancelling..." : "Confirm cancel"}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Order Items */}
@@ -312,6 +384,12 @@ export default function OrderDetailPage() {
                                 <span className="text-gray-600">Delivery charge ({getShippingZone(order.shippingAddress?.postalCode)})</span>
                                 <span>{order.shippingCost > 0 ? formatCurrency(order.shippingCost) : "Free"}</span>
                             </div>
+                            {Number(order.codCharge) > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">COD charges</span>
+                                    <span>{formatCurrency(order.codCharge)}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Tax</span>
                                 <span>{formatCurrency(order.tax)}</span>
@@ -454,6 +532,9 @@ export default function OrderDetailPage() {
                     <p><span>Tax</span><strong>{formatCurrency(order.tax)}</strong></p>
                     {order.codCharge > 0 && <p><span>Cash on delivery fee</span><strong>{formatCurrency(order.codCharge)}</strong></p>}
                     <p className="invoice-grand-total"><span>Order total</span><strong>{formatCurrency(order.total)}</strong></p>
+                    {order.isCod && order.status !== "CANCELLED" && order.status !== "DELIVERED" && (
+                        <p><span>Payable in cash on delivery</span><strong>{formatCurrency(order.total)}</strong></p>
+                    )}
                 </div>
                 <footer className="invoice-footer">Thank you for shopping with Inaayika.</footer>
             </section>

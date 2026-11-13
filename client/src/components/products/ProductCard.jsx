@@ -61,7 +61,7 @@ function CardImage({ candidates, index, alt, className, sizes, style }) {
 /* ════════════════════════════════════════════
    PRODUCT CARD
  ════════════════════════════════════════════ */
-export const ProductCard = ({ product, viewMode = "grid" }) => {
+export const ProductCard = ({ product, viewMode = "grid", onWishlistChange }) => {
   const isList = viewMode === "list";
   const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
@@ -182,13 +182,22 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
         if (item) {
           await fetchApi(`/users/wishlist/${item.id}`, { method: "DELETE", credentials: "include" });
           setWishlistItems((p) => { const n = { ...p }; delete n[product.id]; return n; });
+          onWishlistChange?.(product.id, false);
+          toast.success("Removed from wishlist");
         }
       } else {
-        await fetchApi("/users/wishlist", {
-          method: "POST", credentials: "include",
-          body: JSON.stringify({ productId: product.id }),
-        });
+        try {
+          await fetchApi("/users/wishlist", {
+            method: "POST", credentials: "include",
+            body: JSON.stringify({ productId: product.id }),
+          });
+        } catch (err) {
+          // 409 = already saved; treat as success so the heart just syncs
+          if (!/already/i.test(err?.message || "")) throw err;
+        }
         setWishlistItems((p) => ({ ...p, [product.id]: true }));
+        onWishlistChange?.(product.id, true);
+        toast.success("Added to wishlist");
       }
     } catch { toast.error("Failed to update wishlist"); }
     finally { setIsAddingToWishlist((p) => ({ ...p, [product.id]: false })); }
@@ -319,7 +328,7 @@ export const ProductCard = ({ product, viewMode = "grid" }) => {
         {/* Action icons stack — top right (shows on hover) */}
         <div className={cn(
           "absolute top-3 right-3 z-20 flex flex-col gap-2 transition-all duration-300",
-          isHovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2 pointer-events-none"
+          isHovered ? "opacity-100 translate-x-0" : "opacity-100 md:opacity-0 md:translate-x-2 md:pointer-events-none"
         )}>
           {/* Wishlist */}
           <button

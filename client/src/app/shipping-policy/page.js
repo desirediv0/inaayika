@@ -109,7 +109,7 @@ export default function ShippingPolicyPage() {
 
                 <div className="p-4 rounded-xl border border-gray-200 bg-white">
                   <p className="font-semibold text-gray-900 mb-1">📦 For Bulk Orders:</p>
-                  <p>Delivery timelines for bulk or corporate orders can be custom discussed via INAAYIKA official email (<a href="mailto:info@inaayika.com" className="text-[#003E29] underline font-medium">info@inaayika.com</a>) or WhatsApp (<a href="https://wa.me/918796449692" target="_blank" rel="noopener noreferrer" className="text-[#003E29] underline font-medium">+91-8796449692</a>).</p>
+                  <p>Delivery timelines for bulk or corporate orders can be custom discussed via INAAYIKA official email (<a href="mailto:info@inaayika.com" className="text-[#003E29] underline font-medium">info@inaayika.com</a>) or WhatsApp (<a href="https://wa.me/918796449692" target="_blank" rel="noopener noreferrer" className="text-[#003E29] underline font-medium">+91 87964 49692</a>).</p>
                 </div>
 
                 <div className="p-4 rounded-xl border border-gray-200 bg-white">
@@ -190,7 +190,7 @@ export default function ShippingPolicyPage() {
                   </p>
                   <div className="flex flex-wrap items-center gap-4 text-xs font-semibold pt-2 border-t border-amber-200">
                     <a href="tel:+918796449692" className="flex items-center gap-1.5 text-[#003E29] hover:underline">
-                      <PhoneCall className="h-3.5 w-3.5" /> +91-8796449692
+                      <PhoneCall className="h-3.5 w-3.5" /> +91 87964 49692
                     </a>
                     <a href="mailto:info@inaayika.com" className="flex items-center gap-1.5 text-[#003E29] hover:underline">
                       <Mail className="h-3.5 w-3.5" /> Info@Inaayika.com

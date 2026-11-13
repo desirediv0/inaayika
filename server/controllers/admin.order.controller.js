@@ -5,6 +5,7 @@ import { prisma } from "../config/db.js";
 import { razorpay } from "../app.js";
 import { cancelShiprocketOrder, getShiprocketSettings } from "../utils/shiprocket.js";
 import sendEmail from "../utils/sendEmail.js";
+import { cancelOrderWithRefund, refundMessage } from "../utils/orderCancellation.js";
 import { getShippingNotificationTemplate } from "../email/temp/EmailTemplate.js";
 
 // Get all orders with pagination, filtering, and sorting
@@ -137,6 +138,11 @@ export const getOrders = asyncHandler(async (req, res, next) => {
     subTotal: parseFloat(order.subTotal),
     tax: parseFloat(order.tax),
     shippingCost: parseFloat(order.shippingCost),
+    codCharge: parseFloat(order.codCharge) || 0,
+    refundMethod: order.refundMethod || null,
+    refundStatus: order.refundStatus || null,
+    refundAmount: order.refundAmount != null ? parseFloat(order.refundAmount) : null,
+    cancelledByRole: order.cancelledByRole || null,
     discount: parseFloat(order.discount) || 0,
     total: parseFloat(order.total), // Use the exact total that was recorded at time of order
     date: order.createdAt, // Add date field for frontend compatibility
@@ -308,6 +314,11 @@ export const getOrderById = asyncHandler(async (req, res, next) => {
     subTotal: parseFloat(order.subTotal),
     tax: parseFloat(order.tax),
     shippingCost: parseFloat(order.shippingCost),
+    codCharge: parseFloat(order.codCharge) || 0,
+    refundMethod: order.refundMethod || null,
+    refundStatus: order.refundStatus || null,
+    refundAmount: order.refundAmount != null ? parseFloat(order.refundAmount) : null,
+    cancelledByRole: order.cancelledByRole || null,
     discount: parseFloat(order.discount) || 0,
     total: parseFloat(order.total),
     date: order.createdAt, // Add date field for frontend compatibility
@@ -379,6 +390,29 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
       400,
       `Cannot transition from ${order.status} to ${status}`
     );
+  }
+
+  // Seller/admin cancellation: restock, cancel courier and refund to the original payment method
+  if (status === "CANCELLED") {
+    const result = await cancelOrderWithRefund({
+      orderId,
+      actorId: req.admin.id,
+      actorType: "SELLER",
+      reason: notes || "Cancelled by seller",
+    });
+    const cancelled = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { tracking: true, razorpayPayment: true },
+    });
+    return res
+      .status(200)
+      .json(
+        new ApiResponsive(
+          200,
+          { order: cancelled, refund: result.refund },
+          refundMessage(result.refund)
+        )
+      );
   }
 
   // Start a transaction for status-specific actions

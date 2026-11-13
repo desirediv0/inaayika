@@ -125,7 +125,7 @@ export default function CancellationPolicyPage() {
               <p className="text-xs text-gray-600 mb-4">Contact our support team immediately before dispatch:</p>
               <div className="flex flex-wrap items-center gap-6 text-sm font-semibold">
                 <a href="tel:+918796449692" className="flex items-center gap-2 text-[#003E29] hover:underline">
-                  <PhoneCall className="h-4 w-4 text-[#D4AF37]" /> +91 8796449692
+                  <PhoneCall className="h-4 w-4 text-[#D4AF37]" /> +91 87964 49692
                 </a>
                 <a href="mailto:info@inaayika.com" className="flex items-center gap-2 text-[#003E29] hover:underline">
                   <Mail className="h-4 w-4 text-[#D4AF37]" /> info@inaayika.com

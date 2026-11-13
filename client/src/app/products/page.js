@@ -101,7 +101,7 @@ function ProductsContent() {
     const el = resultsRef.current;
     if (!el) return;
     const top = el.getBoundingClientRect().top + window.scrollY - 90;
-    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+    window.scrollTo({ top: Math.max(top, 0), behavior: "auto" });
   };
   const scrollToResults = () => {
     pendingScrollRef.current = true;
@@ -150,6 +150,27 @@ function ProductsContent() {
     color: colorId, size: sizeId, minPrice, maxPrice,
     sort: sortParam, order: orderParam,
   });
+
+  /* ── Keep filters/page in sync with the URL (menu category links, back/forward button) ── */
+  const urlKey = searchParams.toString();
+  useEffect(() => {
+    const next = {
+      search: searchQuery, category: categorySlug, productType,
+      color: colorId, size: sizeId, minPrice, maxPrice,
+      sort: sortParam, order: orderParam,
+    };
+    setFilters((cur) => (JSON.stringify(cur) === JSON.stringify(next) ? cur : next));
+    setSelectedColors((cur) => (cur.join() === (colorId || "") ? cur : colorId ? [colorId] : []));
+    setSelectedSizes((cur) => (cur.join() === (sizeId || "") ? cur : sizeId ? [sizeId] : []));
+    setMinPriceInput(minPrice);
+    setMaxPriceInput(maxPrice);
+    if (!minPrice && !maxPrice) {
+      setSelectedPredefinedRange("all");
+      setPriceRange({ min: PRICE_MIN, max: PRICE_MAX });
+    }
+    setPagination((cur) => (cur.page === pageParam ? cur : { ...cur, page: pageParam }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlKey]);
 
   /* ── Sync search input ── */
   useEffect(() => { setSearchInput(filters.search || ""); }, [filters.search]);
@@ -608,7 +629,7 @@ function ProductsContent() {
     <div className="min-h-screen font-sans" style={{ background: "#FDFBF7" }}>
 
       {/* ── Header Breadcrumb & Title ── */}
-      <div className="relative w-full h-[180px] sm:h-[300px] border-b flex items-center justify-center overflow-hidden mb-6 sm:mb-10" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
+      <div className="relative w-full h-[150px] sm:h-[220px] border-b flex items-center justify-center overflow-hidden mb-6 sm:mb-10" style={{ background: "#F7F3EB", borderColor: "#E9E2D5" }}>
         <div className="text-center relative z-10">
           <div className="text-[9px] uppercase tracking-[0.35em] flex items-center justify-center gap-2 mb-3" style={{ color: "#B08D57" }}>
             <Link href="/" className="hover:text-[#003E29] transition-colors">Home</Link>
@@ -618,9 +639,9 @@ function ProductsContent() {
           <h1 className="font-display text-3xl sm:text-5xl font-medium text-neutral-900 tracking-wide">The Collection</h1>
           <span className="luxe-rule mt-4" />
         </div>
-        <div className="absolute right-0 top-0 bottom-0 w-[350px] opacity-20 md:opacity-100 pointer-events-none">
+        <div className="absolute right-0 top-0 bottom-0 w-[260px] opacity-20 md:opacity-100 pointer-events-none">
           <Image
-            src="/shop-header.jpg"
+            src="/shop-header-v2.jpg"
             alt="Jewelry Backdrop"
             fill
             className="object-cover object-[center_6%]"
@@ -665,12 +686,12 @@ function ProductsContent() {
                   For the terms of the campaign, check our details page. Handcrafted adornments delivered to your doorstep.
                 </p>
               </div>
-              <div className="relative w-full md:w-[35%] min-h-[320px] md:min-h-[440px]">
+              <div className="relative w-full md:w-[35%] min-h-[240px] md:min-h-[340px]">
                 <Image
-                  src="/shop-banner.jpg"
+                  src="/shop-banner-v2.jpg"
                   alt="Exclusive Campaign Model"
                   fill
-                  className="object-cover object-[center_10%]"
+                  className="object-cover object-[52%_center]"
                 />
               </div>
             </div>

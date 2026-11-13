@@ -398,6 +398,12 @@ model Order {
   cancelReason                 String?
   cancelledAt                  DateTime?
   cancelledBy                  String?
+  cancelledByRole              String?
+  refundMethod                 String? // ORIGINAL
+  refundStatus                 String? // NOT_REQUIRED | PROCESSED | PENDING | FAILED
+  refundAmount                 Decimal?             @db.Decimal(10, 2)
+  refundedAt                   DateTime?
+  reviewRequestSentAt          DateTime? // set once the review-your-purchase email was handled
   // Shiprocket Integration Fields
   shiprocketOrderId            Int?
   shiprocketShipmentId         Int?
@@ -908,6 +914,7 @@ model FlashSale {
   maxQuantity        Int?
   soldCount          Int                @default(0)
   isActive           Boolean            @default(true)
+  saleAlertSentAt    DateTime? // set once wishlist customers have been emailed about this sale
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   products           FlashSaleProduct[]

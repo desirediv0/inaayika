@@ -1,4 +1,5 @@
 import { ApiError } from "../utils/ApiError.js";
+import { cancelOrderWithRefund, refundMessage } from "../utils/orderCancellation.js";
 import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { prisma } from "../config/db.js";
@@ -1278,6 +1279,7 @@ export const getUserOrders = asyncHandler(async (req, res, next) => {
       subTotal: formatDecimal(order.subTotal),
       discount: formatDecimal(order.discount),
       shippingCost: formatDecimal(order.shippingCost),
+      codCharge: formatDecimal(order.codCharge),
       tax: formatDecimal(order.tax),
       total: formatDecimal(order.total),
       items: order.items.map((item) => ({
@@ -1392,6 +1394,13 @@ export const getOrderDetails = asyncHandler(async (req, res, next) => {
     subTotal: parseFloat(order.subTotal),
     tax: parseFloat(order.tax),
     shippingCost: parseFloat(order.shippingCost),
+    codCharge: parseFloat(order.codCharge) || 0,
+    isCod: order.paymentMethod === "CASH",
+    refundMethod: order.refundMethod || null,
+    refundStatus: order.refundStatus || null,
+    refundAmount: order.refundAmount != null ? parseFloat(order.refundAmount) : null,
+    cancelReason: order.cancelReason || null,
+    cancelledByRole: order.cancelledByRole || null,
     discount: parseFloat(order.discount),
     total: parseFloat(order.total),
     razorpayPayment: order.razorpayPayment ? {
@@ -1425,50 +1434,21 @@ export const getOrderDetails = asyncHandler(async (req, res, next) => {
     );
 });
 
-// Cancel order
+// Cancel order (buyer) - restocks items and refunds prepaid orders to the original payment method
 export const cancelOrder = asyncHandler(async (req, res, next) => {
   const { orderId } = req.params;
   const { reason } = req.body;
 
-  // Find order
-  const order = await prisma.order.findFirst({
-    where: {
-      id: orderId,
-      userId: req.user.id,
-    },
+  const result = await cancelOrderWithRefund({
+    orderId,
+    actorId: req.user.id,
+    actorType: "BUYER",
+    reason,
   });
-
-  if (!order) {
-    throw new ApiError(404, "Order not found");
-  }
-
-  // Check if order can be cancelled
-  if (order.status !== "PENDING" && order.status !== "PROCESSING") {
-    throw new ApiError(400, "This order cannot be cancelled");
-  }
-
-  // Update order status
-  const updatedOrder = await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      status: "CANCELLED",
-      cancelReason: reason,
-      cancelledAt: new Date(),
-      cancelledBy: req.user.id,
-    },
-  });
-
-  // TODO: Handle inventory restock and payment refund logic
 
   res
     .status(200)
-    .json(
-      new ApiResponsive(
-        200,
-        { order: updatedOrder },
-        "Order cancelled successfully"
-      )
-    );
+    .json(new ApiResponsive(200, result, refundMessage(result.refund)));
 });
 
 // Request account deletion
@@ -1797,3 +1777,4 @@ export const resendVerificationEmail = asyncHandler(async (req, res, next) => {
       )
     );
 });
+

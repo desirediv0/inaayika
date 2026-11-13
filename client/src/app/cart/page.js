@@ -654,6 +654,8 @@ export default function CartPage() {
                                         <span className="text-neutral-900  ">
                                             {formatCurrency(totals.shipping)}
                                         </span>
+                                    ) : !(cart.freeShippingThreshold > 0 && totals.subtotal >= cart.freeShippingThreshold) ? (
+                                        <span className="text-neutral-500 text-[11px] normal-case tracking-normal">Calculated at checkout</span>
                                     ) : (
                                         <span className="text-green-600   tracking-widest flex items-center gap-1">
                                             FREE
@@ -662,7 +664,7 @@ export default function CartPage() {
                                 </div>
 
                                 {/* Free Shipping Progress Alert */}
-                                {totals.shipping > 0 && cart.freeShippingThreshold > 0 && (
+                                {cart.freeShippingThreshold > 0 && totals.subtotal < cart.freeShippingThreshold && (
                                     <div className="text-[11px] text-neutral-800 bg-neutral-50 p-3 rounded-lg border border-neutral-200/50 text-center font-normal">
                                         Add <strong>{formatCurrency(cart.freeShippingThreshold - totals.subtotal)}</strong> more for <span className="text-green-600   uppercase">FREE shipping!</span>
                                     </div>
@@ -697,7 +699,7 @@ export default function CartPage() {
                             </button>
 
                             <p className="text-[10px] text-neutral-400 text-center leading-relaxed">
-                                Shipping, taxes, and discounts calculated during checkout
+                                Shipping is confirmed at checkout from your delivery pincode. Cash on Delivery adds a small COD charge, shown before you pay.
                             </p>
                         </div>
                     </div>

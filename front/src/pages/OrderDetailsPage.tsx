@@ -42,6 +42,10 @@ export default function OrderDetailsPage() {
     cancelledAt?: string;
     cancelReason?: string;
     cancelledBy?: string;
+    cancelledByRole?: string;
+    refundMethod?: string | null;
+    refundStatus?: string | null;
+    refundAmount?: number | null;
     userId?: string;
     couponCode?: string;
     shippingAddress: {
@@ -97,6 +101,8 @@ export default function OrderDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [shippingFormOpen, setShippingFormOpen] = useState(false);
+  const [cancelFormOpen, setCancelFormOpen] = useState(false);
+  const [cancelNote, setCancelNote] = useState("");  const [cancelling, setCancelling] = useState(false);
   const [shippingCarrier, setShippingCarrier] = useState("");
   const [shippingTrackingNumber, setShippingTrackingNumber] = useState("");
   const [shippingTrackingUrl, setShippingTrackingUrl] = useState("");
@@ -401,12 +407,20 @@ export default function OrderDetailsPage() {
       });
 
       if (response && response.data && response.data.success) {
-        toast.success(t('orders.actions.status_update_success', { status: newStatus }));
+        toast.success(response.data?.message || t('orders.actions.status_update_success', { status: newStatus }));
 
         // Update the order status in the UI
+        const refund = response.data?.data?.refund;
         setOrderDetails((prev: OrderDetails | null) => ({
           ...prev!,
           status: newStatus,
+          ...(newStatus === "CANCELLED" && {
+            cancelReason: extraData.notes,
+            cancelledByRole: "SELLER",
+            refundMethod: refund?.method ?? null,
+            refundStatus: refund?.status ?? null,
+            refundAmount: refund?.amount ?? null,
+          }),
           ...(newStatus === "SHIPPED" && {
             tracking: {
               ...prev?.tracking,
@@ -427,6 +441,22 @@ export default function OrderDetailsPage() {
       console.error("Error updating order status:", error);
       toast.error(t('orders.actions.status_update_error'));
       return false;
+    }
+  };
+
+  const isPrepaidOrder = !!orderDetails && orderDetails.paymentMethod !== "CASH";
+
+  const handleCancelSubmit = async () => {
+    if (!cancelNote.trim()) {
+      toast.error("Please enter a cancellation reason");
+      return;
+    }
+    setCancelling(true);
+    const ok = await handleStatusUpdate("CANCELLED", { notes: cancelNote.trim() });
+    setCancelling(false);
+    if (ok) {
+      setCancelFormOpen(false);
+      setCancelNote("");
     }
   };
 
@@ -637,6 +667,14 @@ export default function OrderDetailsPage() {
                 </Badge>
               )}
 
+            {orderDetails.status === "CANCELLED" &&
+              orderDetails.refundStatus &&
+              orderDetails.refundStatus !== "NOT_REQUIRED" && (
+                <Badge className="text-xs font-medium border px-3 py-1 bg-[#F5F3FF] text-[#6D28D9] border-[#DDD6FE]">
+                  Refund {formatCurrency(Number(orderDetails.refundAmount) || 0)} to original payment method: {orderDetails.refundStatus}
+                </Badge>
+              )}
+
             {/* Status update buttons */}
             {orderDetails.status !== "DELIVERED" &&
               orderDetails.status !== "CANCELLED" &&
@@ -736,10 +774,35 @@ export default function OrderDetailsPage() {
                     size="sm"
                     variant="outline"
                     className="border-[#EF4444] text-[#EF4444] hover:bg-[#FEF2F2]"
-                    onClick={() => handleStatusUpdate("CANCELLED")}
+                    onClick={() => setCancelFormOpen((prev) => !prev)}
                   >
                     {t('orders.actions.cancel')}
                   </Button>
+                  {cancelFormOpen && (
+                    <div className="w-full rounded-lg border border-[#FEE2E2] bg-[#FEF2F2] p-3 shadow-sm sm:w-80">
+                      <p className="mb-2 text-xs text-[#6B7280]">The customer is notified in their order. Items go back to stock.</p>
+                      <textarea
+                        value={cancelNote}
+                        onChange={(e) => setCancelNote(e.target.value)}
+                        rows={2}
+                        placeholder="Reason for cancelling"
+                        className="w-full rounded-md border border-[#D1D5DB] bg-white px-3 py-2 text-sm outline-none focus:border-[#EF4444]"
+                      />
+                      {isPrepaidOrder ? (
+                        <p className="mt-2 text-xs text-[#374151]">
+                          {formatCurrency(Number(orderDetails.total) || 0)} will be refunded to the customer's original payment method automatically.
+                        </p>
+                      ) : (
+                        <p className="mt-2 text-xs text-[#6B7280]">Cash on Delivery order: nothing to refund.</p>
+                      )}
+                      <div className="mt-3 flex gap-2">
+                        <Button size="sm" variant="destructive" disabled={cancelling} onClick={handleCancelSubmit}>
+                          {cancelling ? "Cancelling..." : "Confirm cancel"}
+                        </Button>
+                        <Button size="sm" variant="outline" disabled={cancelling} onClick={() => setCancelFormOpen(false)}>Back</Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
           </div>

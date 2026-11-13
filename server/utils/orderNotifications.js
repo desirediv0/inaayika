@@ -142,3 +142,57 @@ export const notifyPaymentOrderFailure = async ({ userId, razorpayOrderId, razor
     console.error("Failure alert error:", err?.message || err);
   }
 };
+
+/**
+ * Emails the customer that their order was cancelled and what happens to their money,
+ * and (when the customer cancelled) alerts the store. Never throws.
+ */
+export const notifyOrderCancelled = async ({ orderId, refund, actorType, reason }) => {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { user: { select: { name: true, email: true } } },
+    });
+    if (!order) return;
+    const { storeName, storePhone, storeEmail } = getStoreConfig();
+
+    let refundLine = "No payment was collected for this order, so there is nothing to refund.";
+    if (refund?.required) {
+      if (refund.status === "PROCESSED") {
+        refundLine = `A refund of ${money(refund.amount)} has been initiated to your original payment method. It usually reflects in 3-5 business days.`;
+      } else {
+        refundLine = `Your refund of ${money(refund.amount)} is being processed by our team and you will hear from us shortly.`;
+      }
+    }
+
+    const byLine = actorType === "SELLER" ? "We had to cancel this order." : "As requested, your order has been cancelled.";
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1f2937">
+        <h2 style="margin:0 0 12px">Order #${esc(order.orderNumber)} cancelled</h2>
+        <p>Hi ${esc(order.user?.name || "there")},</p>
+        <p>${byLine}${reason ? ` Reason: ${esc(reason)}.` : ""}</p>
+        <p><b>Refund:</b> ${refundLine}</p>
+        <p style="color:#6b7280;font-size:13px">Questions? Reply to ${esc(storeEmail || "")}${storePhone ? ` or WhatsApp ${esc(storePhone)}` : ""}.</p>
+      </div>`;
+
+    if (order.user?.email) {
+      await sendEmail({
+        email: order.user.email,
+        subject: `Order #${order.orderNumber} cancelled`,
+        html,
+      });
+    }
+    if (actorType === "BUYER") {
+      const recipients = getRecipients();
+      if (recipients.length) {
+        await sendEmail({
+          email: recipients.join(","),
+          subject: `Customer cancelled order #${order.orderNumber}`,
+          html: `<p>${esc(order.user?.name || "A customer")} cancelled order <b>#${esc(order.orderNumber)}</b> (${money(order.total)}). Reason: ${esc(reason || "-")}.</p><p>Refund: ${refundLine}</p>`,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Cancellation email failed:", error.message);
+  }
+};

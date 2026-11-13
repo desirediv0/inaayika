@@ -21,7 +21,7 @@ export default function PaymentSettingsPage() {
   const { t } = useLanguage();
   const [cashEnabled, setCashEnabled] = useState(true);
   const [razorpayEnabled, setRazorpayEnabled] = useState(false);
-  const [codCharge, setCodCharge] = useState<number>(0);
+  const [codCharge, setCodCharge] = useState<string>("0");
   const [hasRazorpayKeys, setHasRazorpayKeys] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -49,7 +49,7 @@ export default function PaymentSettingsPage() {
       if (response.data.success) {
         setCashEnabled(response.data.data.cashEnabled ?? true);
         setRazorpayEnabled(response.data.data.razorpayEnabled ?? false);
-        setCodCharge(response.data.data.codCharge ?? 0);
+        setCodCharge(String(response.data.data.codCharge ?? 0));
       }
     } catch (error: any) {
       console.error("Error fetching payment settings:", error);
@@ -96,7 +96,7 @@ export default function PaymentSettingsPage() {
       const response = await api.patch("/api/admin/payment-settings", {
         cashEnabled,
         razorpayEnabled,
-        codCharge: parseFloat(codCharge.toString()) || 0,
+        codCharge: parseFloat(codCharge) || 0,
       });
 
       if (response.data.success) {
@@ -233,7 +233,7 @@ export default function PaymentSettingsPage() {
                     min="0"
                     step="1"
                     value={codCharge}
-                    onChange={(e) => setCodCharge(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setCodCharge(e.target.value.replace(/^0+(?=\d)/, ""))}
                     className="w-32 text-right"
                     disabled={isSaving}
                     placeholder="0"

@@ -1,6 +1,8 @@
 import app from "./app.js";
 import dotenv from "dotenv";
 import { prisma } from "./config/db.js";
+import { startSaleAlertScheduler } from "./utils/saleAlerts.js";
+import { startReviewRequestScheduler } from "./utils/reviewRequests.js";
 
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH || ".env" });
 
@@ -79,6 +81,8 @@ prisma
     await seedDefaultSections();
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT} 🚀`);
+      startSaleAlertScheduler();
+      startReviewRequestScheduler();
     });
   })
   .catch((error) => {

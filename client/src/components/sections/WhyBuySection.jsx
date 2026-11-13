@@ -102,10 +102,10 @@ export const WhyBuySection = () => {
             {/* Right side Image banner */}
             <div className="relative w-full md:w-[40%] min-h-[300px] md:min-h-full">
               <Image
-                src="/deals-hero.jpg"
+                src="/deals-hero-v2.jpg"
                 alt="Jewelry Showcase"
                 fill
-                className="object-cover object-[center_28%]"
+                className="object-cover object-[center_32%]"
                 sizes="(max-w-768px) 100vw, 40vw"
                 priority
               />

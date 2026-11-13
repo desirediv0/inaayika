@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { cancelOrderWithRefund, refundMessage } from "../utils/orderCancellation.js";
 import Razorpay from "razorpay";
 import { prisma } from "../config/db.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -1161,6 +1162,7 @@ export const getOrderHistory = asyncHandler(async (req, res) => {
       total: originalTotal,
       subTotal: parseFloat(order.subTotal),
       shippingCost: parseFloat(order.shippingCost) || 0,
+      codCharge: parseFloat(order.codCharge) || 0,
       tax: parseFloat(order.tax) || 0,
       discount: parseFloat(order.discount) || 0,
       couponCode: order.couponCode || null,
@@ -1341,6 +1343,7 @@ export const getOrderDetails = asyncHandler(async (req, res) => {
     subTotal: parseFloat(order.subTotal),
     tax: parseFloat(order.tax),
     shippingCost: parseFloat(order.shippingCost),
+    codCharge: parseFloat(order.codCharge) || 0,
     discount: parseFloat(order.discount) || 0,
     // Use the original total stored in the database to preserve historical pricing
     total: parseFloat(order.total),
@@ -1422,116 +1425,17 @@ export const getOrderDetails = asyncHandler(async (req, res) => {
     );
 });
 
-// Cancel order
+// Cancel order (buyer)
 export const cancelOrder = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
-  const { orderId } = req.params;
-  const { reason } = req.body;
-
-  if (!reason) {
-    throw new ApiError(400, "Cancellation reason is required");
-  }
-
-  // Find order
-  const order = await prisma.order.findFirst({
-    where: {
-      id: orderId,
-      userId,
-    },
-    include: {
-      items: {
-        include: {
-          variant: true,
-        },
-      },
-    },
+  const result = await cancelOrderWithRefund({
+    orderId: req.params.orderId,
+    actorId: req.user.id,
+    actorType: "BUYER",
+    reason: req.body.reason,
   });
-
-  if (!order) {
-    throw new ApiError(404, "Order not found");
-  }
-
-  // Only allow cancellation for certain statuses (allow PAID if not yet shipped)
-  const allowedStatuses = ["PENDING", "PROCESSING", "PAID"];
-  if (!allowedStatuses.includes(order.status)) {
-    throw new ApiError(400, "This order cannot be cancelled");
-  }
-
-  // Process cancellation in transaction
-  await prisma.$transaction(async (tx) => {
-    // 1. Update order status
-    await tx.order.update({
-      where: { id: orderId },
-      data: {
-        status: "CANCELLED",
-        cancelReason: reason,
-        cancelledAt: new Date(),
-        cancelledBy: userId,
-      },
-    });
-
-    // 2. Return items to inventory
-    for (const item of order.items) {
-      // Update inventory
-      await tx.productVariant.update({
-        where: { id: item.variantId },
-        data: {
-          quantity: {
-            increment: item.quantity,
-          },
-        },
-      });
-
-      // Log inventory change
-      await tx.inventoryLog.create({
-        data: {
-          variantId: item.variantId,
-          quantityChange: item.quantity,
-          reason: "cancellation",
-          referenceId: order.id,
-          previousQuantity: item.variant.quantity,
-          newQuantity: item.variant.quantity + item.quantity,
-          createdBy: userId,
-        },
-      });
-    }
-
-    // 3. Handle payment refund if needed (just mark as refund pending)
-    if (order.razorpayPayment) {
-      await tx.razorpayPayment.update({
-        where: { orderId },
-        data: {
-          status: "REFUNDED",
-        },
-      });
-    }
-  });
-
-  // Cancel Shiprocket order if it exists (outside transaction, non-blocking)
-  if (order.shiprocketOrderId) {
-    try {
-      const { cancelShiprocketOrder, getShiprocketSettings } = await import("../utils/shiprocket.js");
-      const settings = await getShiprocketSettings();
-      if (settings.isEnabled) {
-        await cancelShiprocketOrder(order.shiprocketOrderId);
-        // Update order shiprocket status
-        await prisma.order.update({
-          where: { id: orderId },
-          data: { shiprocketStatus: "CANCELLED" },
-        });
-        console.log(`Shiprocket order ${order.shiprocketOrderId} cancelled`);
-      }
-    } catch (error) {
-      console.error("Failed to cancel Shiprocket order:", error.message);
-      // Non-critical - order is already cancelled in our system
-    }
-  }
-
   res
     .status(200)
-    .json(
-      new ApiResponsive(200, { success: true }, "Order cancelled successfully")
-    );
+    .json(new ApiResponsive(200, result, refundMessage(result.refund)));
 });
 
 // Create Cash on Delivery order
@@ -1928,6 +1832,15 @@ export const createCashOrder = asyncHandler(async (req, res) => {
 
     // Create order in a transaction
     const result = await prisma.$transaction(async (tx) => {
+      // Double-click / double-request guard: claim exactly the cart rows we priced. A second concurrent
+      // request waits on this lock, finds the rows gone and fails, so only one order is created.
+      const claimedCart = await tx.cartItem.deleteMany({
+        where: { userId, id: { in: cartItems.map((c) => c.id) } },
+      });
+      if (claimedCart.count !== cartItems.length) {
+        throw new ApiError(409, "Your cart was already used for an order. Please check My Orders.");
+      }
+
       // 1. Create the order
       const order = await tx.order.create({
         data: {
@@ -2001,15 +1914,14 @@ export const createCashOrder = asyncHandler(async (req, res) => {
         });
         orderItems.push(orderItem);
 
-        // Update inventory
-        await tx.productVariant.update({
-          where: { id: variant.id },
-          data: {
-            quantity: {
-              decrement: item.quantity,
-            },
-          },
+        // Update inventory atomically: never sell the last unit twice
+        const stockClaim = await tx.productVariant.updateMany({
+          where: { id: variant.id, quantity: { gte: item.quantity } },
+          data: { quantity: { decrement: item.quantity } },
         });
+        if (stockClaim.count === 0) {
+          throw new ApiError(409, `${variant.product.name} just went out of stock. Please update your cart.`);
+        }
 
         // Update Flash Sale Sold Count
         if (flashSaleInfo?.flashSaleId) {

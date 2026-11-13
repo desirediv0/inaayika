@@ -61,7 +61,7 @@ export default function ReturnPolicyPage() {
                   Important Mandatory Unboxing Video Requirement (24 Hours)
                 </h3>
                 <p className="text-gray-700 text-sm leading-relaxed">
-                  If you receive a damaged product or a different product than ordered, you <strong>MUST provide a 360° continuous (uncut/unedited) unboxing video recorded from scratch</strong> to process transit damage claims (whether returnable or non-returnable). Contact INAAYIKA customer care immediately at <strong>+91 8796449692</strong> within <strong>24 hours of delivery</strong>. Failure to do so may forfeit your claim. The defective or incorrect product will be recalled and replaced or refunded promptly.
+                  If you receive a damaged product or a different product than ordered, you <strong>MUST provide a 360° continuous (uncut/unedited) unboxing video recorded from scratch</strong> to process transit damage claims (whether returnable or non-returnable). Contact INAAYIKA customer care immediately at <strong>+91 87964 49692</strong> within <strong>24 hours of delivery</strong>. Failure to do so may forfeit your claim. The defective or incorrect product will be recalled and replaced or refunded promptly.
                 </p>
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function ReturnPolicyPage() {
               <p className="text-xs text-gray-600 mb-4">Reach out to our customer care team with your 360° unboxing video and order details:</p>
               <div className="flex flex-wrap items-center gap-6 text-sm font-semibold">
                 <a href="tel:+918796449692" className="flex items-center gap-2 text-[#003E29] hover:underline">
-                  <PhoneCall className="h-4 w-4 text-[#D4AF37]" /> +91 8796449692
+                  <PhoneCall className="h-4 w-4 text-[#D4AF37]" /> +91 87964 49692
                 </a>
                 <a href="mailto:info@inaayika.com" className="flex items-center gap-2 text-[#003E29] hover:underline">
                   <Mail className="h-4 w-4 text-[#D4AF37]" /> info@inaayika.com

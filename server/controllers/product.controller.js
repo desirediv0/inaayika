@@ -145,9 +145,44 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     where: whereConditions,
   });
 
+  // Price sorting must happen across ALL matching products, not just inside one page:
+  // rank every match by price first, then load only the requested page of that ranking.
+  const pageNumber = Math.max(parseInt(page) || 1, 1);
+  const pageSize = Math.max(parseInt(limit) || 12, 1);
+  let priceSortedIds = null;
+  if (isPriceSort) {
+    const slim = await prisma.product.findMany({
+      where: whereConditions,
+      select: {
+        id: true,
+        variants: {
+          where: { isActive: true },
+          select: { price: true, salePrice: true },
+          orderBy: { price: "asc" },
+          take: 1,
+        },
+      },
+    });
+    const priceOf = (p) => {
+      const v = p.variants[0];
+      return v ? parseFloat(v.salePrice || v.price) : null;
+    };
+    slim.sort((a, b) => {
+      const pa = priceOf(a);
+      const pb = priceOf(b);
+      if (pa === null && pb === null) return 0;
+      if (pa === null) return 1; // products without a price always last
+      if (pb === null) return -1;
+      return order === "asc" ? pa - pb : pb - pa;
+    });
+    priceSortedIds = slim
+      .slice((pageNumber - 1) * pageSize, pageNumber * pageSize)
+      .map((p) => p.id);
+  }
+
   // Get products with pagination, sorting
   const products = await prisma.product.findMany({
-    where: whereConditions,
+    where: priceSortedIds ? { id: { in: priceSortedIds } } : whereConditions,
     include: {
       categories: {
         include: {
@@ -187,9 +222,13 @@ export const getAllProducts = asyncHandler(async (req, res) => {
         },
       },
     },
-    orderBy: [{ ourProduct: "desc" }, { [effectiveSort]: order }],
-    skip: (parseInt(page) - 1) * parseInt(limit),
-    take: parseInt(limit),
+    ...(priceSortedIds
+      ? {}
+      : {
+          orderBy: [{ ourProduct: "desc" }, { [effectiveSort]: order }],
+          skip: (pageNumber - 1) * pageSize,
+          take: pageSize,
+        }),
   });
 
   // Batch fetch active flash sales for all products in this result
@@ -314,13 +353,10 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     };
   });
 
-  // Handle explicit price sorting
-  if (isPriceSort) {
-    formattedProducts.sort((a, b) => {
-      const priceA = a.flashSale?.flashSalePrice ?? a.basePrice ?? a.regularPrice ?? 0;
-      const priceB = b.flashSale?.flashSalePrice ?? b.basePrice ?? b.regularPrice ?? 0;
-      return order === "asc" ? priceA - priceB : priceB - priceA;
-    });
+  // Keep the global price ranking inside the page
+  if (priceSortedIds) {
+    const rank = new Map(priceSortedIds.map((id, i) => [id, i]));
+    formattedProducts.sort((a, b) => rank.get(a.id) - rank.get(b.id));
   }
 
   res.status(200).json(

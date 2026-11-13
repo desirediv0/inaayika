@@ -9,7 +9,7 @@ export const getStoreConfig = () => {
     // Store Information
     storeName: process.env.STORE_NAME || "Inaayika",
     storeEmail: process.env.STORE_EMAIL || "info@inaayika.com",
-    storePhone: process.env.STORE_PHONE || "+91 95602 47619",
+    storePhone: process.env.STORE_PHONE || "+91 87964 49692",
     storeAddress: process.env.STORE_ADDRESS || "India",
 
     // Store Description/Tagline
@@ -38,7 +38,7 @@ export const getStoreConfig = () => {
     socialTwitter: process.env.SOCIAL_TWITTER || "",
     socialInstagram: process.env.SOCIAL_INSTAGRAM || "https://www.instagram.com/all_about_hair_accesories?igsh=MTJ6bXA2YnZ5M2k3Ng%3D%3D",
     socialYoutube: process.env.SOCIAL_YOUTUBE || "https://www.youtube.com/@Inaayikabypoojakhan",
-    socialWhatsapp: process.env.SOCIAL_WHATSAPP || "919560247619",
+    socialWhatsapp: process.env.SOCIAL_WHATSAPP || "918796449692",
   };
 };
 

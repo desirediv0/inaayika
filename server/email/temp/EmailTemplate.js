@@ -213,6 +213,8 @@ export const getOrderConfirmationTemplate = (data, storeConfig = null) => {
     const store = storeConfig || getStoreConfig();
     const hasDiscount = data.discount && parseFloat(data.discount) > 0;
     const hasCoupon = data.couponCode && data.couponCode.trim() !== "";
+    const isCod = /cash/i.test(String(data.paymentMethod || ""));
+    const siteUrl = (process.env.FRONTEND_URL || store.websiteUrl || "https://inaayika.com").replace(/\/$/, "");
 
     return `
 <!DOCTYPE html>
@@ -285,10 +287,12 @@ export const getOrderConfirmationTemplate = (data, storeConfig = null) => {
                 <div class="summary-row"><span style="color:#666;">Subtotal</span><span>₹${parseFloat(data.subtotal).toFixed(2)}</span></div>
                 ${hasDiscount ? `<div class="summary-row discount-row"><span>Discount ${hasCoupon ? `(${data.couponCode})` : ""}</span><span>-₹${parseFloat(data.discount).toFixed(2)}</span></div>` : ""}
                 <div class="summary-row"><span style="color:#666;">Shipping</span><span>${parseFloat(data.shipping) > 0 ? `₹${parseFloat(data.shipping).toFixed(2)}` : "FREE"}</span></div>
-                <div class="summary-row"><span style="color:#666;">Tax</span><span>₹${parseFloat(data.tax).toFixed(2)}</span></div>
-                ${parseFloat(data.codCharge) > 0 ? `<div class="summary-row"><span style="color:#666;">COD Surcharge</span><span>₹${parseFloat(data.codCharge).toFixed(2)}</span></div>` : ""}
+                ${parseFloat(data.tax) > 0 ? `<div class="summary-row"><span style="color:#666;">Tax</span><span>₹${parseFloat(data.tax).toFixed(2)}</span></div>` : ""}
+                ${parseFloat(data.codCharge) > 0 ? `<div class="summary-row"><span style="color:#666;">COD Charges</span><span>₹${parseFloat(data.codCharge).toFixed(2)}</span></div>` : ""}
                 <div class="summary-row total-row"><span>Total</span><span class="summary-value">₹${parseFloat(data.total).toFixed(2)}</span></div>
             </div>
+
+            ${isCod ? `<div class="savings-box" style="background:#FFF7ED;border-color:#FED7AA;"><span class="savings-text" style="color:#C2410C;">Please keep ₹${parseFloat(data.total).toFixed(2)} ready to pay in cash when your order is delivered.</span></div>` : ""}
 
             ${hasDiscount ? `<div class="savings-box"><span class="savings-text">🎉 You saved ₹${parseFloat(data.discount).toFixed(2)} on this order!</span></div>` : ""}
 
@@ -305,9 +309,9 @@ export const getOrderConfirmationTemplate = (data, storeConfig = null) => {
 
             <p>Track your order status in your account dashboard:</p>
             <div class="button-container">
-                <a href="${process.env.FRONTEND_URL}/account/orders" class="button">Track Your Order</a>
+                <a href="${siteUrl}/account/orders" class="button">Track Your Order</a>
             </div>
-            <p style="font-size:12px;color:#999;">If you can't click the button: ${process.env.FRONTEND_URL}/account/orders</p>
+            <p style="font-size:12px;color:#999;">If you can't click the button: ${siteUrl}/account/orders</p>
         </div>
         ${FOOTER_HTML(store)}
     </div>
