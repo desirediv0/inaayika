@@ -282,9 +282,42 @@ export const getUserCart = asyncHandler(async (req, res) => {
 });
 
 // Add item to cart
+// Remembers the last add per user+variant so a double tap, a double event or a network retry
+// does not add the same item twice within a couple of seconds.
+const recentCartAdds = new Map();
+const DUPLICATE_ADD_WINDOW_MS = 2500;
+
 export const addToCart = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const { productVariantId, quantity = 1 } = req.body;
+
+  // Log every add so an unexpected quantity can be traced (who, what, how many, from which device)
+  console.log(
+    "[cart:add]",
+    JSON.stringify({ userId, productVariantId, quantity, ua: String(req.headers["user-agent"] || "").slice(0, 60) })
+  );
+
+  if (productVariantId) {
+    const dupKey = `${userId}:${productVariantId}:${quantity}`;
+    const now = Date.now();
+    const last = recentCartAdds.get(dupKey);
+    if (last && now - last < DUPLICATE_ADD_WINDOW_MS) {
+      const existing = await prisma.cartItem.findUnique({
+        where: { userId_productVariantId: { userId, productVariantId } },
+      });
+      if (existing) {
+        return res
+          .status(200)
+          .json(new ApiResponsive(200, existing, "Item already added to cart"));
+      }
+    }
+    recentCartAdds.set(dupKey, now);
+    if (recentCartAdds.size > 2000) {
+      for (const [k, t] of recentCartAdds) {
+        if (now - t > DUPLICATE_ADD_WINDOW_MS) recentCartAdds.delete(k);
+      }
+    }
+  }
 
   if (!productVariantId) {
     throw new ApiError(400, "Product variant ID is required");

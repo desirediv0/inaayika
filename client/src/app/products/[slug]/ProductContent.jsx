@@ -870,6 +870,13 @@ export default function ProductContent({ slug }) {
               </button>
             </div>
 
+            {selectedVariant && getInCart(selectedVariant.id) > 0 && (
+              <p className="-mt-3 mb-4 text-[12px] font-medium text-[#003E29]">
+                ✓ {getInCart(selectedVariant.id)} already in your cart. Pressing Add to Cart again adds {quantity} more.{" "}
+                <a href="/cart" className="underline">View cart</a>
+              </p>
+            )}
+
             <p className="-mt-3 mb-5 text-[11px] text-neutral-500">
               Minimum order value is <strong>₹{MINIMUM_ORDER_VALUE}</strong> in products (shipping is charged separately).
             </p>
