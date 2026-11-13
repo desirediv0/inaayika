@@ -2001,6 +2001,36 @@ export function ProductForm({
             </div>
           </div>
 
+          {/* Existing product-level photos of a product that uses variants (shown to customers when a variant has no photo of its own) */}
+          {hasVariants && imagePreviews.length > 0 && (
+            <div className="space-y-3 rounded-lg border p-4 bg-gray-50">
+              <h2 className="text-xl font-semibold border-b pb-2">Product Photos</h2>
+              <p className="text-xs text-muted-foreground">
+                These photos are saved on the product. Customers see them for any variant that has no photo of its own.
+                Add photos to a variant below to override them.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {imagePreviews.map((preview, index) => (
+                  <div
+                    key={preview.id || index}
+                    className={`relative h-32 rounded-md overflow-hidden border-2 bg-white ${preview.isPrimary ? "border-primary" : "border-transparent"}`}
+                  >
+                    <img
+                      src={preview.url}
+                      alt={`Product photo ${index + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                    {preview.isPrimary && (
+                      <span className="absolute top-2 left-2 bg-primary text-white text-xs py-1 px-2 rounded-full">
+                        Main
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Product Images - Dropzone - Only show when variants are NOT enabled */}
           {!hasVariants && (
             <div className="space-y-4 rounded-lg border p-4 bg-gray-50">
@@ -2346,6 +2376,7 @@ export function ProductForm({
                           onImagesChange={handleVariantImagesChange}
                           isEditMode={mode === "edit"}
                           shiprocketEnabled={shiprocketEnabled}
+                          fallbackImages={imagePreviews}
                         />
                       ))}
                     </div>

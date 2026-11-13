@@ -78,6 +78,8 @@ interface VariantCardProps {
   onImagesChange: (index: number, images: ImageData[]) => void;
   isEditMode?: boolean;
   shiprocketEnabled?: boolean;
+  /** Product-level photos shown to customers when this variant has none of its own */
+  fallbackImages?: { url: string; isPrimary?: boolean }[];
 }
 
 export default function VariantCard({
@@ -88,6 +90,7 @@ export default function VariantCard({
   onImagesChange,
   isEditMode = false,
   shiprocketEnabled = false,
+  fallbackImages = [],
 }: VariantCardProps) {
   const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(true); // Default expanded so user can see images
@@ -1381,7 +1384,28 @@ export default function VariantCard({
             )}
 
             {/* No Images State */}
-            {!hasImages && (
+            {!hasImages && fallbackImages.length > 0 && (
+              <div className="py-4 border border-gray-200 rounded-lg bg-gray-50 px-4">
+                <p className="font-medium text-sm text-gray-700">
+                  No photo for this variant: customers see the product photos below
+                </p>
+                <p className="text-xs text-gray-500 mt-1 mb-3">
+                  Upload an image above only if this variant needs its own photo.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {fallbackImages.map((img, i) => (
+                    <img
+                      key={i}
+                      src={img.url}
+                      alt={`Product photo ${i + 1}`}
+                      className="h-16 w-16 rounded-md object-cover border border-gray-200"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!hasImages && fallbackImages.length === 0 && (
               <div className="text-center py-6 text-gray-500 border border-gray-200 rounded-lg bg-gray-50">
                 <ImageIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
                 <p className="font-medium">No images uploaded yet</p>
