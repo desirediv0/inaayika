@@ -549,6 +549,8 @@ export const addToCart = asyncHandler(async (req, res) => {
         },
         { isolationLevel: "Serializable" }
       );
+      // Success: stop here. Without this the loop ran the add again on every pass (quantity 1 became 3).
+      break;
     } catch (error) {
       const retryable = error?.code === "P2034" || error?.code === "P2002";
       if (!retryable || attempt === 2) {
