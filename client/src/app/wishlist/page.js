@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -20,14 +20,32 @@ export default function WishlistPage() {
     if (!loading && !isAuthenticated) router.push("/auth?redirect=/wishlist");
   }, [isAuthenticated, loading, router]);
 
+  // A failed request must never look like an empty wishlist, so it has its own state.
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  const loadWishlist = useCallback(async () => {
+    setLoadingItems(true);
+    setLoadFailed(false);
+    setError("");
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const res = await fetchApi("/users/wishlist", { credentials: "include" });
+        setWishlistItems(res.data?.wishlistItems || []);
+        setLoadingItems(false);
+        return;
+      } catch {
+        // one quiet retry (a token refresh or a cold server often fixes it)
+        if (attempt === 0) await new Promise((r) => setTimeout(r, 1200));
+      }
+    }
+    setLoadFailed(true);
+    setLoadingItems(false);
+  }, []);
+
   useEffect(() => {
     if (!isAuthenticated) return;
-    setLoadingItems(true);
-    fetchApi("/users/wishlist", { credentials: "include" })
-      .then((res) => setWishlistItems(res.data?.wishlistItems || []))
-      .catch(() => setError("Failed to load wishlist. Please try again."))
-      .finally(() => setLoadingItems(false));
-  }, [isAuthenticated]);
+    loadWishlist();
+  }, [isAuthenticated, loadWishlist]);
 
   const removeFromWishlist = async (wishlistItemId) => {
     try {
@@ -90,6 +108,23 @@ export default function WishlistPage() {
                 </div>
               ))}
             </div>
+          ) : loadFailed ? (
+
+            /* Load error: not the same as an empty wishlist */
+            <div className="bg-white rounded-3xl p-12 text-center max-w-lg mx-auto border border-red-100 shadow-sm mt-12">
+              <h2 className="text-xl uppercase tracking-wide mb-3 text-neutral-900">Couldn&apos;t load your wishlist</h2>
+              <p className="text-neutral-500 mb-6 max-w-xs mx-auto text-xs font-light leading-relaxed">
+                Your saved items are safe. Please check your connection and try again.
+              </p>
+              <button
+                onClick={loadWishlist}
+                className="text-white text-xs font-semibold uppercase tracking-widest px-8 py-4 rounded-xl shadow-md border border-[#D4AF37]/30 hover:bg-[#002216]"
+                style={{ background: "#003E29" }}
+              >
+                Try Again
+              </button>
+            </div>
+
           ) : wishlistItems.length === 0 ? (
 
             /* Empty state */
