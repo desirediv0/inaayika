@@ -1,4 +1,4 @@
-import { XCircle, Clock, AlertTriangle, CheckCircle, RefreshCw, Mail, PhoneCall } from "lucide-react";
+import { XCircle, Clock, AlertTriangle, RefreshCw, Mail, PhoneCall } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
@@ -39,7 +39,7 @@ export default function CancellationPolicyPage() {
             Order Cancellation Policy
           </h1>
           <p className="text-white/70 max-w-2xl text-base font-sans leading-relaxed">
-            Clear guidelines regarding free pre-dispatch cancellations, shipped order rules, customized items, and store-initiated cancellations.
+            Clear guidelines regarding cancellations, shipped order rules, customized items, and store-initiated cancellations.
           </p>
         </div>
       </section>
@@ -58,13 +58,6 @@ export default function CancellationPolicyPage() {
               
               <div className="space-y-4 text-sm text-gray-700 leading-relaxed">
                 
-                <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200">
-                  <p className="font-semibold text-[#003E29] mb-1 flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-[#003E29]" /> Pre-Dispatch Free Cancellation:
-                  </p>
-                  <p>You can cancel your order <strong>before it is dispatched</strong> by logging into your INAAYIKA account dashboard. Pre-dispatch cancellation is completely free of charge.</p>
-                </div>
-
                 <div className="p-4 rounded-xl border border-gray-200 bg-white">
                   <p className="font-semibold text-gray-900 mb-1">📦 Shipped Orders Protocol:</p>
                   <ul className="list-disc pl-5 space-y-1.5 text-gray-600">
