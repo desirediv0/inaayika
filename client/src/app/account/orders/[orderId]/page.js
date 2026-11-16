@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useRequireAuth } from "@/lib/use-require-auth";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -24,10 +25,11 @@ const getImageUrl = (image) => {
 };
 
 export default function OrderDetailPage() {
-    const { isAuthenticated, isLoading: authLoading } = useAuth();
+    const { isAuthenticated, loading: authLoading } = useAuth();
     const router = useRouter();
     const params = useParams();
     const orderId = params.orderId;
+    useRequireAuth(`/account/orders/${orderId}`);
 
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -37,10 +39,7 @@ export default function OrderDetailPage() {
     const [cancelReason, setCancelReason] = useState("");
 
     useEffect(() => {
-        if (!authLoading && !isAuthenticated) {
-            router.push("/auth?redirect=/account/orders");
-            return;
-        }
+        if (authLoading) return;
 
         const fetchOrder = async () => {
             if (!isAuthenticated || !orderId) return;

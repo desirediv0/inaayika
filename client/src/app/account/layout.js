@@ -1,22 +1,18 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useRequireAuth } from "@/lib/use-require-auth";
+import { usePathname } from "next/navigation";
+
 import Link from "next/link";
 import { ClientOnly } from "@/components/client-only";
 import { DynamicIcon } from "@/components/dynamic-icon";
 
 export default function AccountLayout({ children }) {
-    const { isAuthenticated, loading } = useAuth();
-    const router = useRouter();
+    const { loading } = useAuth();
     const pathname = usePathname();
 
-    useEffect(() => {
-        if (!loading && !isAuthenticated) {
-            router.push("/auth");
-        }
-    }, [isAuthenticated, loading, router]);
+    useRequireAuth(pathname);
 
     if (loading) {
         return (

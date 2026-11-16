@@ -9,6 +9,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { safeReturnPath } from "@/lib/use-require-auth";
 import { toast } from "sonner";
 
 const TRUST_POINTS = [
@@ -35,16 +36,7 @@ function AuthForm() {
   // Already logged in: go back to the page the visitor wanted (e.g. /wishlist), not always to the home page.
   useEffect(() => {
     if (!isAuthenticated) return;
-    const wanted = searchParams.get("returnUrl") || searchParams.get("redirect");
-    let target = "/";
-    try {
-      const decoded = wanted ? decodeURIComponent(wanted) : "/";
-      // only same-site paths, never an external address
-      if (decoded.startsWith("/") && !decoded.startsWith("//")) target = decoded;
-    } catch {
-      target = "/";
-    }
-    router.push(target);
+    router.push(safeReturnPath(searchParams.get("returnUrl") || searchParams.get("redirect")));
   }, [isAuthenticated, router, searchParams]);
 
   useEffect(() => {
@@ -201,7 +193,7 @@ function LoginForm({ onSwitchTab }) {
       sessionStorage.setItem("justLoggedIn", "true");
       toast.success("Login successful!");
       const returnUrl = searchParams.get("returnUrl") || searchParams.get("redirect");
-      setTimeout(() => router.push(returnUrl ? decodeURIComponent(returnUrl) : "/"), 300);
+      setTimeout(() => router.push(safeReturnPath(returnUrl)), 300);
     } catch (error) {
       const msg = error.message || "Login failed. Please check your credentials.";
       const isVerify = msg.toLowerCase().includes("verify") || msg.toLowerCase().includes("verification");

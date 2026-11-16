@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useRequireAuth } from "@/lib/use-require-auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ export default function ChangePasswordPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
 
-    useEffect(() => { if (!loading && !isAuthenticated) router.push("/auth"); }, [isAuthenticated, loading, router]);
+    useRequireAuth("/account/change-password");
 
     const handleChange = (e) => { const { name, value } = e.target; setFormData((prev) => ({ ...prev, [name]: value })); };
     const togglePasswordVisibility = (field) => { setShowPassword((prev) => ({ ...prev, [field]: !prev[field] })); };

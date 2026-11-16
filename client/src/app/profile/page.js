@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useRequireAuth } from "@/lib/use-require-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User, Package, MapPin, LogOut, Plus, Truck, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { formatPrice } from "@/lib/products";
 
 function ProfileContent() {
     const { user, isAuthenticated, logout } = useAuth();
+    useRequireAuth("/profile");
     const router = useRouter();
     const searchParams = useSearchParams();
     const tabParam = searchParams.get("tab");
@@ -29,9 +31,7 @@ function ProfileContent() {
     };
 
     if (!isAuthenticated) {
-        if (typeof window !== "undefined") {
-            router.push("/auth");
-        }
+        // useRequireAuth (above) decides whether to send the visitor to the login page
         return null;
     }
 

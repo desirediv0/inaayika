@@ -423,7 +423,7 @@ export default function CartPage() {
 
     const handleCheckout = useCallback(() => {
         if (!isAuthenticated && hidePricesForGuests) {
-            router.push("/auth?redirect=checkout");
+            router.push("/auth?redirect=" + encodeURIComponent("/checkout"));
             return;
         }
         if (totals.subtotal < MINIMUM_ORDER_VALUE) {
@@ -431,7 +431,7 @@ export default function CartPage() {
             return;
         }
         if (!isAuthenticated) {
-            router.push("/auth?redirect=checkout");
+            router.push("/auth?redirect=" + encodeURIComponent("/checkout"));
         } else {
             router.push("/checkout");
         }

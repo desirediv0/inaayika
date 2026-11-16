@@ -3,22 +3,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useRequireAuth } from "@/lib/use-require-auth";
 import { useCart } from "@/lib/cart-context";
 import { fetchApi, formatCurrency, loadScript } from "@/lib/utils";
 import { playSuccessSound, fireConfetti } from "@/lib/sound-utils";
-import { Button } from "@/components/ui/button";
 import {
-    CreditCard,
     AlertCircle,
     Loader2,
     CheckCircle,
     MapPin,
     Plus,
     Minus,
-    ShoppingBag,
     PartyPopper,
-    Gift,
-    Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -133,12 +129,8 @@ export default function CheckoutPage() {
         }
     };
 
-    // Redirect if not authenticated
-    useEffect(() => {
-        if (!isAuthenticated) {
-            router.push("/auth?redirect=checkout");
-        }
-    }, [isAuthenticated, router]);
+    // Redirect to login only when the server confirms there is no session (then come back here)
+    useRequireAuth("/checkout");
 
     useEffect(() => {
         try {
