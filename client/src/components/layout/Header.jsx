@@ -65,6 +65,7 @@ function MobileNavItem({ href, icon: Icon, label, onClick, badge }) {
   return (
     <Link
       href={href}
+      prefetch={href === "/wishlist" ? false : undefined}
       onClick={onClick}
       className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-all duration-200"
     >
@@ -364,6 +365,7 @@ export function Navbar() {
                 {/* Wishlist */}
                 <Link
                   href="/wishlist"
+                  prefetch={false}
                   className="p-2 text-neutral-800 hover:text-[#003E29] transition-colors relative flex items-center justify-center"
                   aria-label="Wishlist"
                 >
@@ -548,6 +550,7 @@ function AccountDropdown({ user, isAuthenticated, activeDropdown, setActiveDropd
                       <Link
                         key={href}
                         href={href}
+                        prefetch={href === "/wishlist" ? false : undefined}
                         onClick={() => setActiveDropdown(null)}
                         className="flex items-center gap-3 px-5 py-2.5 text-sm tracking-wide text-gray-700 hover:text-[#003E29] hover:bg-[#F7F3EB] transition-colors"
                       >

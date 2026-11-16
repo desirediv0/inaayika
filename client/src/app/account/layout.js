@@ -49,7 +49,7 @@ export default function AccountLayout({ children }) {
                                     <h2 className="text-xl font-semibold mb-4">Account</h2>
                                     <nav className="space-y-1">
                                         {navItems.map((item) => (
-                                            <Link key={item.path} href={item.path} className={`flex items-center p-2 rounded-md ${isActive(item.path) ? "bg-[#003E29]/10 text-[#003E29]" : "hover:bg-gray-100"}`}>
+                                            <Link key={item.path} href={item.path} prefetch={item.path === "/wishlist" ? false : undefined} className={`flex items-center p-2 rounded-md ${isActive(item.path) ? "bg-[#003E29]/10 text-[#003E29]" : "hover:bg-gray-100"}`}>
                                                 <DynamicIcon name={item.icon} className="mr-2 h-5 w-5" />
                                                 <span>{item.label}</span>
                                             </Link>

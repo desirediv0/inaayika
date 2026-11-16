@@ -184,6 +184,7 @@ function LoginForm({ onSwitchTab }) {
     setIsSubmitting(true);
     try {
       await login(email, password);
+      router.refresh();
       sessionStorage.setItem("justLoggedIn", "true");
       toast.success("Login successful!");
       const returnUrl = searchParams.get("returnUrl") || searchParams.get("redirect");
@@ -462,6 +463,7 @@ function VerifyOtpForm({ defaultEmail = "", onSwitchTab }) {
     setIsSubmitting(true);
     try {
       await verifyOtp(email, otp);
+      router.refresh();
       toast.success("Email verified successfully! Logging you in...");
       if (typeof window !== "undefined") localStorage.removeItem("registeredEmail");
       setTimeout(() => router.push("/"), 500);
