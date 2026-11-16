@@ -402,9 +402,22 @@ export function AuthProvider({ children }) {
     // Compute isAuthenticated based on user state and loading state
     const isAuthenticated = !loading && !!user;
 
+    // Re-reads the session from the server. Returns the user, or null when really logged out.
+    const refreshUser = async () => {
+        try {
+            const res = await fetchApi("/users/me", { credentials: "include" });
+            const fresh = res.data?.user || null;
+            setUser(fresh);
+            return fresh;
+        } catch {
+            return null;
+        }
+    };
+
     const value = {
         user,
         loading,
+        refreshUser,
         error,
         login,
         register,

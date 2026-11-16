@@ -17,7 +17,9 @@ export function middleware(request) {
 
     // If accessing a private route without authentication, redirect to login
     if (isPrivateRoute && !isAuthenticated) {
-        return NextResponse.redirect(new URL("/auth", request.url));
+        const loginUrl = new URL("/auth", request.url);
+        loginUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
+        return NextResponse.redirect(loginUrl);
     }
 
     return NextResponse.next();

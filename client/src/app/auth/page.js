@@ -32,7 +32,20 @@ function AuthForm() {
   const [pendingEmail, setPendingEmail] = useState("");
 
   useEffect(() => { setActiveTab(tabFromUrl); }, [tabFromUrl]);
-  useEffect(() => { if (isAuthenticated) router.push("/"); }, [isAuthenticated, router]);
+  // Already logged in: go back to the page the visitor wanted (e.g. /wishlist), not always to the home page.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const wanted = searchParams.get("returnUrl") || searchParams.get("redirect");
+    let target = "/";
+    try {
+      const decoded = wanted ? decodeURIComponent(wanted) : "/";
+      // only same-site paths, never an external address
+      if (decoded.startsWith("/") && !decoded.startsWith("//")) target = decoded;
+    } catch {
+      target = "/";
+    }
+    router.push(target);
+  }, [isAuthenticated, router, searchParams]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {

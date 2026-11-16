@@ -10,14 +10,25 @@ import { Trash2, Heart, ShoppingBag, ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
 
 export default function WishlistPage() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, refreshUser } = useAuth();
   const router = useRouter();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [error, setError] = useState("");
 
+  // Right after a login the page can render before the auth state has caught up. Before sending anyone to the
+  // login page, confirm with the server that they really are logged out.
   useEffect(() => {
-    if (!loading && !isAuthenticated) router.push("/auth?redirect=/wishlist");
+    if (loading || isAuthenticated) return;
+    let cancelled = false;
+    (async () => {
+      const fresh = await refreshUser();
+      if (!cancelled && !fresh) router.push("/auth?redirect=" + encodeURIComponent("/wishlist"));
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, loading, router]);
 
   // A failed request must never look like an empty wishlist, so it has its own state.
