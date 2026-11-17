@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { fetchApi } from "@/lib/utils";
 import Reveal from "@/components/ui/Reveal";
 import {
@@ -134,7 +135,7 @@ function ReelCard({ reel, onClick, index = 0 }) {
         {/* Paused — thin gold play ring */}
         {!isPlaying && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/25">
-            <div className="w-12 h-12 rounded-full border border-[#E7C983]/80 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full border border-[#E7C983]/80 bg-black/30 flex items-center justify-center">
               <Play className="h-4 w-4 text-[#E7C983] ml-0.5" />
             </div>
           </div>
@@ -148,7 +149,7 @@ function ReelCard({ reel, onClick, index = 0 }) {
           <Link
             href={`/products/${product.slug || product.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="group/chip absolute bottom-2 inset-x-2 z-20 flex items-center gap-2.5 bg-black/60 backdrop-blur-md border border-white/15 hover:border-[#B08D57]/70 p-2.5 transition-colors"
+            className="group/chip absolute bottom-2 inset-x-2 z-20 flex items-center gap-2.5 bg-black/60 border border-white/15 hover:border-[#B08D57]/70 p-2.5 transition-colors"
           >
             {getProductImageUrl(product) && (
               <div className="w-12 h-12 overflow-hidden flex-shrink-0 border border-[#B08D57]/40">
@@ -298,12 +299,18 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
   if (!currentReel) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#00140D]/95 backdrop-blur-sm flex items-center justify-center px-3">
+    <div
+      className="fixed inset-0 z-[2147483000] bg-[#00140D] flex items-center justify-center px-3"
+      style={{ height: "100dvh", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Reel viewer"
+    >
       {/* Previous arrow */}
       {currentIndex > 0 && (
         <button
           onClick={() => onNavigate(currentIndex - 1)}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-50 w-10 h-10 rounded-full border border-white/25 bg-black/40 backdrop-blur-sm flex items-center justify-center hover:border-[#E7C983] hover:text-[#E7C983] text-white transition-colors"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-50 w-10 h-10 rounded-full border border-white/25 bg-black/40 flex items-center justify-center hover:border-[#E7C983] hover:text-[#E7C983] text-white transition-colors"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
@@ -313,7 +320,7 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
       {currentIndex < reels.length - 1 && (
         <button
           onClick={() => onNavigate(currentIndex + 1)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-50 w-10 h-10 rounded-full border border-white/25 bg-black/40 backdrop-blur-sm flex items-center justify-center hover:border-[#E7C983] hover:text-[#E7C983] text-white transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-50 w-10 h-10 rounded-full border border-white/25 bg-black/40 flex items-center justify-center hover:border-[#E7C983] hover:text-[#E7C983] text-white transition-colors"
         >
           <ChevronRight className="h-6 w-6" />
         </button>
@@ -327,7 +334,7 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
         onTouchEnd={handleTouchEnd}
       >
         {/* Reel counter — top-left */}
-        <div className="absolute top-3 left-3 z-[60] px-3 py-1 border border-white/15 bg-black/50 backdrop-blur-sm">
+        <div className="absolute top-3 left-3 z-[60] px-3 py-1 border border-white/15 bg-black/50">
           <span className="text-white/80 text-[10px] uppercase tracking-[0.25em]">
             {currentIndex + 1} / {reels.length}
           </span>
@@ -337,7 +344,7 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-3 right-3 z-[60] w-10 h-10 rounded-full border border-white/25 bg-black/50 backdrop-blur-sm flex items-center justify-center hover:border-[#E7C983] hover:text-[#E7C983] text-white transition-colors"
+          className="absolute top-3 right-3 z-[60] w-10 h-10 rounded-full border border-white/25 bg-black/50 flex items-center justify-center hover:border-[#E7C983] hover:text-[#E7C983] text-white transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
@@ -346,7 +353,7 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
         <button
           onClick={toggleMute}
           aria-label={isMuted ? "Unmute" : "Mute"}
-          className="absolute top-16 right-3 z-[60] w-10 h-10 rounded-full border border-white/25 bg-black/50 backdrop-blur-sm flex items-center justify-center hover:border-[#E7C983] transition-colors"
+          className="absolute top-16 right-3 z-[60] w-10 h-10 rounded-full border border-white/25 bg-black/50 flex items-center justify-center hover:border-[#E7C983] transition-colors"
         >
           {isMuted ? (
             <VolumeX className="h-5 w-5 text-white" />
@@ -364,7 +371,7 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
             key={`${currentReel.id}-${retryKey}`}
             ref={videoRef}
             src={currentReel.videoUrl}
-            className="w-full h-full object-contain"
+            className="absolute inset-0 w-full h-full object-contain"
             loop
             playsInline
             preload="auto"
@@ -411,7 +418,7 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
           {/* Play overlay when paused */}
           {!isPlaying && !isBuffering && !hasError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/25">
-              <div className="w-16 h-16 rounded-full border border-[#E7C983]/80 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full border border-[#E7C983]/80 bg-black/30 flex items-center justify-center">
                 <Play className="h-6 w-6 text-[#E7C983] ml-1" />
               </div>
             </div>
@@ -419,14 +426,14 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
 
           {/* Phone started the reel muted: tell the customer how to get sound */}
           {isPlaying && isMuted && (
-            <div className="absolute top-28 left-1/2 -translate-x-1/2 px-3 py-1.5 border border-white/15 bg-black/50 backdrop-blur-sm pointer-events-none">
+            <div className="absolute top-28 left-1/2 -translate-x-1/2 px-3 py-1.5 border border-white/15 bg-black/50 pointer-events-none">
               <span className="text-white/80 text-[10px] uppercase tracking-[0.2em]">Tap the speaker for sound</span>
             </div>
           )}
 
           {/* Play/Pause hint */}
           {isPlaying && !isMuted && (
-            <div className="absolute bottom-28 left-1/2 -translate-x-1/2 px-3 py-1.5 border border-white/15 bg-black/40 backdrop-blur-sm pointer-events-none">
+            <div className="absolute bottom-28 left-1/2 -translate-x-1/2 px-3 py-1.5 border border-white/15 bg-black/40 pointer-events-none">
               <span className="text-white/80 text-[10px] uppercase tracking-[0.25em]">
                 Tap to pause
               </span>
@@ -732,7 +739,7 @@ export default function WatchAndBuySection() {
           >
             <button
               onClick={() => scroll("left")}
-              className="absolute -left-1 top-[38%] -translate-y-1/2 z-30 w-9 h-9 border border-[#B08D57]/50 bg-[#00140D]/85 backdrop-blur-sm flex items-center justify-center transition-all text-[#E7C983] hover:bg-[#B08D57] hover:text-[#00140D]"
+              className="absolute -left-1 top-[38%] -translate-y-1/2 z-30 w-9 h-9 border border-[#B08D57]/50 bg-[#00140D]/85 flex items-center justify-center transition-all text-[#E7C983] hover:bg-[#B08D57] hover:text-[#00140D]"
               aria-label="Scroll left"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -761,7 +768,7 @@ export default function WatchAndBuySection() {
 
             <button
               onClick={() => scroll("right")}
-              className="absolute -right-1 top-[38%] -translate-y-1/2 z-30 w-9 h-9 border border-[#B08D57]/50 bg-[#00140D]/85 backdrop-blur-sm flex items-center justify-center transition-all text-[#E7C983] hover:bg-[#B08D57] hover:text-[#00140D]"
+              className="absolute -right-1 top-[38%] -translate-y-1/2 z-30 w-9 h-9 border border-[#B08D57]/50 bg-[#00140D]/85 flex items-center justify-center transition-all text-[#E7C983] hover:bg-[#B08D57] hover:text-[#00140D]"
               aria-label="Scroll right"
             >
               <ChevronRight className="h-4 w-4" />
@@ -771,14 +778,17 @@ export default function WatchAndBuySection() {
       </section>
 
       {/* Fullscreen Reel Viewer */}
-      {viewerOpen && (
-        <ReelViewer
-          reels={reels}
-          currentIndex={viewerIndex}
-          onClose={closeViewer}
-          onNavigate={navigateViewer}
-        />
-      )}
+      {viewerOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <ReelViewer
+            reels={reels}
+            currentIndex={viewerIndex}
+            onClose={closeViewer}
+            onNavigate={navigateViewer}
+          />,
+          document.body
+        )}
     </>
   );
 }
