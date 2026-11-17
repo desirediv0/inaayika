@@ -18,10 +18,6 @@ export default function AccountPage() {
     const [addresses, setAddresses] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
-    const [referralCode, setReferralCode] = useState("");
-    const [referralStats, setReferralStats] = useState(null);
-    const [isLoadingReferral, setIsLoadingReferral] = useState(false);
-    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         if (user) setFormData({ name: user.name || "", phone: user.phone || "", profileImage: null });
@@ -36,22 +32,6 @@ export default function AccountPage() {
             } catch (error) { console.error("Failed to fetch addresses:", error); }
         };
         fetchAddresses();
-    }, [user]);
-
-    useEffect(() => {
-        const fetchReferralData = async () => {
-            if (!user) return;
-            try {
-                setIsLoadingReferral(true);
-                const response = await fetchApi("/referrals/my-code", { credentials: "include" });
-                if (response.success) {
-                    setReferralCode(response.data.referralCode);
-                    setReferralStats(response.data.stats);
-                }
-            } catch (error) { console.error("Failed to fetch referral data:", error); }
-            finally { setIsLoadingReferral(false); }
-        };
-        fetchReferralData();
     }, [user]);
 
     const handleChange = (e) => {
@@ -145,39 +125,6 @@ export default function AccountPage() {
                                     <p className="text-gray-600">No addresses added yet</p>
                                     <Link href="/account/addresses" className="mt-2 inline-block"><Button variant="outline" size="sm" className="mt-2">Add Address</Button></Link>
                                 </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Referral Program */}
-                    <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow mb-8">
-                        <div className="p-4 lg:p-6">
-                            <div className="flex items-center gap-2 mb-4"><DynamicIcon name="Users" className="h-6 w-6 text-green-600" /><h2 className="text-xl font-semibold">Referral Program</h2></div>
-                            <p className="text-gray-600 mb-6">Share your referral code with friends and earn rewards when they make their first order!</p>
-
-                            {isLoadingReferral ? (
-                                <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
-                            ) : (
-                                <>
-                                    <div className="bg-white rounded-lg p-4 mb-6 border-2 border-green-200">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Your Referral Code</label>
-                                        <div className="flex items-center gap-2">
-                                            <Input value={referralCode} readOnly className="font-mono text-lg   bg-gray-50" />
-                                            <Button onClick={() => { navigator.clipboard.writeText(referralCode); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="min-w-[100px] bg-[#003E29] hover:bg-[#002216] text-white border border-[#D4AF37]/20">
-                                                {copied ? <><DynamicIcon name="Check" className="h-4 w-4 mr-2" />Copied!</> : <><DynamicIcon name="Copy" className="h-4 w-4 mr-2" />Copy</>}
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    {referralStats && (
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            <div className="bg-white rounded-lg p-4 text-center border"><p className="text-2xl   text-green-600">{referralStats.totalReferrals || 0}</p><p className="text-sm text-gray-600 mt-1">Total Referrals</p></div>
-                                            <div className="bg-white rounded-lg p-4 text-center border"><p className="text-2xl   text-blue-600">{referralStats.completedReferrals || 0}</p><p className="text-sm text-gray-600 mt-1">Completed</p></div>
-                                            <div className="bg-white rounded-lg p-4 text-center border"><p className="text-2xl   text-yellow-600">{referralStats.pendingReferrals || 0}</p><p className="text-sm text-gray-600 mt-1">Pending</p></div>
-                                            <div className="bg-white rounded-lg p-4 text-center border"><p className="text-2xl   text-green-600">₹{parseFloat(referralStats.totalEarnings || 0).toFixed(2)}</p><p className="text-sm text-gray-600 mt-1">Total Earnings</p></div>
-                                        </div>
-                                    )}
-                                </>
                             )}
                         </div>
                     </div>

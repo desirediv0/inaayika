@@ -47,27 +47,48 @@ const ReelSkeleton = ({ index }) => (
    - Click = open fullscreen viewer
    - Gold corner brackets, glass product chip
 ───────────────────────────────────────── */
-function ReelCard({ reel, onClick }) {
+function ReelCard({ reel, onClick, index = 0 }) {
   const videoRef = useRef(null);
   const cardRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  // iPhones only autoplay a video whose "muted" ATTRIBUTE exists in the page. React sets muted as a property only,
+  // so the attribute is missing and the reel stays black. Set everything by hand as soon as the element exists.
+  const setVideoRef = useCallback((el) => {
+    videoRef.current = el;
+    if (el) {
+      el.muted = true;
+      el.defaultMuted = true;
+      el.setAttribute("muted", "");
+      el.setAttribute("playsinline", "");
+      el.setAttribute("webkit-playsinline", "");
+    }
+  }, []);
 
   useEffect(() => {
     if (!cardRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (videoRef.current) {
-          if (entry.isIntersecting) {
-            videoRef.current.play().catch(() => { });
-            setIsPlaying(true);
+        const video = videoRef.current;
+        if (!video) return;
+        // Data saver / very slow network: do not stream reels on their own, the customer can tap one to watch
+        const connection = navigator.connection;
+        const saveData = connection && (connection.saveData || /(^|-)2g$/.test(connection.effectiveType || ""));
+        if (entry.isIntersecting && !saveData) {
+          const attempt = video.play();
+          if (attempt && attempt.then) {
+            attempt.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
           } else {
-            videoRef.current.pause();
-            setIsPlaying(false);
+            setIsPlaying(true);
           }
+        } else {
+          video.pause();
+          setIsPlaying(false);
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.6 }
     );
 
     observer.observe(cardRef.current);
@@ -83,15 +104,19 @@ function ReelCard({ reel, onClick }) {
       onClick={() => onClick(reel)}
     >
       <div className="luxe-corners relative aspect-[9/14] overflow-hidden bg-[#03130C] border border-white/10 hover:border-[#B08D57]/70 transition-all duration-500 hover:shadow-[0_30px_60px_-25px_rgba(231,201,131,0.25)]">
-        {reel.videoUrl ? (
+        {reel.videoUrl && !failed ? (
           <video
-            ref={videoRef}
+            ref={setVideoRef}
             src={`${reel.videoUrl}#t=0.1`}
             className="w-full h-full object-cover"
             muted
             loop
             playsInline
-            preload="metadata"
+            // only the first few preload; the rest download when they scroll into view (reels are large files)
+            preload={index < 3 ? "metadata" : "none"}
+            onError={() => setFailed(true)}
+            onPlaying={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
           />
         ) : (
           <div className="flex items-center justify-center h-full bg-[#03130C]">
@@ -182,6 +207,9 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showProduct, setShowProduct] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const videoRef = useRef(null);
 
   const currentReel = reels[currentIndex];
@@ -194,14 +222,29 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
     setShowProduct(true);
   }, [currentIndex]);
 
-  // Autoplay UNMUTED when reel changes
+  // Start with sound. Phones often refuse sound without a fresh tap, so fall back to muted playback
+  // (and show the unmute button) instead of leaving a black screen that says "playing".
   useEffect(() => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = false;
-    videoRef.current.play().catch(() => { });
-    setIsPlaying(true);
+    const video = videoRef.current;
+    if (!video) return;
+    setIsBuffering(true);
+    setHasError(false);
+    video.muted = false;
     setIsMuted(false);
-  }, [currentIndex]);
+    const started = video.play();
+    if (started && started.then) {
+      started
+        .then(() => setIsPlaying(true))
+        .catch(() => {
+          video.muted = true;
+          setIsMuted(true);
+          video
+            .play()
+            .then(() => setIsPlaying(true))
+            .catch(() => setIsPlaying(false));
+        });
+    }
+  }, [currentIndex, retryKey]);
 
   // Click on video = toggle play/pause (already unmuted)
   const handleVideoClick = () => {
@@ -279,6 +322,7 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
       {/* Main video popup — ~85% of viewport height, framed */}
       <div
         className="relative w-full max-w-[420px] h-[85vh] max-h-[85vh] flex flex-col overflow-hidden border border-[#B08D57]/30 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)]"
+        style={{ height: "85dvh", maxHeight: "85dvh" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -317,15 +361,55 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
           onClick={handleVideoClick}
         >
           <video
+            key={`${currentReel.id}-${retryKey}`}
             ref={videoRef}
             src={currentReel.videoUrl}
             className="w-full h-full object-contain"
             loop
             playsInline
+            preload="auto"
+            onLoadedData={() => setIsBuffering(false)}
+            onCanPlay={() => setIsBuffering(false)}
+            onWaiting={() => setIsBuffering(true)}
+            onPlaying={() => {
+              setIsBuffering(false);
+              setIsPlaying(true);
+            }}
+            onPause={() => setIsPlaying(false)}
+            onError={() => {
+              setHasError(true);
+              setIsBuffering(false);
+            }}
           />
 
+          {/* Loading spinner while the (large) video downloads */}
+          {isBuffering && !hasError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">
+              <div className="h-10 w-10 rounded-full border-2 border-[#E7C983]/30 border-t-[#E7C983] animate-spin" />
+              <span className="text-white/70 text-[10px] uppercase tracking-[0.25em]">Loading reel</span>
+            </div>
+          )}
+
+          {/* Could not load: say so and offer a retry */}
+          {hasError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/70 px-6 text-center">
+              <span className="text-white/80 text-sm">This reel could not be loaded.</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHasError(false);
+                  setIsBuffering(true);
+                  setRetryKey((k) => k + 1);
+                }}
+                className="border border-[#E7C983]/60 px-5 py-2 text-[10px] uppercase tracking-[0.25em] text-[#E7C983]"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
           {/* Play overlay when paused */}
-          {!isPlaying && (
+          {!isPlaying && !isBuffering && !hasError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/25">
               <div className="w-16 h-16 rounded-full border border-[#E7C983]/80 bg-black/30 backdrop-blur-sm flex items-center justify-center">
                 <Play className="h-6 w-6 text-[#E7C983] ml-1" />
@@ -333,8 +417,15 @@ function ReelViewer({ reels, currentIndex, onClose, onNavigate }) {
             </div>
           )}
 
+          {/* Phone started the reel muted: tell the customer how to get sound */}
+          {isPlaying && isMuted && (
+            <div className="absolute top-28 left-1/2 -translate-x-1/2 px-3 py-1.5 border border-white/15 bg-black/50 backdrop-blur-sm pointer-events-none">
+              <span className="text-white/80 text-[10px] uppercase tracking-[0.2em]">Tap the speaker for sound</span>
+            </div>
+          )}
+
           {/* Play/Pause hint */}
-          {isPlaying && (
+          {isPlaying && !isMuted && (
             <div className="absolute bottom-28 left-1/2 -translate-x-1/2 px-3 py-1.5 border border-white/15 bg-black/40 backdrop-blur-sm pointer-events-none">
               <span className="text-white/80 text-[10px] uppercase tracking-[0.25em]">
                 Tap to pause
@@ -473,6 +564,9 @@ export default function WatchAndBuySection() {
   // Auto-scroll continuous
   useEffect(() => {
     if (reels.length === 0 || !scrollRef.current) return;
+    // Touch screens scroll natively. Moving scrollLeft from JS every frame fights the finger and the
+    // momentum scrolling, so it is only used with a mouse.
+    if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) return;
 
     const container = scrollRef.current;
     let animationId;
@@ -653,15 +747,15 @@ export default function WatchAndBuySection() {
               onMouseUp={endDrag}
               onMouseLeave={endDrag}
               onClickCapture={handleClickCapture}
-              className="flex gap-4 overflow-x-auto pt-2 pb-12 select-none"
+              className="flex gap-4 overflow-x-auto pt-2 pb-12 select-none snap-x snap-proximity overscroll-x-contain"
               style={{
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
                 scrollBehavior: "auto",
               }}
             >
-              {reels.map((reel) => (
-                <ReelCard key={reel.id} reel={reel} onClick={openViewer} />
+              {reels.map((reel, i) => (
+                <ReelCard key={reel.id} reel={reel} index={i} onClick={openViewer} />
               ))}
             </div>
 

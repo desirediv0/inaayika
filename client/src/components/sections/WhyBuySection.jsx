@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { PhoneCall, ShieldCheck, Bell, ChevronRight } from "lucide-react";
+import { PhoneCall, ShieldCheck, ChevronRight } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 
 export const WhyBuySection = () => {
@@ -59,16 +59,6 @@ export const WhyBuySection = () => {
                 </div>
               </div>
 
-              {/* Card 3 */}
-              <div className="p-5 border bg-white flex items-start gap-4 transition-shadow hover:shadow-[0_20px_40px_-24px_rgba(0,34,22,0.2)]" style={{ borderColor: "#E9E2D5" }}>
-                <div className="p-2.5 border" style={{ background: "#F7F3EB", borderColor: "#E9E2D5", color: "#B08D57" }}>
-                  <Bell className="w-5 h-5 stroke-[1.5]" />
-                </div>
-                <div>
-                  <h4 className="font-display text-base font-medium text-neutral-900 mb-0.5">Private Sale Alerts</h4>
-                  <p className="text-xs text-neutral-500 font-light leading-relaxed tracking-wide">Be the first to know when your favourites are on offer.</p>
-                </div>
-              </div>
             </div>
           </Reveal>
 
